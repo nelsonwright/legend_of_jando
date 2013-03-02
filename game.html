@@ -1,0 +1,249 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<!-- 	This game was created by Nelson Wright and Lewis Jepson 
+  		The monster and hero graphics are by Nelson Wright, Lewis Jepson and Lindsay Sugden.
+		The other graphics are from the Open Clip Art library (http://openclipart.org)
+		You are welcome to use this code, and expand it as you wish.
+		It would be damn nice of you to keep this notice in though.  Thanks :)
+!-->
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Nelson and Lewis' game project</title>
+	<meta http-equiv="content-Language" action="en-uk" />
+	
+	
+	<meta http-equiv="imagetoolbar" action="no" />
+	<meta name="MSSmartTagsPreventParsing" action="true" />
+	
+	<meta name="description" action="a game in progress" />
+	<meta name="keywords" action="game" />
+	
+	<meta name="author" action="Nelson Wright and Lewis Jepson" />
+	
+	<style type="text/css" media="all">@import "css/game.css";</style>
+	
+	<script type="text/javascript" src="./javascript/game.js"/></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/jquery-ui.min.js"></script>
+</head>
+
+<body onkeyup="pressed_a_key(event)"; onLoad="start_game();">
+<div id="map_loading">	
+	<strong>Loading map . . .</strong>	
+</div>
+<div id="page-container">
+	<div id="main-nav">
+		<span style="text-align:center; color:white">The Legend of Jando</span>
+	</div>
+	
+	<div id="stats">
+		<div id = "statsHero" style="float:left">
+			<img id="statsHeroImage"  title="the hero" />
+			<p id="heroName">
+				&nbsp;
+			</p>		
+			<p id="levelDesc">
+				Level <span id="heroLevel" style="font-weight:bold;font-size:x-large">1</span>
+			</p>					
+		</div>
+			<table>
+				<tr>
+					<td>
+						Health
+					</td>
+					<td id="heroHealth" class="current_values">
+						&nbsp
+					</td>
+					<td id="maxHeroHealth" class="max_values">
+						&nbsp
+					</td>					
+				</tr>
+				<tr>
+					<td>
+						Attack
+					</td>
+					<td id="heroAttack" class="current_values">
+						&nbsp;
+					</td>
+					<td id="maxHeroAttack" class="max_values">
+						&nbsp;
+					</td>					
+				</tr>
+				<tr>
+					<td>
+						Defence
+					</td>
+					<td id="heroDefence" class="current_values">
+						&nbsp;
+					</td>
+					<td id="maxHeroDefence" class="max_values">
+						&nbsp;
+					</td>										
+				</tr>
+			<tr>
+				<td>
+					Movement
+				</td>
+				<td id="heroMovePoints" class="current_values">
+					&nbsp;
+				</td>
+				<td id="maxHeroMovePoints" class="max_values">
+					&nbsp;
+				</td>				
+			</tr>
+			<tr>
+				<td>
+					Experience
+				</td>
+				<td id="heroExp" class="current_values">
+					 0
+				</td>
+				<td id="heroLevelTarget" class="max_values">
+					 0
+				</td>				
+			</tr>												 
+			</table>
+	</div>  <!-- end of stats DIV -->
+	
+	<div id="mapAndMove">	
+		<div id="mapTableDiv">
+			<table id = "tableMap">
+				<tr>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				</tr>		
+				<tr>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				</tr>		
+				<tr>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				</tr>
+			</table>
+		</div>  <!-- end of mapTable DIV -->
+		
+		<div id="movementArea">				
+		</div> <!-- end of movementArea DIV -->				
+		
+	</div>  <!-- end of mapAndMove DIV -->
+	
+	<div id="buttons">
+		<p><strong>Actions</strong></p>
+		<div id="fightButts" style="visibility:hidden">
+			<button id ="fightButt" onClick="fightMonster();"><u>F</u>ight</button>&nbsp;&nbsp;&nbsp;
+			<button id = "runAwayButt" type="button" onClick="runAway();"><u>R</u>un Away</button>&nbsp;&nbsp;&nbsp;
+			<button id = "contJournButt" type="button" onClick="continueJourney();" style="visibility:hidden;"><u>C</u>ontinue Journey</button>			
+		</div>	<!-- end of fightButts DIV -->
+		
+		<div id="optButts">
+			<button id ="sleepButt" onClick="sleepHero();"><u>S</u>leep</button>&nbsp;&nbsp;&nbsp;
+			<button id ="forageButt" onClick="setForageStatus(this);">F<u>o</u>rage</button>&nbsp;&nbsp;&nbsp;			
+		</div>	<!-- end of optButts DIV -->		
+		
+		<div id="gameButts">
+			<p>
+				<button id ="startNewGame" onClick="startNewGame();">Start New Game</button>&nbsp;&nbsp;&nbsp;
+				<button id ="saveGame" onClick="saveGame();">Save Game</button>&nbsp;&nbsp;&nbsp;
+				<button id ="showMapButt" onClick="showMap(map.big.displayed);">Show Big <u>M</u>ap</button>&nbsp;&nbsp;&nbsp;
+				<button id ="showQuestButt" onClick="showQuest(questDisplayed, map.big.displayed);">Show <u>Q</u>uest</button>&nbsp;&nbsp;&nbsp;				
+			</p>			
+		</div>	<!-- end of gameButts DIV -->		
+	</div>		
+	
+	<div id="action">
+		<!-- stuff will be dynamically generated in here -->
+	</div> 
+	
+	<div id="footer"> 
+		Page hosted by <a href="http://www.nelsonwright.co.uk/">Nelson</a>
+	</div>
+</div>  <!-- end of pageContainer DIV -->
+
+</body>
+</html>

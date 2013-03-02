@@ -1,0 +1,193 @@
+html, body {
+	margin: 0;
+	padding: 0;
+	background: #ffffcc;	
+}
+
+body {
+	font-family: Arial, Helvetica, Verdana, Sans-serif;
+	font-size: 1em;
+	color: black;
+	cursor: url(http://www.nelsonwright.co.uk/game_project/web_images/sword_cursor.cur), default;
+}
+
+h1 {
+	margin: 0;
+	padding: 0;
+}
+
+button {
+	cursor: url(http://www.nelsonwright.co.uk/game_project/web_images/sword_cursor.cur), default;
+}
+
+#page-container {
+	width: 1260px;
+	margin: auto;	
+}
+
+#main-nav {
+	background: darkgreen;
+	height: 1.5em;
+	font-weight:bold;
+	padding-left: 15px;
+	padding-top: 5px;
+}
+
+
+#stats {
+	float: right;
+	width: 560px;
+	height:320px;
+	background: darkgreen;	
+	padding: 15px;
+}
+
+#stats table {
+	border:solid black;
+	width:260px;
+	background-color:darkred;
+	float:right;
+}
+
+#stats td {
+	border:thin solid black;
+	background-color:#eeeecc;
+	padding:0.5em;
+}
+
+#stats td.max_values{
+	border:thin solid black;
+	background-color:#aacccc;
+	padding:0.5em;
+	text-align:right;
+}
+
+#stats #heroName {
+	clear:both; 
+	position:relative;
+	padding-top:1em; 
+	padding-left:25px; 
+	font-weight:bold;
+}
+
+#mapAndMove {
+	background-color: #CFDFC3; 
+	height:320px;
+	padding:15px;
+}
+
+#mapAndMove table {
+	border:solid black;
+	border-collapse:collapse;
+	float:left;
+}
+
+#mapAndMove tr {
+	height:40px;
+}
+
+#mapAndMove td {
+	width:30px;
+	border:thin dotted gray;
+	text-align:center;
+	background-color:#E6EFC2;
+	width:33px;
+}
+
+#movementArea {
+	display:inline;
+	padding:0px 15px 0px 15px;
+	float:right;
+	width:250px;
+}
+
+#action {
+	background-color: #CAEE90;
+	margin-right: 630px;
+	line-height: 18px;
+	padding:15px;
+	height:250px;
+	width:640px;
+	position:relative;
+}
+
+#action h2 {
+	margin: 0;
+	padding: 0;
+	padding-bottom: 15px;
+}
+
+#action p {
+	margin: 0;
+	padding: 0;
+	padding-bottom: 15px;
+}
+
+#action #fight{
+	background-color: #F5FF9F;
+}
+#action table {
+	border:none;
+	width:8em;
+	background-color:darkred;
+	float:right;
+}
+#action table td {
+	border:thin solid black;
+	background-color:#B9CFB5;
+}
+
+#buttons {
+	position:relative; 
+	float: right;
+	width: 560px;
+	height: 250px;
+	background: brown;	
+	padding: 15px;
+}
+
+#footer {
+	clear: both; 
+	background: orange;
+	font-family: Tahoma, Arial, Helvetica, Sans-serif;
+	font-size: 0.7em;
+	color: black;
+	border-top: 1px solid #efefef;
+	padding: 3px;
+}
+
+#footer a {
+	color: #c9c9c9;
+	text-decoration: none;
+}
+
+#footer a:hover {
+	color: #df1d16;
+}
+
+#footer #altnav {
+	width: 350px;
+	float: right;
+	text-align: right;
+}
+
+#map_loading {
+	position:fixed; 
+	background-image: url("http://www.nelsonwright.co.uk/game_project/web_images/ajax-loader.gif");
+	background-repeat: no-repeat;
+	background-position: center;
+	top:155px;
+	left:10px;
+	height: 100px;
+	width: 	362px;
+	text-align:center;
+	padding:15px;
+}
+
+.hidden {
+	display: none;
+}
+
+.floatLeft { float: left; }
+.floatRight { float: right; }
+
