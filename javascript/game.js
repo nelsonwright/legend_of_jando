@@ -1,20 +1,25 @@
-	/* 
-	   *** global variables ***
+	/* So, this was created in order to try and learn javascript.  You can probably tell.
+	   If you have any suggestions on how to improve this script, I'd love to hear from you.
+	   Contact me at: me@nelsonwright.co.uk
+	*/
+	
+	/*    
+	   *** global variables, eek!!
 	*/
 	
 	// game_state object 
 	var game_state = {
         gameInProgress : null,
-        foraging : false, // are you foraging at the moment?
-        fightOn : 'No',	         // indicates if a fight with a monster is ongoing
-        asleep : 'No',		     // indicates if you're sleeping	
-        attackRisk : 0.91	     // if the random number is higher than this (plus or minus modifiers), then you'll be attacked!
+        foraging : false,       // are you foraging at the moment?
+        fightOn : 'No',	        // indicates if a fight with a monster is ongoing
+        asleep : 'No',		    // indicates if you're sleeping	
+        attackRisk : 0.91	    // if the random number is higher than this (plus or minus modifiers), then you'll be attacked!
     };
 	
     //map object
     var map = {
         // small map, i.e. the one your hero character moves around on
-        small : {
+            small : {
             rows : 8,
             cols : 10, // size of the map you move around in
             posRowCell : null,
@@ -26,37 +31,37 @@
             cols : 10, // size of the overall big scale map
             posRowCell : null,
             posColumnCell : null,	// big map-cordinates of the hero
-            terrainAttributes : 6,	 // number of attributes of the particular terrain
+            terrainAttributes : 6,	// number of attributes of the particular terrain
             numTerrainTypes : 6,    // how many different terrain types there are
-            displayed : false,
+            displayed : false,      // indicates if the big map is being displayed
             nextDestination : 0		// holds the next destination level, 
                                     // corresponds to terrain type, i.e. starts at zero,which = light grass
         }
     };
 	
 	// big map
-	var terrainAttributes = 6;	 // number of attributes of the particular terrain
+	var terrainAttributes = 6;	// number of attributes of the particular terrain
 	var numTerrainTypes = 6;	// how many different terrain types there are
 
 	var nextDestination = 0;		// holds the next destination level, 
 		// corresponds to terrain type, i.e. starts at zero,which = light grass
 
 	var heroMoved;
-	var storyEvent = 'No';	// is a story event happening?
-	var questDisplayed = false; // are we currently showing the current quest objective?
-	var finalFight = false; // is the final battle happening?
+	var storyEvent = 'No';	        // is a story event happening?
+	var questDisplayed = false;    // are we currently showing the current quest objective?
+	var finalFight = false;        // is the final battle happening?
 	
-	var numMonsters = 19;					// how many monsters there are
-	var numMonsterAttributes = 5;		// number of monster attributes
+	var numMonsters = 19;        	// how many monsters there are
+	var numMonsterAttributes = 5;	// number of monster attributes
 	
 	var finalMonsterIdx = numMonsters; // the index number of the final monster.   
 																				 
 	/*  	Monster Attributes:
-				1		Name
-				2		Image name
-				3 		Health
-				4		Attack
-				5		Defence
+			1	Name
+			2	Image name
+			3	Health
+			4	Attack
+			5	Defence
 			
 			Terrain Attributes:
 			1	Number Code
@@ -91,14 +96,14 @@
 	var terrainLocArray=new Array(numTerrainTypes);
 	for (i=0; i <numTerrainTypes; i++)
 		terrainLocArray[i]=''; 	// set up terrainLocArray
-							// Used to hold row/col locations on big map, indexed by terrain type		
+						// Used to hold row/col locations on big map, indexed by terrain type		
 								
 	var terrainDestinationArray=new Array(numTerrainTypes + 1);	 // last destination is random location for treasure 
 	for (i=0; i <numTerrainTypes + 1; i++)
 		terrainDestinationArray[i] = new Array(7); 	// set up Array
-							// Used to hold row/col destination pairs on big map and small map, 
-							// indexed by terrain type.  Also used to hold character and map images
-							// that are displayed upon reaching a destination							
+						// Used to hold row/col destination pairs on big map and small map, 
+						// indexed by terrain type.  Also used to hold character and map images
+						// that are displayed upon reaching a destination							
 
 	var monsterArray=new Array(numMonsters + 1); // add 1 to have room for final boss battle monster
 	for (i=0; i <numMonsters +1; i++)
@@ -128,24 +133,28 @@
 	var foodIdx;
 	
 	// hero
-	var heroImage = new Image();
-	var heroType;	
-	var heroTurn = 'Yes';
-	var movePoints;		
+	var hero = {
+	    name: "bozo",
+	    image: new Image(),
+	    type: "man",
+	    turn: true,
+	    movePoints: 0,
+	    
+	    // attributes connected with fighting . . .
+	    health: 0,
+	    attack: 0,
+	    defence: 0,
+	    maxHealth: 0,
+	    maxAttack: 0,
+	    maxDefence: 0,
+	    experience: 0,
+	    level: 0,
+	    numDiceRolls: 3, // this equates to how many dice are rolled
+	    experiencePerLevel: 4
+	};
 	
-	//hero stats
-	var maxHeroHealth;
-	var maxHeroAttack;
-	var maxHeroDefence;
+	// hero stats
 	var maxMovePoints;	
-	var heroName;
-	var heroHealth;
-	var heroAttack;
-	var heroDefence;
-	var heroExperience;
-	var heroLevel;	
-	var numHeroDiceRolls = 3;
-	var heroExpPerLevel = 4;
 	
     var oldposRowCell;
     var oldPosColumnCell;
@@ -406,14 +415,14 @@
 	// pre-load the images into an array . . .
 		for (i=0; i <numFoods; i++) {
 			var imgSrc = './web_images/food/' + foodArray[i][1] + '.png';			
-			 foodImageArray[i].src = imgSrc; 		// set up foodImageArray			
+			 foodImageArray[i].src = imgSrc; 	// set up foodImageArray			
 		}
 	}
 		
 	function loadFood(){
 		foodArray[0][0] = 'squashy fig';		// food name
-		foodArray[0][1] = 'fig';						// name of png file
-		foodArray[0][2] = 3;							// health points gained
+		foodArray[0][1] = 'fig';				// name of png file
+		foodArray[0][2] = 3;					// health points gained
 
 		foodArray[1][0] = 'loaf of bread';
 		foodArray[1][1] = 'bread_1';
@@ -621,37 +630,37 @@
 	}	// end of startHeroPosition
 	
 	function loadHeroImage() {
-		heroImage.src = './web_images/hero_' + heroType + '.png';
-		heroImage.title = heroType + ' hero ' + heroName;
+		hero.image.src = './web_images/hero_' + hero.type + '.png';
+		hero.image.title = hero.type + ' ' + hero.name;
 	}
 	
 	function loadHeroInfo(game_state, map){
 		var cookieValue = getCookie('jando');
-		heroName = getCookieValue('name', cookieValue);
-		heroHealth = parseInt(getCookieValue('health', cookieValue));
-		heroAttack = parseInt(getCookieValue('attack', cookieValue));
-		heroDefence = parseInt(getCookieValue('defence', cookieValue));
-		heroType = getCookieValue('char', cookieValue);
+		hero.name = getCookieValue('name', cookieValue);
+		hero.health = parseInt(getCookieValue('health', cookieValue));
+		hero.attack = parseInt(getCookieValue('attack', cookieValue));
+		hero.defence = parseInt(getCookieValue('defence', cookieValue));
+		hero.type = getCookieValue('char', cookieValue);
 		map.small.posRowCell = parseInt(getCookieValue('posRowCell', cookieValue));
 		map.small.posColumnCell = parseInt(getCookieValue('posColumnCell', cookieValue));		
 		map.big.posRowCell = parseInt(getCookieValue('bigPosRowCell', cookieValue));
 		map.big.posColumnCell = parseInt(getCookieValue('bigPosColumnCell', cookieValue));
 		game_state.gameInProgress = (getCookieValue('gameInProgress', cookieValue) == "Y") ? true : false;		
-		movePoints = parseInt(getCookieValue('movePoints', cookieValue));
+		hero.movePoints = parseInt(getCookieValue('movePoints', cookieValue));
 		
-		maxHeroHealth = parseInt(getCookieValue('maxHeroHealth', cookieValue));
-		maxHeroAttack = parseInt(getCookieValue('maxHeroAttack', cookieValue));
-		maxHeroDefence = parseInt(getCookieValue('maxHeroDefence', cookieValue));
+		hero.maxHealth = parseInt(getCookieValue('maxHeroHealth', cookieValue));
+		hero.maxAttack = parseInt(getCookieValue('maxHeroAttack', cookieValue));
+		hero.maxDefence = parseInt(getCookieValue('maxHeroDefence', cookieValue));
 		maxMovePoints = parseInt(getCookieValue('maxMovePoints', cookieValue));		
 		nextDestination = parseInt(getCookieValue('nextDestination', cookieValue));
-		heroExperience = parseInt(getCookieValue('heroExperience', cookieValue));
-		heroLevel = parseInt(getCookieValue('heroLevel', cookieValue));		
+		hero.experience = parseInt(getCookieValue('heroExperience', cookieValue));
+		hero.level = parseInt(getCookieValue('heroLevel', cookieValue));		
 		//nextDestination = 5;  // test line
 		
 		loadHeroImage();		
 		var statsHeroImage = document.getElementById('statsHeroImage');
-		statsHeroImage.src = './web_images/hero_' + heroType + '.png';
-		statsHeroImage.title = heroType + ' hero ' + heroName;
+		statsHeroImage.src = './web_images/hero_' + hero.type + '.png';
+		statsHeroImage.title = hero.type + ' ' + hero.name;
 			
 		startHeroPosition(game_state);
 		if (!game_state.gameInProgress)
@@ -660,24 +669,24 @@
 
 	function saveHeroInfo(){
 	    var gameInProgress = (game_state.gameInProgress == true) ? "Y" : "N";
-		var cookieValue  = "name=" + heroName + ';'
-										+ "health=" + heroHealth + ';'
-										+ "attack=" + heroAttack + ';'
-										+ "defence=" + heroDefence + ';' 
-										+ "char=" + heroType + ';' 
+		var cookieValue  = "name=" + hero.name + ';'
+										+ "health=" + hero.health + ';'
+										+ "attack=" + hero.attack + ';'
+										+ "defence=" + hero.defence + ';' 
+										+ "char=" + hero.type + ';' 
 										+ "posRowCell=" + map.small.posRowCell + ';'
 										+ "posColumnCell=" + map.small.posColumnCell + ';'										
 										+ "bigPosRowCell=" + map.big.posRowCell + ';' 
 										+ "bigPosColumnCell=" + map.big.posColumnCell + ';'
 										+ "gameInProgress=" + gameInProgress + ';'
-										+ "movePoints=" + movePoints + ';'
-										+ "maxHeroHealth=" + maxHeroHealth + ';'
-										+ "maxHeroAttack=" + maxHeroAttack + ';'
-										+ "maxHeroDefence=" + maxHeroDefence + ';'
+										+ "movePoints=" + hero.movePoints + ';'
+										+ "maxHeroHealth=" + hero.maxHealth + ';'
+										+ "maxHeroAttack=" + hero.maxAttack + ';'
+										+ "maxHeroDefence=" + hero.maxDefence + ';'
 										+ "maxMovePoints=" + maxMovePoints + ';'
 										+ "nextDestination=" + nextDestination + ';'
-										+ "heroExperience=" + heroExperience + ';'
-										+ "heroLevel=" + heroLevel
+										+ "heroExperience=" + hero.experience + ';'
+										+ "heroLevel=" + hero.level
 										;																							
 		setCookie('jando', cookieValue, 365);  // cookie will expire in a year
 		//alert('map.big.posRowCell is: ' + map.big.posRowCell + ', and map.big.posColumnCell is: ' + map.big.posColumnCell);
@@ -918,7 +927,7 @@
 				+	'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />'
 			+'</div>';
 		var mouseMoveHero = document.getElementById('mouseMoveHero');
-		mouseMoveHero.innerHTML='<img src="./web_images/hero_' + heroType + '_thumb.png" title="the hero" />';			
+		mouseMoveHero.innerHTML='<img src="./web_images/hero_' + hero.type + '_thumb.png" title="the hero" />';			
 	}	
 	
 	function showSpecialMapFeature(mapTable, row, col)
@@ -961,7 +970,7 @@
 
 		var mapRow = mapTableDiv.getElementsByTagName("tr")[map.small.posRowCell];
 		var mapCell = mapRow.getElementsByTagName("td")[map.small.posColumnCell];
-		mapCell.innerHTML='<img src="./web_images/hero_' + heroType + '_thumb.png" title="the hero" id="theHeroImg" />';	
+		mapCell.innerHTML='<img src="./web_images/hero_' + hero.type + '_thumb.png" title="the hero" id="theHeroImg" />';	
 	} // end of draw_map
 
 	function offMap(tableRow, tableCol) {
@@ -1098,7 +1107,7 @@
 	
 	function startNewGame(){
 		var newGame = true;
-		if (heroHealth > 0)
+		if (hero.health > 0)
 			newGame = confirm('Are you sure you would like to quit this game and start a new one?');
 		if (newGame === true ) {
 			deleteCookie('jando');
@@ -1259,39 +1268,39 @@
 	function updateMovePoints(movePointsToUse){
 		var canMove = false;
 		document.getElementById('maxHeroMovePoints').innerHTML = maxMovePoints;		
-		if (movePoints - movePointsToUse >= 0) {
+		if (hero.movePoints - movePointsToUse >= 0) {
 			canMove = true;
-			movePoints = movePoints - movePointsToUse; 
-			document.getElementById('heroMovePoints').innerHTML = movePoints;
+			hero.movePoints = hero.movePoints - movePointsToUse; 
+			document.getElementById('heroMovePoints').innerHTML = hero.movePoints;
 			heroMoved = 'Yes';
 		} 
 		return canMove;
 	}	
 	
 	function levelUpHero(){
-		maxHeroHealth = maxHeroHealth + 1;
-		maxHeroAttack = maxHeroAttack + 1;
-		maxHeroDefence = maxHeroDefence + 1;
-		heroHealth = maxHeroHealth;
-		heroAttack = maxHeroAttack;
-		heroDefence = maxHeroDefence;		
-		heroExperience = 0;
-		heroLevel = heroLevel + 1;
+		hero.maxHealth = hero.maxHealth + 1;
+		hero.maxAttack = hero.maxAttack + 1;
+		hero.maxDefence = hero.maxDefence + 1;
+		hero.health = hero.maxHealth;
+		hero.attack = hero.maxAttack;
+		hero.defence = hero.maxDefence;		
+		hero.experience = 0;
+		hero.level = hero.level + 1;
 	}		
 	
 	function updateHeroStats() {
-		if (heroExperience >= heroLevel * heroExpPerLevel)
+		if (hero.experience >= hero.level * hero.experiencePerLevel)
 			levelUpHero();
-		document.getElementById('heroName').innerHTML = heroName; 
-		document.getElementById('heroHealth').innerHTML= heroHealth;
-		document.getElementById('heroAttack').innerHTML=heroAttack;
-		document.getElementById('heroDefence').innerHTML=heroDefence;
-		document.getElementById('maxHeroHealth').innerHTML= maxHeroHealth;
-		document.getElementById('maxHeroAttack').innerHTML=maxHeroAttack;
-		document.getElementById('maxHeroDefence').innerHTML=maxHeroDefence;
-		document.getElementById('heroExp').innerHTML=heroExperience;
-		document.getElementById('heroLevel').innerHTML=heroLevel;				
-		document.getElementById('heroLevelTarget').innerHTML=heroLevel * heroExpPerLevel;		
+		document.getElementById('heroName').innerHTML = hero.name; 
+		document.getElementById('heroHealth').innerHTML= hero.health;
+		document.getElementById('heroAttack').innerHTML=hero.attack;
+		document.getElementById('heroDefence').innerHTML=hero.defence;
+		document.getElementById('maxHeroHealth').innerHTML= hero.maxHealth;
+		document.getElementById('maxHeroAttack').innerHTML=hero.maxAttack;
+		document.getElementById('maxHeroDefence').innerHTML=hero.maxDefence;
+		document.getElementById('heroExp').innerHTML=hero.experience;
+		document.getElementById('heroLevel').innerHTML=hero.level;				
+		document.getElementById('heroLevelTarget').innerHTML=hero.level * hero.experiencePerLevel;		
 
 	}
 	
@@ -1348,9 +1357,9 @@
 		var heroHit;
 		
 		// simulate the rolling of three dice for the hero's attack, take the highest value . . .
-		for (i=0; i <numHeroDiceRolls; i++)
+		for (i=0; i <hero.numDiceRolls; i++)
 		{
-			tempHeroRoll = Math.ceil(Math.random() * heroAttack);
+			tempHeroRoll = Math.ceil(Math.random() * hero.attack);
 			if (tempHeroRoll > heroAttackRoll)
 				heroAttackRoll = tempHeroRoll; 
 		}
@@ -1378,12 +1387,12 @@
 					monsterHealth = 0;
 					heroHitDisplay = heroHitDisplay + ' and do <strong>' + heroHit + '</strong>' + ' damage,' 
 													+ ' and slay the creature.';
-					heroExperience	= heroExperience + 1; 							
+					hero.experience	= hero.experience + 1; 							
 				}						
 				else {			
 					heroHitDisplay = heroHitDisplay + ' and do <strong>' + heroHit + '</strong>' + ' damage';							
 				}								
-		heroTurn = 'No';
+		hero.turn = 'No';
 		animateFightHero();			
 		fightPara.innerHTML = heroHitDisplay;
 	}	// end of doHeroAttack
@@ -1419,7 +1428,7 @@
 		}					
 		
 		// simulate the rolling of three dice for the hero's defence, take the highest value . . .
-		for (i=0; i <numHeroDiceRolls; i++)
+		for (i=0; i <hero.numDiceRolls; i++)
 		{
 			tempHeroRoll = Math.ceil(Math.random() * heroDefence);
 			if (tempHeroRoll > heroDefenceRoll)
@@ -1435,16 +1444,16 @@
 			monsterHitDisplay = monsterHitDisplay + ' and <strong>misses</strong>';
 		else 
 			monsterHitDisplay = monsterHitDisplay + ' and does <strong>' + monsterHit + '</strong>' + ' damage';						
-		heroHealth = heroHealth - monsterHit;
-		if (heroHealth <= 0) {
-			heroHealth = 0;
+		hero.health = hero.health - monsterHit;
+		if (hero.health <= 0) {
+			hero.health = 0;
 			monsterHitDisplay = monsterHitDisplay + '.  You have been killed!';
 		}
 		monsterFightPara.innerHTML = monsterHitDisplay;
 		animateFightMonster();
-		if (heroHealth <= 0) 
+		if (hero.health <= 0) 
 			sayHeroDead();
-		heroTurn = 'Yes';
+		hero.turn = 'Yes';
 		
 	}	// end of monsterAttack
 
@@ -1460,7 +1469,7 @@
 		hideFightButts();
 		showOptButts();		
 		game_state.fightOn = 'No';		
-		heroTurn = 'Yes';	// reset to give first hit next time.				
+		hero.turn = 'Yes';	// reset to give first hit next time.				
 	}	// 	
 	
 	function showContJournButt() {
@@ -1480,8 +1489,8 @@
 	
 	function fightMonster() {
 		var experienceAdded = monsterArray[monsterIdx][3];
-		var newHeroExperience = heroExperience;	
-		if (heroTurn == 'Yes') 
+		var newHeroExperience = hero.experience;	
+		if (hero.turn == 'Yes') 
 		{ 
 			doHeroAttack();			
 			if (monsterHealth <= 0  && finalFight)
@@ -1490,16 +1499,16 @@
 				showContJournButt() ;			
 		}
 		else if (monsterHealth > 0)
-			doMonsterAttack(heroDefence);			
+			doMonsterAttack(hero.defence);			
 		updateHeroStats();
 		popMonsterStatsDisplay();
 	} // end of fightMonster
 	
 	function runAway() {
-		doMonsterAttack(heroDefence/2);			
+		doMonsterAttack(hero.defence/2);			
 		updateHeroStats();
 		// if you're not dead after trying to run away, show the "continue journey" button
-		if (heroHealth > 0) 
+		if (hero.health > 0) 
 			showContJournButt() ;			
 	} // end of runAway
 	
@@ -1515,8 +1524,8 @@
 	
 	function setHeroImage() {
 		var fightHeroImg = document.getElementById('fightHeroImage');
-		fightHeroImg.src = heroImage.src;
-		fightHeroImg.title = heroType + ' hero ' + heroName;
+		fightHeroImg.src = hero.image.src;
+		fightHeroImg.title = hero.type + ' ' + hero.name;
 	}	
 	
 	function setDestinationHTML(nextDestination){
@@ -1636,9 +1645,9 @@
 		var foodPic = document.getElementById('foodImage');
 		foodPic.src = foodImageArray[foodIdx].src;
 		foodPic.title = foodArray[foodIdx][0];																
-		heroHealth = heroHealth + foodArray[foodIdx][2]; 		
-		if (heroHealth > maxHeroHealth)
-			heroHealth = maxHeroHealth;
+		hero.health = hero.health + foodArray[foodIdx][2]; 		
+		if (hero.health > hero.maxHealth)
+			hero.health = hero.maxHealth;
 		updateHeroStats();
 	}	// end of processFoundFood
 	
@@ -1667,7 +1676,7 @@
 	
 	function sleepHero() {
 		alert('You sleep, perchance to dream . . .');
-		movePoints = maxMovePoints;
+		hero.movePoints = maxMovePoints;
 		updateMovePoints(0);
 	}		// end of sleepHero
 
@@ -1768,7 +1777,7 @@
 			if (actionCode == 79) // letter "o" for f(o)rage
 				setForageStatus(document.getElementById('forageButt'));
 		}	
-		if (game_state.fightOn == 'Yes' && heroHealth > 0)	// fight is ongoing
+		if (game_state.fightOn == 'Yes' && hero.health > 0)	// fight is ongoing
 		{
 				if (actionCode == 70)	// letter "f" for (F)ight
 					fightMonster();
