@@ -12,7 +12,7 @@ module.exports = function(grunt) {
     
     browserify: {
       release: {
-        src: 'scripts/**/*.js',
+        src: 'javascript/**/*.js',
         dest: 'build/main.js'
       },
       debug: {
