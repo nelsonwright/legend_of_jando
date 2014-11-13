@@ -1,0 +1,18 @@
+{
+  "name": "legend_of_jando",
+  "version": "0.0.0",
+  "description": "The Legend of Jando is a typical RPG game that is written in JavaScript.  I created it in order to try and learn JavaScript, and to show my son what sort of game could be created by an amateur hacker with no prior knowledge.",
+  "main": "main.js",
+  "scripts": {
+    "test": "grunt spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nelsonwright/legend_of_jando.git"
+  },
+  "author": "Nelson Wright",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/nelsonwright/legend_of_jando/issues"
+  }
+}
