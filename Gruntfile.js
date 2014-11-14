@@ -16,8 +16,8 @@ module.exports = function(grunt) {
         dest: 'build/main.js'
       },
       debug: {
-        src: 'spec/**/*.js',
-        dest: 'build/test.js',
+        src: 'javascript/**/*.js',
+        dest: 'build/main.js',
         options: {
           browserifyOptions: {
             debug: true
@@ -25,13 +25,22 @@ module.exports = function(grunt) {
         }
       }
     },
-    
+  
+    watch: {
+      scripts: {
+        files: ['Gruntfile.js', 'javascript/**/*.js', 'spec/**/*.js'],
+        tasks: ['browserify:debug'],
+        options: {
+          spawn: false,
+        },
+      },
+    },
     
   });
   
  // grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-browserify');
- // grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-watch');
  // grunt.loadNpmTasks('grunt-shell');
   
 //  grunt.registerTask('spec', ['browserify:debug', 'jasmine']);
