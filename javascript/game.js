@@ -1,3 +1,4 @@
+
 	/* So, this was created in order to try and learn javascript.  You can probably tell.
 	   If you have any suggestions on how to improve this script, I'd love to hear from you.
 	   Contact me at: me@nelsonwright.co.uk
@@ -6,6 +7,23 @@
 	/*    
 	   *** global variables, eek!!
 	*/
+	
+    require("./string_utils");
+
+    global.start_game = start_game;
+    global.pressed_a_key = pressed_a_key;
+    global.clickedAnArrow = clickedAnArrow;
+    global.arrowImageMouseOver = arrowImageMouseOver;
+    global.fightMonster = fightMonster;
+    global.runAway = runAway;
+    global.continueJourney = continueJourney;
+    global.sleepHero = sleepHero;
+    global.setForageStatus = setForageStatus;
+    global.startNewGame = startNewGame;
+    global.saveGame = saveGame;
+    global.showQuest = showQuest;
+    global.showMap = showMap;
+
 	
 	// game_state object 
 	var game_state = {
@@ -19,7 +37,7 @@
     //map object
     var map = {
         // small map, i.e. the one your hero character moves around on
-            small : {
+        small : {
             rows : 8,
             cols : 10, // size of the map you move around in
             posRowCell : null,
@@ -38,6 +56,8 @@
                                     // corresponds to terrain type, i.e. starts at zero,which = light grass
         }
     };
+    global.map = map;
+    
 	
 	// big map
 	var terrainAttributes = 6;	// number of attributes of the particular terrain
@@ -48,7 +68,7 @@
 
 	var heroMoved;
 	var storyEvent = 'No';	        // is a story event happening?
-	var questDisplayed = false;    // are we currently showing the current quest objective?
+	global.questDisplayed = false;    // are we currently showing the current quest objective?
 	var finalFight = false;        // is the final battle happening?
 	
 	var numMonsters = 19;        	// how many monsters there are
@@ -172,16 +192,6 @@
 	*/
 	
 	// cookie and trim stuff thanks to Patrick Hunlock: http://www.hunlock.com/blogs/Ten_Javascript_Tools_Everyone_Should_Have
-	
-	String.prototype.trim = function() {
-		return this.replace(/^\s+|\s+$/g,"");
-	}
-	String.prototype.ltrim = function() {
-		return this.replace(/^\s+/g,"");
-	}
-	String.prototype.rtrim = function() {
-		return this.replace(/\s+$/g,"");
-	}
 		
 	function setCookie(name,value,expires, options) {
 		if (options===undefined) { options = {}; }
@@ -1180,7 +1190,7 @@
 			document.getElementById('showMapButt').innerHTML = 'Show Small <u>M</u>ap';
 		}
 		// regardless of which map has been shown, we want to reset the questDisplayed status
-		questDisplayed = false;
+		global.questDisplayed = false;
 		questButt.innerHTML = 'Show <u>Q</u>uest';
 	}
 	
@@ -1216,7 +1226,7 @@
 	
 		if (!questShown)
 		{
-			questDisplayed = true;
+			global.questDisplayed = true;
 			var moveArea = document.getElementById('movementArea');
 			var questString;
 			
@@ -1748,7 +1758,7 @@
 			 // if movement is requested . . .
 			if (actionCode >= 37 && actionCode <= 40 
 				&& !map.big.displayed 
-			    && !questDisplayed) 
+			    && !global.questDisplayed) 
 			{	 
 				calcMovement(actionCode)
 				processMovement(map.small.posRowCell,
@@ -1767,11 +1777,11 @@
 				}
 			}
 			if (actionCode == 77 /* letter "m" for (m)ap  */
-				 && !questDisplayed) 
+				 && !global.questDisplayed) 
 				showMap(map.big.displayed);	
 			if (actionCode == 81 /* letter "q" for (q)uest log */
 				 && !map.big.displayed)
-				showQuest(questDisplayed, map.big.displayed);				
+				showQuest(global.questDisplayed, map.big.displayed);				
 			if (actionCode == 83) // letter "s" for (s)leep
 				sleepHero();
 			if (actionCode == 79) // letter "o" for f(o)rage
