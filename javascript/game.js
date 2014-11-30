@@ -9,6 +9,8 @@
 	*/
 	
     require("./string_utils");
+    var $ = require('jquery');
+    require('jquery-ui');
 
     global.start_game = start_game;
     global.pressed_a_key = pressed_a_key;
