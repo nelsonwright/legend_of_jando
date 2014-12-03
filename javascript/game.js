@@ -648,26 +648,25 @@
 	
 	function loadHeroInfo(game_state, map){
 		var cookieValue = getCookie('jando');
-		hero.name = getCookieValue('name', cookieValue);
-		hero.health = parseInt(getCookieValue('health', cookieValue));
-		hero.attack = parseInt(getCookieValue('attack', cookieValue));
-		hero.defence = parseInt(getCookieValue('defence', cookieValue));
-		hero.type = getCookieValue('char', cookieValue);
-		map.small.posRowCell = parseInt(getCookieValue('posRowCell', cookieValue));
-		map.small.posColumnCell = parseInt(getCookieValue('posColumnCell', cookieValue));		
-		map.big.posRowCell = parseInt(getCookieValue('bigPosRowCell', cookieValue));
-		map.big.posColumnCell = parseInt(getCookieValue('bigPosColumnCell', cookieValue));
+		hero.name = getCookieValue('name', cookieValue || 'You');
+		hero.health = parseInt(getCookieValue('health', cookieValue || 30));
+		hero.attack = parseInt(getCookieValue('attack', cookieValue || 10));
+		hero.defence = parseInt(getCookieValue('defence', cookieValue || 8));
+		hero.type = getCookieValue('char', cookieValue || 'man');
+		map.small.posRowCell = parseInt(getCookieValue('posRowCell', cookieValue) || 0);
+		map.small.posColumnCell = parseInt(getCookieValue('posColumnCell', cookieValue) || 0);
+		map.big.posRowCell = parseInt(getCookieValue('bigPosRowCell', cookieValue) || 0);
+		map.big.posColumnCell = parseInt(getCookieValue('bigPosColumnCell', cookieValue) || 0);
 		game_state.gameInProgress = (getCookieValue('gameInProgress', cookieValue) == "Y") ? true : false;		
-		hero.movePoints = parseInt(getCookieValue('movePoints', cookieValue));
-		
-		hero.maxHealth = parseInt(getCookieValue('maxHeroHealth', cookieValue));
-		hero.maxAttack = parseInt(getCookieValue('maxHeroAttack', cookieValue));
-		hero.maxDefence = parseInt(getCookieValue('maxHeroDefence', cookieValue));
-		maxMovePoints = parseInt(getCookieValue('maxMovePoints', cookieValue));		
-		nextDestination = parseInt(getCookieValue('nextDestination', cookieValue));
-		hero.experience = parseInt(getCookieValue('heroExperience', cookieValue));
-		hero.level = parseInt(getCookieValue('heroLevel', cookieValue));		
-		//nextDestination = 5;  // test line
+		hero.movePoints = parseInt(getCookieValue('movePoints', cookieValue) || 20);
+
+		hero.maxHealth = parseInt(getCookieValue('maxHeroHealth', cookieValue || 30));
+		hero.maxAttack = parseInt(getCookieValue('maxHeroAttack', cookieValue) || 10);
+		hero.maxDefence = parseInt(getCookieValue('maxHeroDefence', cookieValue) || 8);
+		maxMovePoints = parseInt(getCookieValue('maxMovePoints', cookieValue) || 20);
+		nextDestination = parseInt(getCookieValue('nextDestination', cookieValue) || 0);
+		hero.experience = parseInt(getCookieValue('heroExperience', cookieValue) || 0);
+		hero.level = parseInt(getCookieValue('heroLevel', cookieValue) || 1);
 		
 		loadHeroImage();		
 		var statsHeroImage = document.getElementById('statsHeroImage');
