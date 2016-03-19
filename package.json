@@ -16,11 +16,11 @@
     "url": "https://github.com/nelsonwright/legend_of_jando/issues"
   },
   "devDependencies": {
-    "browserify": "~6.3.2",
+    "browserify": "^13.0.0",
     "grunt": "~0.4.5",
-    "grunt-browserify": "~3.2.0",
-    "grunt-contrib-watch": "~0.6.1",
+    "grunt-browserify": "^5.0.0",
     "grunt-contrib-jasmine": "~0.8.1",
+    "grunt-contrib-watch": "~0.6.1",
     "grunt-shell": "~1.1.1",
     "jquery": "~2.1.1",
     "jquery-ui": "~1.10.5"
