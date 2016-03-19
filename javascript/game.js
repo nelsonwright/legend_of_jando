@@ -3,6 +3,8 @@
    Contact me at: me@nelsonwright.co.uk
 */
 
+
+// cookie and trim stuff thanks to Patrick Hunlock: http://www.hunlock.com/blogs/Ten_Javascript_Tools_Everyone_Should_Have
 String.prototype.trim = function() {
 	return this.replace(/^\s+|\s+$/g,"");
 }
@@ -12,8 +14,6 @@ String.prototype.ltrim = function() {
 String.prototype.rtrim = function() {
 	return this.replace(/\s+$/g,"");
 }
-
-// cookie and trim stuff thanks to Patrick Hunlock: http://www.hunlock.com/blogs/Ten_Javascript_Tools_Everyone_Should_Have
 
 function setCookie(name,value,expires, options) {
   if (options===undefined) { options = {}; }
@@ -63,23 +63,23 @@ function cookiesAllowed() {
 
 // hero
 var hero = {
-  name: "bozo",
-  image: new Image(),
-  type: "man",
-  turn: true,
-  movePoints: 0,
+	name: "bozo",
+	image: new Image(),
+	type: "man",
+	movePoints: 0,
 
-  // attributes connected with fighting . . .
-  health: 0,
-  attack: 0,
-  defence: 0,
-  maxHealth: 0,
-  maxAttack: 0,
-  maxDefence: 0,
-  experience: 0,
-  level: 0,
-  numDiceRolls: 3, // this equates to how many dice are rolled
-  experiencePerLevel: 4
+	// attributes connected with fighting . . .
+	turnToFight: true,
+	health: 0,
+	attack: 0,
+	defence: 0,
+	maxHealth: 0,
+	maxAttack: 0,
+	maxDefence: 0,
+	experience: 0,
+	level: 0,
+	numDiceRolls: 3, // this equates to how many dice are rolled
+	experiencePerLevel: 4
 };
 
 // hero stats
@@ -1394,7 +1394,7 @@ function doHeroAttack() {
 			else {
 				heroHitDisplay = heroHitDisplay + ' and do <strong>' + heroHit + '</strong>' + ' damage';
 			}
-	hero.turn = 'No';
+	hero.turnToFight = false;
 	animateFightHero();
 	fightPara.innerHTML = heroHitDisplay;
 }	// end of doHeroAttack
@@ -1439,11 +1439,11 @@ function doMonsterAttack(heroDefence) {
 	monsterHit = monsterAttackRoll - heroDefenceRoll;
 	if (monsterHit < 0) {
 		monsterHit = 0;	// hero defence roll is larger, so no damage done
-  }
+	}
 	var monsterHitDisplay = 'The ' + monsterArray[monsterIdx][0] + ' attacks ';
 	if (monsterHit == 0) {
 		monsterHitDisplay = monsterHitDisplay + ' and <strong>misses</strong>';
-  }
+	}
 	else
 		monsterHitDisplay = monsterHitDisplay + ' and does <strong>' + monsterHit + '</strong>' + ' damage';
 	hero.health = hero.health - monsterHit;
@@ -1453,10 +1453,11 @@ function doMonsterAttack(heroDefence) {
 	}
 	monsterFightPara.innerHTML = monsterHitDisplay;
 	animateFightMonster();
-	if (hero.health <= 0)
+	if (hero.health <= 0) {
 		sayHeroDead();
-	hero.turn = 'Yes';
+	}
 
+	hero.turnToFight = true; // do we need this . . . ????
 }	// end of monsterAttack
 
 function endFight() {
@@ -1471,7 +1472,7 @@ function endFight() {
 	hideFightButts();
 	showOptButts();
 	game_state.fightOn = 'No';
-	hero.turn = 'Yes';	// reset to give first hit next time.
+	hero.turnToFight = true;	// reset to give first hit next time.
 }	//
 
 function showContJournButt() {
@@ -1492,7 +1493,7 @@ function tellEndStory() {
 function fightMonster() {
 	var experienceAdded = monsterArray[monsterIdx][3];
 	var newHeroExperience = hero.experience;
-	if (hero.turn == 'Yes')
+	if (hero.turnToFight === true)
 	{
 		doHeroAttack();
 		if (monsterHealth <= 0  && finalFight)
