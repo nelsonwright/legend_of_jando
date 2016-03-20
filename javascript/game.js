@@ -16,59 +16,76 @@ String.prototype.rtrim = function() {
 }
 
 function setCookie(name,value,expires, options) {
-  if (options===undefined) { options = {}; }
-  if ( expires ) {
-    var expires_date = new Date();
-    expires_date.setDate(expires_date.getDate() + expires)
-  }
-  document.cookie = name+'='+escape( value ) +
-  ( ( expires ) ? ';expires='+expires_date.toGMTString() : '' ) +
-  ( ( options.path ) ? ';path=' + options.path : '' ) +
-  ( ( options.domain ) ? ';domain=' + options.domain : '' ) +
-  ( ( options.secure ) ? ';secure' : '' );
+	if (options===undefined) {
+	  options = {};
+	}
+
+	if ( expires ) {
+		var expires_date = new Date();
+		expires_date.setDate(expires_date.getDate() + expires)
+	}
+
+	document.cookie = name+'='+escape( value ) +
+	( ( expires ) ? ';expires='+expires_date.toGMTString() : '' ) +
+	( ( options.path ) ? ';path=' + options.path : '' ) +
+	( ( options.domain ) ? ';domain=' + options.domain : '' ) +
+	( ( options.secure ) ? ';secure' : '' );
 }
 
 function getCookie( name ) {
-  var start = document.cookie.indexOf( name + "=" );
-  var len = start + name.length + 1;
-  if ( ( !start ) && ( name != document.cookie.substring( 0, name.length ) ) ) {
-    return null;
-  }
-  if ( start == -1 ) return null;
-  var end = document.cookie.indexOf( ';', len );
-  if ( end == -1 ) end = document.cookie.length;
-  return unescape( document.cookie.substring( len, end ) );
+	var start = document.cookie.indexOf( name + "=" );
+	var len = start + name.length + 1;
+
+	if ( ( !start ) && ( name != document.cookie.substring( 0, name.length ) ) ) {
+	 return null;
+	}
+
+	if ( start == -1 ) {
+	  return null;
+	}
+	var end = document.cookie.indexOf( ';', len );
+
+	if ( end == -1 ) {
+	  end = document.cookie.length;
+	}
+	return unescape( document.cookie.substring( len, end ) );
 }
 
 function deleteCookie( name, path, domain ) {
-  if ( getCookie( name ) ) document.cookie = name + '=' +
-  ( ( path ) ? ';path=' + path : '') +
-  ( ( domain ) ? ';domain=' + domain : '' ) +
-  ';expires=Thu, 01-Jan-1970 00:00:01 GMT';
+	if ( getCookie( name ) ) {
+		document.cookie = name + '=' +
+		( ( path ) ? ';path=' + path : '') +
+		( ( domain ) ? ';domain=' + domain : '' ) +
+		';expires=Thu, 01-Jan-1970 00:00:01 GMT';
+	}
 }
 
 function cookiesAllowed() {
-  setCookie('checkCookie', 'test', 1);
-  if (getCookie('checkCookie')) {
-    deleteCookie('checkCookie');
-    return true;
-  }
-  return false;
+	setCookie('checkCookie', 'test', 1);
+
+	if (getCookie('checkCookie')) {
+		deleteCookie('checkCookie');
+	 	return true;
+	}
+	return false;
 }
+// end of cookie functions
 
-
-/*
+/*********************************
     do some initial game set up
-*/
+**********************************/
 
-// hero
 var hero = {
 	name: "bozo",
 	image: new Image(),
 	type: "man",
 	movePoints: 0,
+	maxMovePoints: 0,
+	foraging : false,       // are you foraging at the moment?
+	asleep : false,		    // indicates if you're sleeping
 
 	// attributes connected with fighting . . .
+	fightOn : 'No',	        // indicates if a fight with a monster is ongoing
 	turnToFight: true,
 	health: 0,
 	attack: 0,
@@ -82,28 +99,23 @@ var hero = {
 	experiencePerLevel: 4
 };
 
-// hero stats
-var maxMovePoints;
+// monster stats for fighting . . .
+var monster = {
+	health:0,
+	attack:0,
+	defence:0,
+	numDiceRolls:3
+}
 
-var oldposRowCell;
-var oldPosColumnCell;
-var bigOldposRowCell;
-var bigOldPosColumnCell;
-
-// monster stats
-var monsterHealth;
-var monsterAttack;
-var monsterDefence;
-var numMonsterDiceRolls = 3;
-
-//map object
 var map = {
   // small map, i.e. the one your hero character moves around on
   small : {
     rows : 8,
     cols : 10, // size of the map you move around in
     posRowCell : null,
-    posColumnCell : null	// map-cordinates of the hero
+    posColumnCell : null,	// map-cordinates of the hero
+	 oldPosRowCell:0,
+	 oldPosColumnCell:0 // the previous co-ordinates
   },
   // big map, i.e the overview of the whole area
   big : {
@@ -111,6 +123,8 @@ var map = {
     cols : 10, // size of the overall big scale map
     posRowCell : null,
     posColumnCell : null,	// big map-cordinates of the hero
+	 bigOldposRowCell:0,
+	 bigOldPosColumnCell:0, // the previous co-ordinates
     terrainAttributes : 6,	// number of attributes of the particular terrain
     numTerrainTypes : 6,    // how many different terrain types there are
     displayed : false,      // indicates if the big map is being displayed
@@ -122,15 +136,8 @@ var map = {
 // game_state object
 var game_state = {
   gameInProgress : null,
-  foraging : false,       // are you foraging at the moment?
-  fightOn : 'No',	        // indicates if a fight with a monster is ongoing
-  asleep : 'No',		    // indicates if you're sleeping
   attackRisk : 0.91	    // if the random number is higher than this (plus or minus modifiers), then you'll be attacked!
 };
-
-// big map
-var terrainAttributes = 6;	// number of attributes of the particular terrain
-var numTerrainTypes = 6;	// how many different terrain types there are
 
 var nextDestination = 0;		// holds the next destination level,
 // corresponds to terrain type, i.e. starts at zero,which = light grass
@@ -168,9 +175,6 @@ var numFoodAttributes = 3;
 */
 
 
-// end of cookie functions
-
-
 var bigMapArray=new Array(map.big.rows);
 for (i=0; i <map.big.rows; i++)
 bigMapArray[i]=new Array(map.big.cols); // Used to hold terrain types on larger map
@@ -180,23 +184,23 @@ for (i=0; i <map.small.rows; i++)
 mapDetailArray[i]=new Array(map.small.cols); 	// set up mapDetailArray with rows & cols.
 // Used to hold details of map features, for small map
 
-var terrainArray=new Array(numTerrainTypes);
-for (i=0; i <numTerrainTypes; i++)
-terrainArray[i]=new Array(terrainAttributes); 	// set up terrainArray
+var terrainArray=new Array(map.big.numTerrainTypes);
+for (i=0; i <map.big.numTerrainTypes; i++)
+terrainArray[i]=new Array(map.big.terrainAttributes); 	// set up terrainArray
 // Used to hold details of terrain
 
 // used to pre-load terrain images . . .
-var terrainImageArray=new Array(numTerrainTypes);
-for (i=0; i <numTerrainTypes; i++)
+var terrainImageArray=new Array(map.big.numTerrainTypes);
+for (i=0; i <map.big.numTerrainTypes; i++)
 terrainImageArray[i]=new Image(); // set up terrain array
 
-var terrainLocArray=new Array(numTerrainTypes);
-for (i=0; i <numTerrainTypes; i++)
+var terrainLocArray=new Array(map.big.numTerrainTypes);
+for (i=0; i <map.big.numTerrainTypes; i++)
 terrainLocArray[i]=''; 	// set up terrainLocArray
 // Used to hold row/col locations on big map, indexed by terrain type
 
-var terrainDestinationArray=new Array(numTerrainTypes + 1);	 // last destination is random location for treasure
-for (i=0; i <numTerrainTypes + 1; i++)
+var terrainDestinationArray=new Array(map.big.numTerrainTypes + 1);	 // last destination is random location for treasure
+for (i=0; i <map.big.numTerrainTypes + 1; i++)
 terrainDestinationArray[i] = new Array(7); 	// set up Array
 // Used to hold row/col destination pairs on big map and small map,
 // indexed by terrain type.  Also used to hold character and map images
@@ -231,7 +235,7 @@ var foodIdx;
 
 function setTerrainImageSource() {
   // pre-load the images into an array . . .
-  for (i=0; i <numTerrainTypes; i++) {
+  for (i=0; i <map.big.numTerrainTypes; i++) {
     var imgSrc = './web_images/' + terrainArray[i][4] + '.png';
     terrainImageArray[i].src = imgSrc; 		// set up terrainImageArray
   }
@@ -626,10 +630,10 @@ function startHeroPosition(gameState){
 		map.small.posRowCell = Math.floor(Math.random() * map.small.rows); // random starting row of small map;
 		map.small.posColumnCell = 0;  // on LHS
 	}
-	oldposRowCell    = map.small.posRowCell;
-	oldPosColumnCell = map.small.posColumnCell;
-	bigOldposRowCell = map.big.posRowCell;
-	bigOldPosColumnCell = map.big.posColumnCell;
+	map.small.oldPosRowCell = map.small.posRowCell;
+	map.small.oldPosColumnCell = map.small.posColumnCell;
+	hero.bigOldposRowCell = map.big.posRowCell;
+	hero.bigOldPosColumnCell = map.big.posColumnCell;
 }	// end of startHeroPosition
 
 function loadHeroImage() {
@@ -654,8 +658,8 @@ function loadHeroInfo(game_state, map){
 	hero.maxHealth = parseInt(getCookieValue('maxHeroHealth', cookieValue || 30));
 	hero.maxAttack = parseInt(getCookieValue('maxHeroAttack', cookieValue) || 10);
 	hero.maxDefence = parseInt(getCookieValue('maxHeroDefence', cookieValue) || 8);
-	maxMovePoints = parseInt(getCookieValue('maxMovePoints', cookieValue) || 20);
-	nextDestination = parseInt(getCookieValue('nextDestination', cookieValue) || 0);
+	hero.maxMovePoints = parseInt(getCookieValue('maxMovePoints', cookieValue) || 20);
+	map.big.nextDestination = parseInt(getCookieValue('nextDestination', cookieValue) || 0);
 	hero.experience = parseInt(getCookieValue('heroExperience', cookieValue) || 0);
 	hero.level = parseInt(getCookieValue('heroLevel', cookieValue) || 1);
 
@@ -685,8 +689,8 @@ function saveHeroInfo(){
 									+ "maxHeroHealth=" + hero.maxHealth + ';'
 									+ "maxHeroAttack=" + hero.maxAttack + ';'
 									+ "maxHeroDefence=" + hero.maxDefence + ';'
-									+ "maxMovePoints=" + maxMovePoints + ';'
-									+ "nextDestination=" + nextDestination + ';'
+									+ "maxMovePoints=" + hero.maxMovePoints + ';'
+									+ "nextDestination=" + map.big.nextDestination + ';'
 									+ "heroExperience=" + hero.experience + ';'
 									+ "heroLevel=" + hero.level
 									;
@@ -815,7 +819,7 @@ function setTerrainTargetLocations(){
 
 	// loop through the array by terrain type, randomly pick
 	// one of the locations, and assign it to the terrain destination array
-	for (i=0; i <numTerrainTypes; i++)
+	for (i=0; i <map.big.numTerrainTypes; i++)
 	{
 		thisTerrainCoords = terrainLocArray[i].split(';');
 		var arrayLength = thisTerrainCoords.length;
@@ -838,13 +842,10 @@ function setTerrainTargetLocations(){
 		terrainDestinationArray[i][3] = Math.floor(Math.random() * map.small.cols);
 	}
 	// now do the same for the last location . . .
-	terrainDestinationArray[numTerrainTypes][0] = Math.floor(Math.random() * map.big.rows);
-	terrainDestinationArray[numTerrainTypes][1] = Math.floor(Math.random() * map.big.cols);
-	terrainDestinationArray[numTerrainTypes][2] = Math.floor(Math.random() * map.small.rows);
-	terrainDestinationArray[numTerrainTypes][3] = Math.floor(Math.random() * map.small.cols);
-
-	//alert ('The big destination for ' + terrainArray[nextDestination][1] + ' is ' + terrainDestinationArray[nextDestination][0] +
-	//	' ' + terrainDestinationArray[nextDestination][1]);
+	terrainDestinationArray[map.big.numTerrainTypes][0] = Math.floor(Math.random() * map.big.rows);
+	terrainDestinationArray[map.big.numTerrainTypes][1] = Math.floor(Math.random() * map.big.cols);
+	terrainDestinationArray[map.big.numTerrainTypes][2] = Math.floor(Math.random() * map.small.rows);
+	terrainDestinationArray[map.big.numTerrainTypes][3] = Math.floor(Math.random() * map.small.cols);
 
 	loadTerrainTargetInfo();
 }
@@ -862,8 +863,8 @@ function createBigMap() {
 				terrType = terrType + 1	;
 			if (terrType < 0)
 				terrType = 0;
-			if (terrType > numTerrainTypes -1)
-				terrType = numTerrainTypes-1;
+			if (terrType > map.big.numTerrainTypes -1)
+				terrType = map.big.numTerrainTypes-1;
 
 			bigMapArray[bigRow][bigCol] = terrType;
 
@@ -940,7 +941,7 @@ function showSpecialMapFeature(mapTable, row, col)
 	mapRow = mapTable.getElementsByTagName("tr")[row];
 	mapCell = mapRow.getElementsByTagName("td")[col];
 	mapCell.innerHTML ='<img title="the destination" src="./web_images/'
-	+ terrainDestinationArray[nextDestination][6]
+	+ terrainDestinationArray[map.big.nextDestination][6]
 	+ '.png"/>';
 }
 
@@ -954,21 +955,21 @@ function showSmallMap(bigRow, bigCol) {
 			setTerrainCellSmallMap(mapTableDiv, i, k);
 		}
 		// check if this is a destination big map square . . .
-		if (terrainDestinationArray[nextDestination][0] == bigRow &&
-			  terrainDestinationArray[nextDestination][1] == bigCol)
+		if (terrainDestinationArray[map.big.nextDestination][0] == bigRow &&
+			  terrainDestinationArray[map.big.nextDestination][1] == bigCol)
 		{
 			showSpecialMapFeature(mapTableDiv,
-								  terrainDestinationArray[nextDestination][2],
-								  terrainDestinationArray[nextDestination][3]);
+								  terrainDestinationArray[map.big.nextDestination][2],
+								  terrainDestinationArray[map.big.nextDestination][3]);
 		}
 }	// end of drawMapDetail
 
 function drawHero() {
 	var mapTableDiv = document.getElementById('mapTableDiv');
-	var mapRow = mapTableDiv.getElementsByTagName("tr")[oldposRowCell];
-	var mapCell = mapRow.getElementsByTagName("td")[oldPosColumnCell];
-	oldposRowCell = map.small.posRowCell;
-	oldPosColumnCell = map.small.posColumnCell;
+	var mapRow = mapTableDiv.getElementsByTagName("tr")[map.small.oldPosRowCell];
+	var mapCell = mapRow.getElementsByTagName("td")[map.small.oldPosColumnCell];
+	map.small.oldPosRowCell = map.small.posRowCell;
+	map.small.oldPosColumnCell = map.small.posColumnCell;
 
 	var mapRow = mapTableDiv.getElementsByTagName("tr")[map.small.posRowCell];
 	var mapCell = mapRow.getElementsByTagName("td")[map.small.posColumnCell];
@@ -998,27 +999,24 @@ function offBigMap(tableRow, tableCol, bigTableRow, bigTableCol) {
 
 function checkDestReached(map)
 {
-	if (terrainDestinationArray[nextDestination][0] == map.big.posRowCell &&
-	  terrainDestinationArray[nextDestination][1] == map.big.posColumnCell &&
-		terrainDestinationArray[nextDestination][2] == map.small.posRowCell &&
-	  terrainDestinationArray[nextDestination][3] == map.small.posColumnCell)
+	if (terrainDestinationArray[map.big.nextDestination][0] == map.big.posRowCell &&
+	  terrainDestinationArray[map.big.nextDestination][1] == map.big.posColumnCell &&
+		terrainDestinationArray[map.big.nextDestination][2] == map.small.posRowCell &&
+	  terrainDestinationArray[map.big.nextDestination][3] == map.small.posColumnCell)
 	{
-		nextDestination = nextDestination + 1;
+		map.big.nextDestination = map.big.nextDestination + 1;
 		storyEvent = 'Yes';
-		if  (nextDestination == numTerrainTypes)  // final destination
+		if  (map.big.nextDestination == map.big.numTerrainTypes)  // final destination
 		{
 			alert('Who dares take the black feather???!!!!');
 			alert('Prepare yourself, for you will die!!!');
-			//used to say "Sorry!"
-			game_state.fightOn='Yes';
+			hero.fightOn = 'Yes';
 			finalFight=true;
 			startAttack();
 		}
 		else
 		{
-//			alert ('The big destination for ' + terrainArray[nextDestination][1] + ' is ' + terrainDestinationArray[nextDestination][0] +
-//				' ' + terrainDestinationArray[nextDestination][1]);
-			displayDestination(nextDestination);
+			displayDestination(map.big.nextDestination);
 		}
 	}
 }
@@ -1031,8 +1029,8 @@ function processMovement(tableRow, tableCol, bigTableRow, bigTableCol) {
 	if ( offMap(tableRow, tableCol,tableRow, tableCol)) {
 		if  ( offBigMap(tableRow, tableCol, bigTableRow, bigTableCol))	// don't allow to move off playing area
 		{
-			map.small.posRowCell = oldposRowCell;
-			map.small.posColumnCell = oldPosColumnCell;
+			map.small.posRowCell = map.small.oldPosRowCell;
+			map.small.posColumnCell = map.small.oldPosColumnCell;
 		}
 		else	// swap to next map square . . .
 		{
@@ -1058,8 +1056,8 @@ function processMovement(tableRow, tableCol, bigTableRow, bigTableCol) {
 			}
 			createMap(map.big.posRowCell, map.big.posColumnCell);
 			showSmallMap(map.big.posRowCell, map.big.posColumnCel);
-			oldposRowCell = map.small.posRowCell;
-			oldPosColumnCell = map.small.posColumnCell;
+			map.small.oldPosRowCell = map.small.posRowCell;
+			map.small.oldPosColumnCell = map.small.posColumnCell;
 			drawHero();
 		}
 	} else {
@@ -1067,16 +1065,16 @@ function processMovement(tableRow, tableCol, bigTableRow, bigTableCol) {
           // still on this map square . . . .
           var terrType = mapDetailArray[tableRow][tableCol];
           var terrainMovementCost = 1 + terrainArray[terrType][3];
-          if (game_state.foraging)
+          if (hero.foraging)
               terrainMovementCost = terrainMovementCost * 2;
           if (updateMovePoints(terrainMovementCost))	{
               var mapTableDiv = document.getElementById('mapTableDiv');
-              setTerrainCellSmallMap(mapTableDiv, oldposRowCell, oldPosColumnCell);
+              setTerrainCellSmallMap(mapTableDiv, map.small.oldPosRowCell, map.small.oldPosColumnCell);
               //check for reaching destination
               checkDestReached(map);
           } else	{
-              map.small.posRowCell = oldposRowCell;
-              map.small.posColumnCell = oldPosColumnCell;
+              map.small.posRowCell = map.small.oldPosRowCell;
+              map.small.posColumnCell = map.small.oldPosColumnCell;
               // highlight the fact that you've run out of movement points . . .
               $("#heroMovePoints").effect("highlight",{color: "#A52A2A"});
               $("#theHeroImg").parent().effect("highlight",{color: "#A52A2A"});
@@ -1156,7 +1154,7 @@ function showBigMap(){
 function showBigMapKey(moveArea){
 	moveArea.innerHTML='<h3>Map Key</h3>'
 		+ '<div>';
-	for (i=0; i <numTerrainTypes; i++)
+	for (i=0; i <map.big.numTerrainTypes; i++)
 	{
 		moveArea.innerHTML = moveArea.innerHTML +
 			terrainArray[i][1] + '&nbsp;&nbsp;<img src = '
@@ -1213,8 +1211,8 @@ function showQuest(questShown, bigMapDisplayed){
 	var destImageWords;
 	var charImageWords;
 
-	destImageWords = terrainDestinationArray[nextDestination][6].replace(/_/g,' ');
-	charImageWords = terrainDestinationArray[nextDestination + 1][4].replace(/_/g,' ');
+	destImageWords = terrainDestinationArray[map.big.nextDestination][6].replace(/_/g,' ');
+	charImageWords = terrainDestinationArray[map.big.nextDestination + 1][4].replace(/_/g,' ');
 
 	if (!questShown) {
 		questDisplayed = true;
@@ -1224,13 +1222,13 @@ function showQuest(questShown, bigMapDisplayed){
 		moveArea.innerHTML = '&nbsp;';
 		questString =	'<div style = "position:absolute;width:360px">'
 			        +   '<h3>Quest Log</h3>';
-		if (nextDestination == 5) {
+		if (map.big.nextDestination == 5) {
 			questString = questString +	'Go where the eagle told you, to meet your destiny . . .'
 			+ '<p>'
 			+ 'Go to row '
-		   + parseInt(terrainDestinationArray[nextDestination][0] + 1)
+		   + parseInt(terrainDestinationArray[map.big.nextDestination][0] + 1)
 			+ ', column '
-				+	 parseInt(terrainDestinationArray[nextDestination][1] + 1)
+				+	 parseInt(terrainDestinationArray[map.big.nextDestination][1] + 1)
 			+ ' on your map.'
 			+ '</p>'
 		} else {
@@ -1239,14 +1237,14 @@ function showQuest(questShown, bigMapDisplayed){
 			+ ', who lives in a '
 			+ destImageWords
 			+ ' like this  '
-			+ '<img src="./web_images/' + terrainDestinationArray[nextDestination][6] + '.png" />'
+			+ '<img src="./web_images/' + terrainDestinationArray[map.big.nextDestination][6] + '.png" />'
 			+ ' '
 			+ '. You can find the '
 			+ destImageWords
 			+' by looking at the big map, and searching all of the squares of type "'
-			+ terrainArray[nextDestination][1]
+			+ terrainArray[map.big.nextDestination][1]
 			+ '", which look like this: <img src = '
-			+ '"./web_images/' + terrainArray[nextDestination][4] + '.png" />'
+			+ '"./web_images/' + terrainArray[map.big.nextDestination][4] + '.png" />'
 			+'</p>'
 			+'One of these larger squares will have the '
 			+ destImageWords
@@ -1267,7 +1265,7 @@ function showQuest(questShown, bigMapDisplayed){
 
 function updateMovePoints(movePointsToUse){
 	var canMove = false;
-	document.getElementById('maxHeroMovePoints').innerHTML = maxMovePoints;
+	document.getElementById('maxHeroMovePoints').innerHTML = hero.maxMovePoints;
 	if (hero.movePoints - movePointsToUse >= 0) {
 		canMove = true;
 		hero.movePoints = hero.movePoints - movePointsToUse;
@@ -1307,11 +1305,11 @@ function updateHeroStats() {
 
 function popMonsterStatsDisplay(){
 	var monsterDispEle = document.getElementById('monsterHealthDisplay');
-	monsterDispEle.innerHTML = monsterHealth;
+	monsterDispEle.innerHTML = monster.health;
 	monsterDispEle = document.getElementById('monsterAttackDisplay');
-	monsterDispEle.innerHTML = monsterAttack;
+	monsterDispEle.innerHTML = monster.attack;
 	monsterDispEle = document.getElementById('monsterDefenceDisplay');
-	monsterDispEle.innerHTML = monsterDefence;
+	monsterDispEle.innerHTML = monster.monsterDefence;
 }		// end of popMonsterStatsDisplay
 
 function resetFightMonster() {
@@ -1366,7 +1364,7 @@ function doHeroAttack() {
 	}
 
 	// simulate the rolling of three dice for the monster defence, take the highest value . . .
-	for (i=0; i <numMonsterDiceRolls; i++)
+	for (i=0; i <monster.numDiceRolls; i++)
 	{
 		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[monsterIdx][4]);
 		if (tempMonsterRoll > monsterDefenceRoll)
@@ -1380,13 +1378,13 @@ function doHeroAttack() {
 	if (heroHit < 0) {
     heroHit = 0;	// monster defence roll is larger, so no damage done
   }
-	monsterHealth = monsterHealth - heroHit;
+	monster.health = monster.health - heroHit;
 	var heroHitDisplay =  'You attack the ' + monsterArray[monsterIdx][0];
 	if (heroHit == 0) {
 		heroHitDisplay = heroHitDisplay + ' and <strong>miss</strong>';
 		}
-		else if (monsterHealth <= 0)  {
-				monsterHealth = 0;
+		else if (monster.health <= 0)  {
+				monster.health = 0;
 				heroHitDisplay = heroHitDisplay + ' and do <strong>' + heroHit + '</strong>' + ' damage,'
 												+ ' and slay the creature.';
 				hero.experience	= hero.experience + 1;
@@ -1422,7 +1420,7 @@ function doMonsterAttack(heroDefence) {
 	var monsterHit;
 
 	// simulate the rolling of three dice for the monster attack, take the highest value . . .
-	for (i=0; i <numMonsterDiceRolls; i++) {
+	for (i=0; i <monster.numDiceRolls; i++) {
 		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[monsterIdx][3]);
 		if (tempMonsterRoll > monsterAttackRoll)
 			monsterAttackRoll = tempMonsterRoll;
@@ -1471,7 +1469,7 @@ function endFight() {
 	resetFightHero();
 	hideFightButts();
 	showOptButts();
-	game_state.fightOn = 'No';
+	hero.fightOn = 'No';
 	hero.turnToFight = true;	// reset to give first hit next time.
 }	//
 
@@ -1481,7 +1479,7 @@ function showContJournButt() {
 	document.getElementById('runAwayButt').style.visibility="hidden";
 	document.getElementById('contJournButt').style.visibility="visible";
 	$("#contJournButt").focus();
-	game_state.fightOn = 'JustEnded';
+	hero.fightOn = 'JustEnded';
 }	// end of showContJournButt
 
 function tellEndStory() {
@@ -1496,12 +1494,12 @@ function fightMonster() {
 	if (hero.turnToFight === true)
 	{
 		doHeroAttack();
-		if (monsterHealth <= 0  && finalFight)
+		if (monster.health <= 0  && finalFight)
 			tellEndStory();
-		else if (monsterHealth <= 0)
+		else if (monster.health <= 0)
 			showContJournButt() ;
 	}
-	else if (monsterHealth > 0)
+	else if (monster.health > 0)
 		doMonsterAttack(hero.defence);
 	updateHeroStats();
 	popMonsterStatsDisplay();
@@ -1610,9 +1608,9 @@ function startAttack() {
 	if (finalFight)
 		monsterIdx = finalMonsterIdx;
 	var monsterName = monsterArray[monsterIdx][0];
-	monsterHealth = monsterArray[monsterIdx][2];
-	monsterAttack = monsterArray[monsterIdx][3];
-	monsterDefence = monsterArray[monsterIdx][4];
+	monster.health = monsterArray[monsterIdx][2];
+	monster.attack = monsterArray[monsterIdx][3];
+	monster.monsterDefence = monsterArray[monsterIdx][4];
 	var monsterEle = document.getElementById('monsterName');
 	monsterEle.innerHTML = monsterName;
 	var monsterPic = document.getElementById('monsterImage');
@@ -1625,10 +1623,10 @@ function startAttack() {
 
 function checkForAttack() {
 	var attackModifier = 0;
-	if (game_state.foraging)
+	if (hero.foraging)
 		attackModifier = -0.05;
 	if (Math.random() > game_state.attackRisk + attackModifier) {
-		game_state.fightOn = 'Yes';
+		hero.fightOn = 'Yes';
 		startAttack();
 	}
 } // end of checkForAttack()
@@ -1660,9 +1658,9 @@ function checkForForage(forageState, posRowCell, posColumnCell) {
 	//alert ('terrType = ' + terrType);
 	var forageModifier = terrainArray[terrType][3];
 
-	if (game_state.foraging)		// if actively foraging
+	if (hero.foraging)		// if actively foraging
 	{
-		forageModifier = ((1/numTerrainTypes) / 2) * forageModifier ;
+		forageModifier = ((1/map.big.numTerrainTypes) / 2) * forageModifier ;
 		if (Math.random() > 0.89 - forageModifier) // success!
 			processFoundFood(forageState, actionSpace);
 		else
@@ -1679,20 +1677,20 @@ function checkForForage(forageState, posRowCell, posColumnCell) {
 
 function sleepHero() {
 	alert('You sleep, perchance to dream . . .');
-	hero.movePoints = maxMovePoints;
+	hero.movePoints = hero.maxMovePoints;
 	updateMovePoints(0);
 }		// end of sleepHero
 
 function setForageStatus(butt) {
 	var buttState = butt.innerHTML;
-	if (!game_state.foraging)
+	if (!hero.foraging)
 	{
-		game_state.foraging = true;
+		hero.foraging = true;
 		butt.innerHTML = 'Stop f<u>o</u>raging';
 	}
 	else
 	{
-		game_state.foraging = false;
+		hero.foraging = false;
 		butt.innerHTML = 'F<u>o</u>rage'	;
 	}
 }		// end of setForageStatus
@@ -1743,10 +1741,8 @@ function clickedAnArrow(arrowImage)
 	processAction(unicode);
 }	//	end of clickedAnArrow
 
-function processAction(actionCode){
-	//alert(actionCode + ' game_state.fightOn ' + game_state.fightOn);
-
-	if (game_state.fightOn == 'No' )			// if there's no fight ongoing
+function processAction(actionCode) {
+	if (hero.fightOn === 'No' )			// if there's no fight ongoing
 	{
 		 // if movement is requested . . .
 		if (actionCode >= 37 && actionCode <= 40
@@ -1764,8 +1760,8 @@ function processAction(actionCode){
 				if (storyEvent == 'No')
 				{
 				checkForAttack();
-				if (game_state.fightOn == 'No' )
-					checkForForage(game_state.foraging, map.small.posRowCell, map.small.posColumnCell);
+				if (hero.fightOn === 'No' )
+					checkForForage(hero.foraging, map.small.posRowCell, map.small.posColumnCell);
 				}
 			}
 		}
@@ -1780,14 +1776,14 @@ function processAction(actionCode){
 		if (actionCode == 79) // letter "o" for f(o)rage
 			setForageStatus(document.getElementById('forageButt'));
 	}
-	if (game_state.fightOn == 'Yes' && hero.health > 0)	// fight is ongoing
+	if (hero.fightOn === 'Yes' && hero.health > 0)	// fight is ongoing
 	{
 			if (actionCode == 70)	// letter "f" for (F)ight
 				fightMonster();
 			if (actionCode == 82)	// letter "r" for (R)un Away
 			runAway();
 	}
-	if (game_state.fightOn == 'JustEnded')  // The fight has just ended, so allow a (C)ontinue Journey
+	if (hero.fightOn === 'JustEnded')  // The fight has just ended, so allow a (C)ontinue Journey
 			if (actionCode == 67)	// letter "c" for (C)ontinue Journey
 				continueJourney();
 } // end of processAction
@@ -1811,6 +1807,6 @@ function start_game() {
   updateHeroStats();
   updateMovePoints(0);
   document.getElementById('map_loading').style.display = "none";
-  displayDestination(nextDestination);
+  displayDestination(map.big.nextDestination);
   document.getElementById('mapTableDiv').focus();
 }	// end of start_game
