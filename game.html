@@ -24,10 +24,20 @@
 	<style type="text/css" media="all">@import "css/game.css";</style>
 
 	<!-- <script type="text/javascript" src="./build/main.js"/></script> -->
-		<script type="text/javascript" src="./javascript/game.js"/></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+
+<script src="./javascript/game.js"/></script>
+
+<script>
+	$(document).ready(function() {
+		start_game();
+	});
+</script>
+
 </head>
 
-<body onkeyup="pressed_a_key(event)"; onLoad="start_game();">
+<body onkeyup="pressed_a_key(event)">
 <div id="map_loading">
 	<strong>Loading map . . .</strong>
 </div>

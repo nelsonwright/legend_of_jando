@@ -3,7 +3,6 @@
    Contact me at: me@nelsonwright.co.uk
 */
 
-
 // cookie and trim stuff thanks to Patrick Hunlock: http://www.hunlock.com/blogs/Ten_Javascript_Tools_Everyone_Should_Have
 String.prototype.trim = function() {
 	return this.replace(/^\s+|\s+$/g,"");
@@ -81,8 +80,9 @@ var hero = {
 	type: "man",
 	movePoints: 0,
 	maxMovePoints: 0,
-	foraging : false,       // are you foraging at the moment?
-	asleep : false,		    // indicates if you're sleeping
+	foraging: false,     // are you foraging at the moment?
+	asleep: false,		   // indicates if you're sleeping
+	moved: false,			// indicates if the hero has successfully moved on the map
 
 	// attributes connected with fighting . . .
 	fightOn : 'No',	        // indicates if a fight with a monster is ongoing
@@ -98,14 +98,6 @@ var hero = {
 	numDiceRolls: 3, // this equates to how many dice are rolled
 	experiencePerLevel: 4
 };
-
-// monster stats for fighting . . .
-var monster = {
-	health:0,
-	attack:0,
-	defence:0,
-	numDiceRolls:3
-}
 
 var map = {
   // small map, i.e. the one your hero character moves around on
@@ -134,23 +126,33 @@ var map = {
 };
 
 // game_state object
-var game_state = {
-  gameInProgress : null,
-  attackRisk : 0.91	    // if the random number is higher than this (plus or minus modifiers), then you'll be attacked!
-};
+var game_state = Object.freeze ({
+	gameInProgress : null,
+	attackRisk : 0.91,	    // if the random number is higher than this (plus or minus modifiers), then you'll be attacked!
+	numHeroDiceRolls: 3, // this equates to how many dice are rolled
+	numMonsterDiceRolls: 3
+});
 
 var nextDestination = 0;		// holds the next destination level,
 // corresponds to terrain type, i.e. starts at zero,which = light grass
 
-var heroMoved;
+
 var storyEvent = 'No';	        // is a story event happening?
 var questDisplayed = false;    // are we currently showing the current quest objective?
 var finalFight = false;        // is the final battle happening?
 
 var numMonsters = 19;        	// how many monsters there are
 var numMonsterAttributes = 5;	// number of monster attributes
-
 var finalMonsterIdx = numMonsters; // the index number of the final monster.
+
+// monster stats for fighting . . .
+var monster = {
+	name: "monster_name",
+	imageName: "monster.png",
+	health:0,
+	attack:0,
+	defence:0
+}
 
 /*  	Monster Attributes:
 1	Name
@@ -1024,7 +1026,7 @@ function checkDestReached(map)
 function processMovement(tableRow, tableCol, bigTableRow, bigTableCol) {
 	// see if the hero has moved off the current map into another map square, and
 	// also block movement off the playing area
-	heroMoved = 'No';
+	hero.moved = false;
 	storyEvent = 'No';
 	if ( offMap(tableRow, tableCol,tableRow, tableCol)) {
 		if  ( offBigMap(tableRow, tableCol, bigTableRow, bigTableCol))	// don't allow to move off playing area
@@ -1061,7 +1063,6 @@ function processMovement(tableRow, tableCol, bigTableRow, bigTableCol) {
 			drawHero();
 		}
 	} else {
-	    //alert('posRowCell is: ' + posRowCell + '& posColumnCell is: ' + posColumnCell);
           // still on this map square . . . .
           var terrType = mapDetailArray[tableRow][tableCol];
           var terrainMovementCost = 1 + terrainArray[terrType][3];
@@ -1270,7 +1271,7 @@ function updateMovePoints(movePointsToUse){
 		canMove = true;
 		hero.movePoints = hero.movePoints - movePointsToUse;
 		document.getElementById('heroMovePoints').innerHTML = hero.movePoints;
-		heroMoved = 'Yes';
+		hero.moved = true;
 	}
 	return canMove;
 }
@@ -1730,7 +1731,7 @@ function arrowImageMouseOver(arrowImage)
 function clickedAnArrow(arrowImage)
 {
 	var unicode = 0;
-	var arrowDirection = arrowImage.title	;
+	var arrowDirection = arrowImage.title;
 	switch (arrowDirection)
 	{
 		case 'left' :	unicode = 37; 	break;
@@ -1745,26 +1746,23 @@ function processAction(actionCode) {
 	if (hero.fightOn === 'No' )			// if there's no fight ongoing
 	{
 		 // if movement is requested . . .
-		if (actionCode >= 37 && actionCode <= 40
-			&& !map.big.displayed
-		    && !questDisplayed)
-		{
+		if (actionCode >= 37 && actionCode <= 40 && !map.big.displayed && !questDisplayed) {
 			calcMovement(actionCode)
 			processMovement(map.small.posRowCell,
 			                map.small.posColumnCell,
 			                map.big.posRowCell,
 			                map.big.posColumnCell);
 			drawHero();
-			if (heroMoved == 'Yes')
-			{
-				if (storyEvent == 'No')
-				{
-				checkForAttack();
-				if (hero.fightOn === 'No' )
-					checkForForage(hero.foraging, map.small.posRowCell, map.small.posColumnCell);
+			if (hero.moved) {
+				if (storyEvent === 'No') {
+					checkForAttack();
+					if (hero.fightOn === 'No' ) {
+						checkForForage(hero.foraging, map.small.posRowCell, map.small.posColumnCell);
+					}
 				}
 			}
 		}
+
 		if (actionCode == 77 /* letter "m" for (m)ap  */
 			 && !questDisplayed)
 			showMap(map.big.displayed);
