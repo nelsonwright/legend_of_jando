@@ -125,42 +125,35 @@ var map = {
   }
 };
 
+// can use Object.freeze () for enums
+
 // game_state object
-var game_state = Object.freeze ({
+var game_state = {
 	gameInProgress : null,
 	attackRisk : 0.91,	    // if the random number is higher than this (plus or minus modifiers), then you'll be attacked!
 	numHeroDiceRolls: 3, // this equates to how many dice are rolled
 	numMonsterDiceRolls: 3
-});
-
-var nextDestination = 0;		// holds the next destination level,
-// corresponds to terrain type, i.e. starts at zero,which = light grass
-
+};
 
 var storyEvent = 'No';	        // is a story event happening?
 var questDisplayed = false;    // are we currently showing the current quest objective?
 var finalFight = false;        // is the final battle happening?
 
-var numMonsters = 19;        	// how many monsters there are
-var numMonsterAttributes = 5;	// number of monster attributes
-var finalMonsterIdx = numMonsters; // the index number of the final monster.
 
-// monster stats for fighting . . .
-var monster = {
-	name: "monster_name",
-	imageName: "monster.png",
-	health:0,
-	attack:0,
-	defence:0
+function monster(name, imageName, healthPoints, attackPoints, defencePoints) {
+	this.name = name;
+	this.image = new Image();
+	this.image.src = './web_images/' + imageName + '.png';
+	this.healthPoints = healthPoints;
+	this.attackPoints = attackPoints;
+	this.defencePoints = defencePoints;
 }
 
-/*  	Monster Attributes:
-1	Name
-2	Image name
-3	Health
-4	Attack
-5	Defence
+var numMonsters = 19; 				// how many monsters there are
+var numMonsterAttributes = Object.keys(monster).length;
+var finalMonsterIndex = numMonsters; 	// the index number of the final monster.
 
+/*
 Terrain Attributes:
 1	Number Code
 2	Name
@@ -171,10 +164,6 @@ Terrain Attributes:
 
 var numFoods = 44;	// types of different foods that can be found
 var numFoodAttributes = 3;
-
-/*
-*** end of global variables
-*/
 
 
 var bigMapArray=new Array(map.big.rows);
@@ -208,14 +197,45 @@ terrainDestinationArray[i] = new Array(7); 	// set up Array
 // indexed by terrain type.  Also used to hold character and map images
 // that are displayed upon reaching a destination
 
-var monsterArray=new Array(numMonsters + 1); // add 1 to have room for final boss battle monster
-for (i=0; i <numMonsters +1; i++)
-monsterArray[i]=new Array(numMonsterAttributes); // set up monsterArray
 
-// used to pre-load monster images . . .
-var monsterImageArray=new Array(numMonsters);
-for (i=0; i <numMonsters + 1; i++)
-monsterImageArray[i]=new Image(); // set up monsterArray
+/*
+	Monster Attributes:
+	1	Name
+	2	Image name (assumed suffix of .png)
+	3	Health
+	4	Attack
+	5	Defence
+*/
+
+var monsterArray=new Array(numMonsters + 1); // add 1 to have room for final boss battle monster
+
+// set up monsterArray with monster objects
+function loadMonsterInfo() {
+	monsterArray[0]= new monster('Turtle Rider', 'turtle_rider', 12, 6, 4);
+	monsterArray[1]= new monster('Horned Devil', 'horned_devil', 13, 7, 5);
+	monsterArray[2]= new monster('Squirm', 'squirm', 9, 4, 4);
+	monsterArray[3]= new monster('Bleh', 'bleh', 16, 8, 5);
+	monsterArray[4]= new monster('Scream', 'scream', 7, 6, 6);
+	monsterArray[5]= new monster('Warrior Ant', 'ant_warrior', 10, 4, 7);
+	monsterArray[6]= new monster('Drop', 'drop', 9, 4, 3);
+	monsterArray[7]= new monster('Ground Fish', 'ground_fish', 11, 6, 3);
+	monsterArray[8]= new monster('Snail', 'snail', 8, 6, 6);
+	monsterArray[9]= new monster('Strawberry', 'strawb', 7, 5, 3);
+
+   // level 2 monsters (allegedly) . . .
+	monsterArray[10]= new monster('Flame Spirit', 'flame_spirit', 16, 9, 9);
+	monsterArray[11]= new monster('Bloat', 'bloat', 12, 7, 14);
+	monsterArray[12]= new monster('Star Man', 'starman', 6, 10, 5);
+	monsterArray[13]= new monster('Ninja', 'ninja', 8, 10, 7);
+	monsterArray[14]= new monster('Assassin', 'assassin', 14, 11, 6);
+	monsterArray[15]= new monster('Lightning Fish', 'lightning_fish', 15, 12, 7);
+	monsterArray[16]= new monster('Leosaur', 'leosaur', 19, 15, 11);
+	monsterArray[17]= new monster('Leecho', 'leecho', 21, 4, 16);
+	monsterArray[18]= new monster('Crazed King', 'crazed_king', 18, 11, 16);
+
+	// The final big boss-battle monster! . . .
+	monsterArray[finalMonsterIndex]= new monster('hideously evil GREEN SKULL', 'green_skull', 32, 16, 12);
+}
 
 var monsterIdx;	// used to index the monster array
 
@@ -243,7 +263,7 @@ function setTerrainImageSource() {
   }
 }		// end of setTerrainImageSource
 
-function loadTerrain(){
+function loadTerrain() {
   terrainArray[0][0] = 0;	// terrain code
   terrainArray[0][1] = 'light grass';	// terrain name
   terrainArray[0][2] = 0;	// density factor
@@ -284,141 +304,6 @@ function loadTerrain(){
 
 }	// end of loadTerrain
 
-function setMonsterImageSource() {
-  // pre-load the images into an array . . .
-  for (i=0; i <numMonsters + 1; i++) {
-    var imgSrc = './web_images/' + monsterArray[i][1] + '.png';
-    monsterImageArray[i].src = imgSrc; 		// set up monsterImageArray
-  }
-}
-
-function loadMonsterInfo(){
-  monsterArray[0][0] = 'Turtle Rider';		// monster name
-  monsterArray[0][1] = 'turtle_rider_1';		// image name
-  monsterArray[0][2] = 12;							// Health
-  monsterArray[0][3] = 6;							// Attack
-  monsterArray[0][4] = 4;							// Defence
-
-  monsterArray[1][0] = 'Horned Devil';		// monster name
-  monsterArray[1][1] = 'horned_devil_1';		// image name
-  monsterArray[1][2] = 13;							// Health
-  monsterArray[1][3] = 7;							// Attack
-  monsterArray[1][4] = 5;							// Defence
-
-  monsterArray[2][0] = 'Squirm';				// monster name
-  monsterArray[2][1] = 'squirm_1';			// image name
-  monsterArray[2][2] = 9;					// Health
-  monsterArray[2][3] = 4;					// Attack
-  monsterArray[2][4] = 4;					// Defence
-
-  monsterArray[3][0] = 'Bleh';				// monster name
-  monsterArray[3][1] = 'bleh_1';				// image name
-  monsterArray[3][2] = 16;					// Health
-  monsterArray[3][3] = 8;					// Attack
-  monsterArray[3][4] = 5;					// Defence
-
-  monsterArray[4][0] = 'Scream';			// monster name
-  monsterArray[4][1] = 'scream_1';		// image name
-  monsterArray[4][2] = 7;				// Health
-  monsterArray[4][3] = 6;				// Attack
-  monsterArray[4][4] = 6;				// Defence
-
-  monsterArray[5][0] = 'Warrior Ant';		// monster name
-  monsterArray[5][1] = 'ant_warrior_1';		// image name
-  monsterArray[5][2] = 10;				// Health
-  monsterArray[5][3] = 4;				// Attack
-  monsterArray[5][4] = 7;				// Defence
-
-  monsterArray[6][0] = 'Drop';			// monster name
-  monsterArray[6][1] = 'drop_1';			// image name
-  monsterArray[6][2] = 9;				// Health
-  monsterArray[6][3] = 4;				// Attack
-  monsterArray[6][4] = 3;				// Defence
-
-  monsterArray[7][0] = 'Ground Fish';			// monster name
-  monsterArray[7][1] = 'ground_fish_1';			// image name
-  monsterArray[7][2] = 11;				// Health
-  monsterArray[7][3] = 6;				// Attack
-  monsterArray[7][4] = 3;				// Defence
-
-  monsterArray[8][0] = 'Snail';			// monster name
-  monsterArray[8][1] = 'snail_1';			// image name
-  monsterArray[8][2] = 8;				// Health
-  monsterArray[8][3] = 6;				// Attack
-  monsterArray[8][4] = 6;				// Defence
-
-  monsterArray[9][0] = 'Strawberry';			// monster name
-  monsterArray[9][1] = 'strawb_1';			// image name
-  monsterArray[9][2] = 7;				// Health
-  monsterArray[9][3] = 5;				// Attack
-  monsterArray[9][4] = 3;				// Defence
-
-  // level 2 monsters . . .
-  monsterArray[10][0] = 'Flame Spirit';			// monster name
-  monsterArray[10][1] = 'flame_spirit_2';			// image name
-  monsterArray[10][2] = 16;				// Health
-  monsterArray[10][3] = 9;				// Attack
-  monsterArray[10][4] = 9;				// Defence
-
-  monsterArray[11][0] = 'Bloat';			// monster name
-  monsterArray[11][1] = 'bloat_2';			// image name
-  monsterArray[11][2] = 12;				// Health
-  monsterArray[11][3] = 7;				// Attack
-  monsterArray[11][4] = 14;				// Defence
-
-  monsterArray[12][0] = 'Star Man';			// monster name
-  monsterArray[12][1] = 'starman';			// image name
-  monsterArray[12][2] = 6;				// Health
-  monsterArray[12][3] = 10;				// Attack
-  monsterArray[12][4] = 5;				// Defence
-
-  monsterArray[13][0] = 'Ninja';			// monster name
-  monsterArray[13][1] = 'ninja';			// image name
-  monsterArray[13][2] = 8;				// Health
-  monsterArray[13][3] = 10;				// Attack
-  monsterArray[13][4] = 7;				// Defence
-
-  monsterArray[14][0] = 'Assassin';			// monster name
-  monsterArray[14][1] = 'assassin';			// image name
-  monsterArray[14][2] = 14;				// Health
-  monsterArray[14][3] = 11;				// Attack
-  monsterArray[14][4] = 6;				// Defence
-
-  monsterArray[15][0] = 'Lightning Fish';			// monster name
-  monsterArray[15][1] = 'lightning_fish_1';			// image name
-  monsterArray[15][2] = 15;				// Health
-  monsterArray[15][3] = 12;				// Attack
-  monsterArray[15][4] = 7;				// Defence
-
-  monsterArray[16][0] = 'Leosaur';			// monster name
-  monsterArray[16][1] = 'leosaur_1';			// image name
-  monsterArray[16][2] = 19;				// Health
-  monsterArray[16][3] = 15;				// Attack
-  monsterArray[16][4] = 11;				// Defence
-
-  monsterArray[17][0] = 'Leecho';			// monster name
-  monsterArray[17][1] = 'leecho_1';			// image name
-  monsterArray[17][2] = 21;				// Health
-  monsterArray[17][3] = 4;				// Attack
-  monsterArray[17][4] = 16;				// Defence
-
-  monsterArray[18][0] = 'Crazed King';			// monster name
-  monsterArray[18][1] = 'crazed_king_1';			// image name
-  monsterArray[18][2] = 18;				// Health
-  monsterArray[18][3] = 11;				// Attack
-  monsterArray[18][4] = 16;				// Defence
-
-  // The final big boss-battle monster!
-  monsterArray[finalMonsterIdx][0] = 'hideously evil GREEN SKULL';	// monster name
-  monsterArray[finalMonsterIdx][1] = 'green_skull';			// image name
-  monsterArray[finalMonsterIdx][2] = 32;				// Health
-  monsterArray[finalMonsterIdx][3] = 16;				// Attack
-  monsterArray[finalMonsterIdx][4] = 12;				// Defence
-
-  setMonsterImageSource() ;
-
-  setMonsterImageSource() ;
-}	// end of loadMonsterInfo
 
 function setFoodImageSource() {
   // pre-load the images into an array . . .
@@ -676,7 +561,7 @@ function loadHeroInfo(game_state, map){
 }
 
 function saveHeroInfo(){
-    var gameInProgress = (game_state.gameInProgress == true) ? "Y" : "N";
+   var gameInProgress = (game_state.gameInProgress == true) ? "Y" : "N";
 	var cookieValue  = "name=" + hero.name + ';'
 									+ "health=" + hero.health + ';'
 									+ "attack=" + hero.attack + ';'
@@ -1367,7 +1252,7 @@ function doHeroAttack() {
 	// simulate the rolling of three dice for the monster defence, take the highest value . . .
 	for (i=0; i <monster.numDiceRolls; i++)
 	{
-		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[monsterIdx][4]);
+		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[monsterIdx].attackPoints);
 		if (tempMonsterRoll > monsterDefenceRoll)
 			monsterDefenceRoll = tempMonsterRoll;
 	}
@@ -1380,7 +1265,7 @@ function doHeroAttack() {
     heroHit = 0;	// monster defence roll is larger, so no damage done
   }
 	monster.health = monster.health - heroHit;
-	var heroHitDisplay =  'You attack the ' + monsterArray[monsterIdx][0];
+	var heroHitDisplay =  'You attack the ' + monsterArray[monsterIdx].name;
 	if (heroHit == 0) {
 		heroHitDisplay = heroHitDisplay + ' and <strong>miss</strong>';
 		}
@@ -1422,7 +1307,7 @@ function doMonsterAttack(heroDefence) {
 
 	// simulate the rolling of three dice for the monster attack, take the highest value . . .
 	for (i=0; i <monster.numDiceRolls; i++) {
-		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[monsterIdx][3]);
+		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[monsterIdx].healthPoints);
 		if (tempMonsterRoll > monsterAttackRoll)
 			monsterAttackRoll = tempMonsterRoll;
 	}
@@ -1439,7 +1324,7 @@ function doMonsterAttack(heroDefence) {
 	if (monsterHit < 0) {
 		monsterHit = 0;	// hero defence roll is larger, so no damage done
 	}
-	var monsterHitDisplay = 'The ' + monsterArray[monsterIdx][0] + ' attacks ';
+	var monsterHitDisplay = 'The ' + monsterArray[monsterIdx].name + ' attacks ';
 	if (monsterHit == 0) {
 		monsterHitDisplay = monsterHitDisplay + ' and <strong>misses</strong>';
 	}
@@ -1490,7 +1375,7 @@ function tellEndStory() {
 }
 
 function fightMonster() {
-	var experienceAdded = monsterArray[monsterIdx][3];
+	var experienceAdded = monsterArray[monsterIdx].healthPoints;
 	var newHeroExperience = hero.experience;
 	if (hero.turnToFight === true)
 	{
@@ -1606,17 +1491,18 @@ function prepareFightDiv() {
 function startAttack() {
 	prepareFightDiv();
 	monsterIdx = Math.floor(Math.random() * numMonsters);
-	if (finalFight)
-		monsterIdx = finalMonsterIdx;
-	var monsterName = monsterArray[monsterIdx][0];
-	monster.health = monsterArray[monsterIdx][2];
-	monster.attack = monsterArray[monsterIdx][3];
-	monster.monsterDefence = monsterArray[monsterIdx][4];
+	if (finalFight) {
+		monsterIdx = finalMonsterIndex;
+	}
+	var monsterName = monsterArray[monsterIdx].name;
+	monster.health = monsterArray[monsterIdx].healthPoints;
+	monster.attack = monsterArray[monsterIdx].attackPoints;
+	monster.monsterDefence = monsterArray[monsterIdx].defencePoints;
 	var monsterEle = document.getElementById('monsterName');
 	monsterEle.innerHTML = monsterName;
 	var monsterPic = document.getElementById('monsterImage');
-	monsterPic.src = monsterImageArray[monsterIdx].src;
-	monsterPic.title = monsterArray[monsterIdx][0];
+	monsterPic.src = monsterArray[monsterIdx].image.src;
+	monsterPic.title = monsterArray[monsterIdx].name;
 	popMonsterStatsDisplay();
 	showFightButts();
 	hideOptButts();
