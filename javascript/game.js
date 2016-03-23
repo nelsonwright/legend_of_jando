@@ -140,63 +140,64 @@ var questDisplayed = false;    // are we currently showing the current quest obj
 var finalFight = false;        // is the final battle happening?
 
 
+function makeImageSource(imageName) {
+	return './web_images/' + imageName + '.png';
+}
+
 function monster(name, imageName, healthPoints, attackPoints, defencePoints) {
 	this.name = name;
-	this.image = new Image();
-	this.image.src = './web_images/' + imageName + '.png';
 	this.healthPoints = healthPoints;
 	this.attackPoints = attackPoints;
 	this.defencePoints = defencePoints;
+
+	this.image = new Image();
+	this.image.src = makeImageSource(imageName);
 }
 
 var numMonsters = 19; 				// how many monsters there are
 var numMonsterAttributes = Object.keys(monster).length;
 var finalMonsterIndex = numMonsters; 	// the index number of the final monster.
 
-/*
-Terrain Attributes:
-1	Number Code
-2	Name
-3	Density Factor
-4	Additional movement points needed to traverse this terrain
-5	Image name
-*/
+function terrainType(code, name, densityFactor, extraMovementPts, imageName) {
+	this.code = code;
+	this.name = name;
+	this.densityFactor = densityFactor;
+	this.extraMovementPts = extraMovementPts;
+	this.imageName = imageName;
+
+	this.image = new Image();
+	this.image.src = makeImageSource(imageName);
+}
 
 var numFoods = 44;	// types of different foods that can be found
 var numFoodAttributes = 3;
 
-
+// Used to hold terrain types on larger map . . .
 var bigMapArray=new Array(map.big.rows);
 for (i=0; i <map.big.rows; i++)
-bigMapArray[i]=new Array(map.big.cols); // Used to hold terrain types on larger map
+bigMapArray[i]=new Array(map.big.cols);
 
+// Used to hold details of map features, for small map . . .
 var mapDetailArray=new Array(map.small.rows);
 for (i=0; i <map.small.rows; i++)
 mapDetailArray[i]=new Array(map.small.cols); 	// set up mapDetailArray with rows & cols.
-// Used to hold details of map features, for small map
 
+// Used to hold details of terrain . . .
 var terrainArray=new Array(map.big.numTerrainTypes);
 for (i=0; i <map.big.numTerrainTypes; i++)
 terrainArray[i]=new Array(map.big.terrainAttributes); 	// set up terrainArray
-// Used to hold details of terrain
 
-// used to pre-load terrain images . . .
-var terrainImageArray=new Array(map.big.numTerrainTypes);
-for (i=0; i <map.big.numTerrainTypes; i++)
-terrainImageArray[i]=new Image(); // set up terrain array
-
+// Used to hold row/col locations on big map, indexed by terrain type
 var terrainLocArray=new Array(map.big.numTerrainTypes);
 for (i=0; i <map.big.numTerrainTypes; i++)
 terrainLocArray[i]=''; 	// set up terrainLocArray
-// Used to hold row/col locations on big map, indexed by terrain type
 
-var terrainDestinationArray=new Array(map.big.numTerrainTypes + 1);	 // last destination is random location for treasure
-for (i=0; i <map.big.numTerrainTypes + 1; i++)
-terrainDestinationArray[i] = new Array(7); 	// set up Array
 // Used to hold row/col destination pairs on big map and small map,
 // indexed by terrain type.  Also used to hold character and map images
 // that are displayed upon reaching a destination
-
+var terrainDestinationArray=new Array(map.big.numTerrainTypes + 1);	 // last destination is random location for treasure
+for (i=0; i <map.big.numTerrainTypes + 1; i++)
+terrainDestinationArray[i] = new Array(7); 	// set up Array
 
 /*
 	Monster Attributes:
@@ -222,7 +223,7 @@ function loadMonsterInfo() {
 	monsterArray[8]= new monster('Snail', 'snail', 8, 6, 6);
 	monsterArray[9]= new monster('Strawberry', 'strawb', 7, 5, 3);
 
-   // level 2 monsters (allegedly) . . .
+   // level 2 monsters (allegedly, but is this done anywhere . . . ?) . . .
 	monsterArray[10]= new monster('Flame Spirit', 'flame_spirit', 16, 9, 9);
 	monsterArray[11]= new monster('Bloat', 'bloat', 12, 7, 14);
 	monsterArray[12]= new monster('Star Man', 'starman', 6, 10, 5);
@@ -255,53 +256,22 @@ for (i=0; i <numFoods; i++)
 foodImageArray[i]=new Image(); // set up foodArray
 var foodIdx;
 
-function setTerrainImageSource() {
-  // pre-load the images into an array . . .
-  for (i=0; i <map.big.numTerrainTypes; i++) {
-    var imgSrc = './web_images/' + terrainArray[i][4] + '.png';
-    terrainImageArray[i].src = imgSrc; 		// set up terrainImageArray
-  }
-}		// end of setTerrainImageSource
+/*
+	Terrain Attributes:
+	1	Number Code
+	2	Name
+	3	Density Factor (relates to how many will appear on the small map)
+	4	Additional movement points needed to traverse this terrain
+	5	Image name
+*/
 
 function loadTerrain() {
-  terrainArray[0][0] = 0;	// terrain code
-  terrainArray[0][1] = 'light grass';	// terrain name
-  terrainArray[0][2] = 0;	// density factor
-  terrainArray[0][3] = 0;	// additional movement points needed
-  terrainArray[0][4] = 'grass';	// image name
-
-  terrainArray[1][0] = 1;	// terrain code
-  terrainArray[1][1] = 'low scrub';	// terrain name
-  terrainArray[1][2] = 0.1;	// density factor
-  terrainArray[1][3] = 1;	// additional movement points needed
-  terrainArray[1][4] = 'scrub';	// image name
-
-  terrainArray[2][0] = 2;	// terrain code
-  terrainArray[2][1] = 'woods';	// terrain name
-  terrainArray[2][2] = 0.15;	// density factor
-  terrainArray[2][3] = 2;	// additional movement points needed
-  terrainArray[2][4] = 'tree2';	// image name
-
-  terrainArray[3][0] = 3;	// terrain code
-  terrainArray[3][1] = 'forest';	// terrain name
-  terrainArray[3][2] = 0.3;	// density factor
-  terrainArray[3][3] = 2;	// additional movement points needed
-  terrainArray[3][4] = 'forest';	// image name
-
-  terrainArray[4][0] = 4;	// terrain code
-  terrainArray[4][1] = 'hills';	// terrain name
-  terrainArray[4][2] = 0.35;	// density factor
-  terrainArray[4][3] = 3;	// additional movement points needed
-  terrainArray[4][4] = 'hills';	// image name
-
-  terrainArray[5][0] = 5;	// terrain code
-  terrainArray[5][1] = 'mountains';	// terrain name
-  terrainArray[5][2] = 0.4;	// density factor
-  terrainArray[5][3] = 4;	// additional movement points needed
-  terrainArray[5][4] = 'mountains';	// image name
-
-  setTerrainImageSource();
-
+	terrainArray[0] = new terrainType(0, 'light grass', 0, 0, 'grass');
+	terrainArray[1] = new terrainType(1, 'low scrub', 0.1, 1, 'scrub');
+	terrainArray[2] = new terrainType(2, 'woods', 0.15, 2, 'tree2');
+	terrainArray[3] = new terrainType(3, 'forest', 0.3, 2, 'forest');
+	terrainArray[4] = new terrainType(4, 'hills', 0.35, 3, 'hills');
+	terrainArray[5] = new terrainType(5, 'mountains', 0.4, 4, 'mountains');
 }	// end of loadTerrain
 
 
@@ -766,15 +736,18 @@ function createBigMap() {
 }	// end of createBigMap
 
 function createMap(bigRow, bigCol) {
-    var terrType = bigMapArray[bigRow][bigCol];
-	var terrainFreq =  terrainArray[terrType][2];
+	var terrType = bigMapArray[bigRow][bigCol];
+	var terrainFreq =  terrainArray[terrType].densityFactor;
 
-	for (i=0; i <map.small.rows; i++)
-		for (k=0; k <map.small.cols; k++)
-			if (Math.random() < terrainFreq )
+	for (i=0; i <map.small.rows; i++) {
+		for (k=0; k <map.small.cols; k++) {
+			if (Math.random() < terrainFreq ) {
 				mapDetailArray[i][k] = terrType; 	// terrain type
-			else
+			} else {
 				mapDetailArray[i][k] = 0;	// default to terrain type zero
+			}
+		}
+	}
 }	// end of createMap
 
 function setTerrainCellSmallMap(mapTableDiv, row, col)
@@ -789,8 +762,9 @@ function setTerrainCellSmallMap(mapTableDiv, row, col)
 	terrType = mapDetailArray[row][col];
 	mapTableCell.innerHTML = '<img  />';
 	terrEle = mapTableCell.firstChild;
-	terrEle.src = terrainImageArray[terrType].src;
-	terrEle.title = terrainArray[terrType][1];
+	terrEle.src = terrainArray[terrType].image.src;
+	terrEle.title = terrainArray[terrType].name;
+	terrEle.alt = terrainArray[terrType].name;
 	mapTableCell.style.backgroundColor ='#E6EFC2';
 }
 
@@ -950,7 +924,7 @@ function processMovement(tableRow, tableCol, bigTableRow, bigTableCol) {
 	} else {
           // still on this map square . . . .
           var terrType = mapDetailArray[tableRow][tableCol];
-          var terrainMovementCost = 1 + terrainArray[terrType][3];
+          var terrainMovementCost = 1 + terrainArray[terrType].extraMovementPts;
           if (hero.foraging)
               terrainMovementCost = terrainMovementCost * 2;
           if (updateMovePoints(terrainMovementCost))	{
@@ -1021,15 +995,14 @@ function showBigMap(){
 	makeMapIfNotThere(mapTableDiv);
 
 	for (i=0; i <map.small.rows; i++)
-		for (k=0; k <map.small.cols; k++)
-		{
+		for (k=0; k <map.small.cols; k++) {
 			var terrType = bigMapArray[i][k];
 			mapRow = mapTableDiv.getElementsByTagName("tr")[i];
 			mapCell = mapRow.getElementsByTagName("td")[k];
 			mapCell.innerHTML='<img  />';
 			terrEle = mapCell.firstChild;
-			terrEle.src = terrainImageArray[terrType].src;
-			terrEle.title = terrainArray[terrType][1];
+			terrEle.src = makeImageSource(terrainArray[terrType].imageName);
+			terrEle.title = terrainArray[terrType].name;
 		}
 		// show where on the big map the hero is . . .
 		mapRow = mapTableDiv.getElementsByTagName("tr")[map.big.posRowCell];
@@ -1037,17 +1010,16 @@ function showBigMap(){
 		mapCell.style.backgroundColor = 'yellow';
 }
 
-function showBigMapKey(moveArea){
+function showBigMapKey(moveArea) {
 	moveArea.innerHTML='<h3>Map Key</h3>'
 		+ '<div>';
-	for (i=0; i <map.big.numTerrainTypes; i++)
-	{
+	for (i=0; i <map.big.numTerrainTypes; i++) {
 		moveArea.innerHTML = moveArea.innerHTML +
-			terrainArray[i][1] + '&nbsp;&nbsp;<img src = '
-			+ '"./web_images/' + terrainArray[i][4] + '.png"'
+			terrainArray[i].name + '&nbsp;&nbsp;<img src = '
+			+ makeImageSource(terrainArray[i].imageName)
 			+'/><br /><br />';
 	}
-		moveArea.innerHTML = moveArea.innerHTML + '</div>';
+	moveArea.innerHTML = moveArea.innerHTML + '</div>';
 }
 
 function showMap(bigMapShown){
@@ -1128,9 +1100,9 @@ function showQuest(questShown, bigMapDisplayed){
 			+ '. You can find the '
 			+ destImageWords
 			+' by looking at the big map, and searching all of the squares of type "'
-			+ terrainArray[map.big.nextDestination][1]
+			+ terrainArray[map.big.nextDestination].name
 			+ '", which look like this: <img src = '
-			+ '"./web_images/' + terrainArray[map.big.nextDestination][4] + '.png" />'
+			+ makeImageSource(terrainArray[map.big.nextDestination].imageName) + '/>'
 			+'</p>'
 			+'One of these larger squares will have the '
 			+ destImageWords
@@ -1542,23 +1514,20 @@ function processFoundFood(forageState, actionSpace){
 function checkForForage(forageState, posRowCell, posColumnCell) {
 	var actionSpace = document.getElementById('action');
 	var terrType = mapDetailArray[posRowCell][posColumnCell];
-	//alert ('terrType = ' + terrType);
-	var forageModifier = terrainArray[terrType][3];
+	var forageModifier = terrainArray[terrType].extraMovementPts;
 
-	if (hero.foraging)		// if actively foraging
-	{
+	if (hero.foraging) {
 		forageModifier = ((1/map.big.numTerrainTypes) / 2) * forageModifier ;
 		if (Math.random() > 0.89 - forageModifier) // success!
 			processFoundFood(forageState, actionSpace);
 		else
 			actionSpace.innerHTML = '<p>Haven\'t found anything . . .</p>';
 	}
-	else
-	{
+	else {
 		if (Math.random() > 0.99)
 			processFoundFood(forageState, actionSpace);
 		else
-			actionSpace.	innerHTML = '&nbsp';
+			actionSpace.innerHTML = '&nbsp';
 	}
 } // end of checkForForage()
 
