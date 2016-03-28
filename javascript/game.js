@@ -65,6 +65,16 @@ function cookiesAllowed() {
     do some initial game set up
 **********************************/
 
+// We're using Object.freeze as these values shouldn't change, i.e. it's an immutable object . . .
+
+var gameSettings = Object.freeze({
+	numMonsterTypes: 19, 	// how many types of monsters there are in the game
+	attackRisk: 0.91,	   	// if the random number is higher than this (plus or minus modifiers), then you'll be attacked!
+	numHeroDiceRolls: 3, 	// this equates to how many dice are rolled
+	numMonsterDiceRolls: 3,
+	numFoodTypes: 44			// types of different foods that can be found
+});
+
 var hero = {
 	name: "bozo",
 	image: new Image(),
@@ -86,7 +96,6 @@ var hero = {
 	maxDefence: 0,
 	experience: 0,
 	level: 0,
-	numDiceRolls: 3, // this equates to how many dice are rolled
 	experiencePerLevel: 4
 };
 
@@ -147,21 +156,11 @@ function foodType(name, imageName, extraHealthPoints) {
 	this.image.src = makeImageSource(imageName, isFood);
 }
 
-// can use Object.freeze () for enums
-
-// game_state object
-var game_state = {
-	gameInProgress : null,
-	attackRisk : 0.91,	    // if the random number is higher than this (plus or minus modifiers), then you'll be attacked!
-	numHeroDiceRolls: 3, // this equates to how many dice are rolled
-	numMonsterDiceRolls: 3
-};
-
+var gameInProgress = false;
 var storyEvent = 'No';	        // is a story event happening?
 var questDisplayed = false;    // are we currently showing the current quest objective?
 var finalFight = false;        // is the final battle happening?
-var numMonsters = 19; 				// how many monsters there are
-var finalMonsterIndex = numMonsters; 	// the index number of the final monster.
+var finalMonsterIndex = gameSettings.numMonsterTypes; 	// the index number of the final monster.
 
 function makeImageSource(imageName, isFood) {
 	if (isFood) {
@@ -170,9 +169,6 @@ function makeImageSource(imageName, isFood) {
 		return './web_images/' + imageName + '.png';
 	}
 }
-
-var numFoods = 44;	// types of different foods that can be found
-var numFoodAttributes = 3;
 
 // Used to hold terrain types on larger map . . .
 var bigMapArray=new Array(map.big.rows);
@@ -210,7 +206,7 @@ terrainDestinationArray[i] = new Array(7); 	// set up Array
 	5	Defence
 */
 
-var monsterArray = new Array(numMonsters + 1); // add 1 to have room for final boss battle monster
+var monsterArray = new Array(gameSettings.numMonsterTypes + 1); // add 1 to have room for final boss battle monster
 
 // set up monsterArray with monster objects
 function loadMonsterInfo() {
@@ -248,9 +244,7 @@ var monsterIdx;	// used to index the monster array
 3.  Health points boost
 */
 
-var foodArray=new Array(numFoods);
-for (i=0; i <numFoods; i++)
-foodArray[i]=new Array(numFoodAttributes);
+var foodArray = new Array(gameSettings.numFoodTypes);
 
 /*
 	Terrain Attributes:
@@ -358,7 +352,7 @@ function loadHeroImage() {
 	hero.image.title = hero.type + ' ' + hero.name;
 }
 
-function loadHeroInfo(game_state, map){
+function loadHeroInfo(gameSettings, map){
 	var cookieValue = getCookie('jando');
 	hero.name = getCookieValue('name', cookieValue || 'You');
 	hero.health = parseInt(getCookieValue('health', cookieValue || 30));
@@ -369,7 +363,7 @@ function loadHeroInfo(game_state, map){
 	map.small.posColumnCell = parseInt(getCookieValue('posColumnCell', cookieValue) || 0);
 	map.big.posRowCell = parseInt(getCookieValue('bigPosRowCell', cookieValue) || 0);
 	map.big.posColumnCell = parseInt(getCookieValue('bigPosColumnCell', cookieValue) || 0);
-	game_state.gameInProgress = (getCookieValue('gameInProgress', cookieValue) == "Y") ? true : false;
+	gameInProgress = (getCookieValue('gameInProgress', cookieValue) == "Y") ? true : false;
 	hero.movePoints = parseInt(getCookieValue('movePoints', cookieValue) || 20);
 
 	hero.maxHealth = parseInt(getCookieValue('maxHeroHealth', cookieValue || 30));
@@ -385,13 +379,13 @@ function loadHeroInfo(game_state, map){
 	statsHeroImage.src = './web_images/hero_' + hero.type + '.png';
 	statsHeroImage.title = hero.type + ' ' + hero.name;
 
-	startHeroPosition(game_state);
-	if (!game_state.gameInProgress)
-		game_state.gameInProgress = true;
+	startHeroPosition(gameSettings);
+	if (!gameInProgress)
+		gameInProgress = true;
 }
 
 function saveHeroInfo(){
-   var gameInProgress = (game_state.gameInProgress == true) ? "Y" : "N";
+   var gameInProgress = (gameInProgress == true) ? "Y" : "N";
 	var cookieValue  = "name=" + hero.name + ';'
 									+ "health=" + hero.health + ';'
 									+ "attack=" + hero.attack + ';'
@@ -1072,7 +1066,7 @@ function doHeroAttack() {
 	var heroHit;
 
 	// simulate the rolling of three dice for the hero's attack, take the highest value . . .
-	for (i=0; i <hero.numDiceRolls; i++)
+	for (i=0; i <gameSettings.numHeroDiceRolls; i++)
 	{
 		tempHeroRoll = Math.ceil(Math.random() * hero.attack);
 		if (tempHeroRoll > heroAttackRoll)
@@ -1080,7 +1074,7 @@ function doHeroAttack() {
 	}
 
 	// simulate the rolling of three dice for the monster defence, take the highest value . . .
-	for (i=0; i <monster.numDiceRolls; i++)
+	for (i=0; i <gameSettings.numMonsterDiceRolls; i++)
 	{
 		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[monsterIdx].attackPoints);
 		if (tempMonsterRoll > monsterDefenceRoll)
@@ -1136,14 +1130,14 @@ function doMonsterAttack(heroDefence) {
 	var monsterHit;
 
 	// simulate the rolling of three dice for the monster attack, take the highest value . . .
-	for (i=0; i <monster.numDiceRolls; i++) {
+	for (i=0; i <gameSettings.numMonsterDiceRolls; i++) {
 		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[monsterIdx].healthPoints);
 		if (tempMonsterRoll > monsterAttackRoll)
 			monsterAttackRoll = tempMonsterRoll;
 	}
 
 	// simulate the rolling of three dice for the hero's defence, take the highest value . . .
-	for (i=0; i <hero.numDiceRolls; i++) {
+	for (i=0; i <gameSettings.numHeroDiceRolls; i++) {
 		tempHeroRoll = Math.ceil(Math.random() * heroDefence);
 		if (tempHeroRoll > heroDefenceRoll)
 			heroDefenceRoll = tempHeroRoll;
@@ -1320,7 +1314,7 @@ function prepareFightDiv() {
 
 function startAttack() {
 	prepareFightDiv();
-	monsterIdx = Math.floor(Math.random() * numMonsters);
+	monsterIdx = Math.floor(Math.random() * gameSettings.numMonsterTypes);
 	if (finalFight) {
 		monsterIdx = finalMonsterIndex;
 	}
@@ -1342,7 +1336,7 @@ function checkForAttack() {
 	var attackModifier = 0;
 	if (hero.foraging)
 		attackModifier = -0.05;
-	if (Math.random() > game_state.attackRisk + attackModifier) {
+	if (Math.random() > gameSettings.attackRisk + attackModifier) {
 		hero.fightOn = 'Yes';
 		startAttack();
 	}
@@ -1359,7 +1353,7 @@ function processFoundFood(forageState, actionSpace){
 		foundPhrase = 'You stumble upon a ';
 	}
 
-	var foodIdx = Math.floor(Math.random() * numFoods);
+	var foodIdx = Math.floor(Math.random() * gameSettings.numFoodTypes);
 	actionSpace.innerHTML = '<p>' + foundPhrase + foodArray[foodIdx].name + '</p>'
 												+ '<img id="foodImage" title="'
 												+  foodArray[foodIdx].name
@@ -1513,7 +1507,7 @@ function pressed_a_key(e) {
 
 function start_game() {
   loadMonsterInfo();
-  loadHeroInfo(game_state, map);
+  loadHeroInfo(gameSettings, map);
   loadTerrain();
   loadFood();
   createBigMap();
