@@ -15,43 +15,34 @@ String.prototype.rtrim = function() {
 }
 
 function setCookie(name,value,expires, options) {
-	if (options===undefined) {
-	  options = {};
-	}
+	if (options === undefined) options = {};
 
 	if ( expires ) {
 		var expires_date = new Date();
 		expires_date.setDate(expires_date.getDate() + expires)
 	}
 
-	document.cookie = name+'='+escape( value ) +
+	document.cookie = name+'=' + escape(value) +
 	( ( expires ) ? ';expires='+expires_date.toGMTString() : '' ) +
 	( ( options.path ) ? ';path=' + options.path : '' ) +
 	( ( options.domain ) ? ';domain=' + options.domain : '' ) +
 	( ( options.secure ) ? ';secure' : '' );
 }
 
-function getCookie( name ) {
+function getCookie(name) {
 	var start = document.cookie.indexOf( name + "=" );
 	var len = start + name.length + 1;
 
-	if ( ( !start ) && ( name != document.cookie.substring( 0, name.length ) ) ) {
-	 return null;
-	}
-
-	if ( start == -1 ) {
-	  return null;
-	}
+	if ( ( !start ) && ( name != document.cookie.substring( 0, name.length ) ) ) return null;
+	if ( start == -1 ) return null;
 	var end = document.cookie.indexOf( ';', len );
 
-	if ( end == -1 ) {
-	  end = document.cookie.length;
-	}
+	if ( end == -1 ) end = document.cookie.length;
 	return unescape( document.cookie.substring( len, end ) );
 }
 
-function deleteCookie( name, path, domain ) {
-	if ( getCookie( name ) ) {
+function deleteCookie(name, path, domain) {
+	if (getCookie(name)) {
 		document.cookie = name + '=' +
 		( ( path ) ? ';path=' + path : '') +
 		( ( domain ) ? ';domain=' + domain : '' ) +
@@ -125,6 +116,37 @@ var map = {
   }
 };
 
+function monster(name, imageName, healthPoints, attackPoints, defencePoints) {
+	this.name = name;
+	this.healthPoints = healthPoints;
+	this.attackPoints = attackPoints;
+	this.defencePoints = defencePoints;
+
+	this.image = new Image();
+	this.image.src = makeImageSource(imageName);
+}
+
+function terrainType(code, name, densityFactor, extraMovementPts, imageName) {
+	this.code = code;
+	this.name = name;
+	this.densityFactor = densityFactor;
+	this.extraMovementPts = extraMovementPts;
+	this.imageName = imageName;
+
+	this.image = new Image();
+	this.image.src = makeImageSource(imageName);
+}
+
+function foodType(name, imageName, extraHealthPoints) {
+	this.name = name;
+	this.imageName = imageName;
+	this.extraHealthPoints = extraHealthPoints;
+
+	this.image = new Image();
+	var isFood = true;
+	this.image.src = makeImageSource(imageName, isFood);
+}
+
 // can use Object.freeze () for enums
 
 // game_state object
@@ -138,35 +160,15 @@ var game_state = {
 var storyEvent = 'No';	        // is a story event happening?
 var questDisplayed = false;    // are we currently showing the current quest objective?
 var finalFight = false;        // is the final battle happening?
-
-
-function makeImageSource(imageName) {
-	return './web_images/' + imageName + '.png';
-}
-
-function monster(name, imageName, healthPoints, attackPoints, defencePoints) {
-	this.name = name;
-	this.healthPoints = healthPoints;
-	this.attackPoints = attackPoints;
-	this.defencePoints = defencePoints;
-
-	this.image = new Image();
-	this.image.src = makeImageSource(imageName);
-}
-
 var numMonsters = 19; 				// how many monsters there are
-var numMonsterAttributes = Object.keys(monster).length;
 var finalMonsterIndex = numMonsters; 	// the index number of the final monster.
 
-function terrainType(code, name, densityFactor, extraMovementPts, imageName) {
-	this.code = code;
-	this.name = name;
-	this.densityFactor = densityFactor;
-	this.extraMovementPts = extraMovementPts;
-	this.imageName = imageName;
-
-	this.image = new Image();
-	this.image.src = makeImageSource(imageName);
+function makeImageSource(imageName, isFood) {
+	if (isFood) {
+		return './web_images/food/' + imageName + '.png';
+	} else {
+		return './web_images/' + imageName + '.png';
+	}
 }
 
 var numFoods = 44;	// types of different foods that can be found
@@ -180,12 +182,12 @@ bigMapArray[i]=new Array(map.big.cols);
 // Used to hold details of map features, for small map . . .
 var mapDetailArray=new Array(map.small.rows);
 for (i=0; i <map.small.rows; i++)
-mapDetailArray[i]=new Array(map.small.cols); 	// set up mapDetailArray with rows & cols.
+mapDetailArray[i]=new Array(map.small.cols);
 
 // Used to hold details of terrain . . .
 var terrainArray=new Array(map.big.numTerrainTypes);
 for (i=0; i <map.big.numTerrainTypes; i++)
-terrainArray[i]=new Array(map.big.terrainAttributes); 	// set up terrainArray
+terrainArray[i]=new Array(map.big.terrainAttributes);
 
 // Used to hold row/col locations on big map, indexed by terrain type
 var terrainLocArray=new Array(map.big.numTerrainTypes);
@@ -208,7 +210,7 @@ terrainDestinationArray[i] = new Array(7); 	// set up Array
 	5	Defence
 */
 
-var monsterArray=new Array(numMonsters + 1); // add 1 to have room for final boss battle monster
+var monsterArray = new Array(numMonsters + 1); // add 1 to have room for final boss battle monster
 
 // set up monsterArray with monster objects
 function loadMonsterInfo() {
@@ -248,13 +250,7 @@ var monsterIdx;	// used to index the monster array
 
 var foodArray=new Array(numFoods);
 for (i=0; i <numFoods; i++)
-foodArray[i]=new Array(numFoodAttributes); // set up foodArray
-
-// used to pre-load food images . . .
-var foodImageArray=new Array(numFoods);
-for (i=0; i <numFoods; i++)
-foodImageArray[i]=new Image(); // set up foodArray
-var foodIdx;
+foodArray[i]=new Array(numFoodAttributes);
 
 /*
 	Terrain Attributes:
@@ -274,195 +270,59 @@ function loadTerrain() {
 	terrainArray[5] = new terrainType(5, 'mountains', 0.4, 4, 'mountains');
 }	// end of loadTerrain
 
+/*
+	Food Attributes:
+	1	Name of food (word or phrase always starts with a consonant)
+	2	Image name
+	3	Health points gained from eating this food
+*/
 
-function setFoodImageSource() {
-  // pre-load the images into an array . . .
-  for (i=0; i <numFoods; i++) {
-    var imgSrc = './web_images/food/' + foodArray[i][1] + '.png';
-    foodImageArray[i].src = imgSrc; 	// set up foodImageArray
-  }
+function loadFood() {
+	foodArray[0] = new foodType('squashy fig', 'fig', 3);
+	foodArray[1] = new foodType('loaf of bread', 'bread_1', 1);
+	foodArray[2] = new foodType('croissant', 'croissant', 2);
+	foodArray[3] = new foodType('brown egg', 'brown egg', 3);
+	foodArray[4] = new foodType('cucumber', 'cucumber', 1);
+	foodArray[5] = new foodType('glass of beer', 'glass_of_beer', 2);
+	foodArray[6] = new foodType('strawberry', 'strawberry', 2);
+	foodArray[7] = new foodType('husk of sweetcorn', 'sweetcorn', 3);
+	foodArray[8] = new foodType('watermelon', 'watermelon', 3);
+	foodArray[9] = new foodType('ripe acorn', 'ripe acorn', 1);
+	foodArray[10] = new foodType('shiny aubergine', 'aubergine', 3);
+	foodArray[11] = new foodType('half avacado', 'avacado', 3);
+	foodArray[12] = new foodType('black olive', 'black_olive', 1);
+	foodArray[13] = new foodType('bunch of blueberries', 'blueberries', 2);
+	foodArray[14] = new foodType('loaf of tasty bread', 'bread_2', 5);
+	foodArray[15] = new foodType('yam', 'yam', 4);
+	foodArray[16] = new foodType('couple of buns', 'buns', 4);
+	foodArray[17] = new foodType('cabbage', 'cabbage', 3);
+	foodArray[18] = new foodType('fancy cake', 'cake', 4);
+	foodArray[19] = new foodType('carrot', 'carrot', 3);
+	foodArray[20] = new foodType('stick of celery', 'celery', 1);
+	foodArray[21] = new foodType('smelly wheel of cheese', 'cheese_1', 5);
+	foodArray[22] = new foodType('wheel of cheese', 'cheese_2', 5);
+	foodArray[23] = new foodType('small bunch of cherries', 'cherries', 2);
+	foodArray[24] = new foodType('courgette', 'courgette', 3);
+	foodArray[25] = new foodType('couple of pale eggs', 'eggs', 5);
+	foodArray[26] = new foodType('clove of garlic', 'garlic', 3);
+	foodArray[27] = new foodType('bunch of grapes', 'grapes', 4);
+	foodArray[28] = new foodType('green chilli', 'green_chilli', 2);
+	foodArray[29] = new foodType('green olive', 'green_olive', 2);
+	foodArray[30] = new foodType('green pepper', 'green_pepper', 3);
+	foodArray[31] = new foodType('nice orange', 'orange', 4);
+	foodArray[32] = new foodType('fresh orange pepper', 'orange_pepper', 3);
+	foodArray[33] = new foodType('pak choi leaf', 'pak_choi', 1);
+	foodArray[34] = new foodType('pear', 'pear', 3);
+	foodArray[35] = new foodType('load of peas in their pod', 'peas_in_pod', 3);
+	foodArray[36] = new foodType('few peas in the pod', 'peas_in_pod2', 2);
+	foodArray[37] = new foodType('plum', 'plum', 3);
+	foodArray[38] = new foodType('potato', 'potato', 2);
+	foodArray[39] = new foodType('red chilli', 'red_chilli', 2);
+	foodArray[40] = new foodType('red pepper', 'red_pepper', 3);
+	foodArray[41] = new foodType('yellow pepper', 'yellow_pepper', 2);
+	foodArray[42] = new foodType('tomato', 'tomato', 2);
+	foodArray[43] = new foodType('veggie sausage', 'veggie_sausage', 5);
 }
-
-function loadFood(){
-  foodArray[0][0] = 'squashy fig';		// food name
-  foodArray[0][1] = 'fig';				// name of png file
-  foodArray[0][2] = 3;					// health points gained
-
-  foodArray[1][0] = 'loaf of bread';
-  foodArray[1][1] = 'bread_1';
-  foodArray[1][2] = 5;
-
-  foodArray[2][0] = 'croissant';
-  foodArray[2][1] = 'croissant';
-  foodArray[2][2] = 2;
-
-  foodArray[3][0] = 'brown egg';
-  foodArray[3][1] = 'brown_egg';
-  foodArray[3][2] = 3;
-
-  foodArray[4][0] = 'cucumber';
-  foodArray[4][1] = 'cucumber';
-  foodArray[4][2] = 1;
-
-  foodArray[5][0] = 'glass of beer';
-  foodArray[5][1] = 'glass_of_beer';
-  foodArray[5][2] = 2;
-
-  foodArray[6][0] = 'strawberry';
-  foodArray[6][1] = 'strawberry';
-  foodArray[6][2] = 2;
-
-  foodArray[7][0] = 'husk of sweetcorn';
-  foodArray[7][1] = 'sweetcorn';
-  foodArray[7][2] = 3;
-
-  foodArray[8][0] = 'watermelon';
-  foodArray[8][1] = 'watermelon';
-  foodArray[8][2] = 3;
-
-  foodArray[9][0] = 'ripe acorn';
-  foodArray[9][1] = 'acorn';
-  foodArray[9][2] = 1;
-
-  foodArray[10][0] = 'shiny aubergine';
-  foodArray[10][1] = 'aubergine';
-  foodArray[10][2] = 3;
-
-  foodArray[11][0] = 'half avacado';
-  foodArray[11][1] = 'avacado';
-  foodArray[11][2] = 2;
-
-  foodArray[12][0] = 'black olive';
-  foodArray[12][1] = 'black_olive';
-  foodArray[12][2] = 1;
-
-  foodArray[13][0] = 'bunch of blueberries';
-  foodArray[13][1] = 'blueberries';
-  foodArray[13][2] = 2;
-
-  foodArray[14][0] = 'loaf of tasty bread';
-  foodArray[14][1] = 'bread_2';
-  foodArray[14][2] = 5;
-
-  foodArray[15][0] = 'yam';
-  foodArray[15][1] = 'yam';
-  foodArray[15][2] = 4;
-
-  foodArray[16][0] = 'couple of buns';
-  foodArray[16][1] = 'buns';
-  foodArray[16][2] = 4;
-
-  foodArray[17][0] = 'cabbage';
-  foodArray[17][1] = 'cabbage';
-  foodArray[17][2] = 3;
-
-  foodArray[18][0] = 'fancy cake';
-  foodArray[18][1] = 'cake';
-  foodArray[18][2] = 4;
-
-  foodArray[19][0] = 'carrot';
-  foodArray[19][1] = 'carrot';
-  foodArray[19][2] = 3;
-
-  foodArray[20][0] = 'stick of celery';
-  foodArray[20][1] = 'celery';
-  foodArray[20][2] = 1;
-
-  foodArray[21][0] = 'smelly wheel of cheese';
-  foodArray[21][1] = 'cheese_1';
-  foodArray[21][2] = 5;
-
-  foodArray[22][0] = 'wheel of cheese';
-  foodArray[22][1] = 'cheese_2';
-  foodArray[22][2] = 5;
-
-  foodArray[23][0] = 'small bunch of cherries';
-  foodArray[23][1] = 'cherries';
-  foodArray[23][2] = 2;
-
-  foodArray[24][0] = 'courgette';
-  foodArray[24][1] = 'courgette';
-  foodArray[24][2] = 3;
-
-  foodArray[25][0] = 'couple of pale eggs';
-  foodArray[25][1] = 'eggs';
-  foodArray[25][2] = 5;
-
-  foodArray[26][0] = 'clove of garlc';
-  foodArray[26][1] = 'garlic';
-  foodArray[26][2] = 3;
-
-  foodArray[27][0] = 'bunch of grapes';
-  foodArray[27][1] = 'grapes';
-  foodArray[27][2] = 4;
-
-  foodArray[28][0] = 'green chilli';
-  foodArray[28][1] = 'green_chilli';
-  foodArray[28][2] = 2;
-
-  foodArray[29][0] = 'green olive';
-  foodArray[29][1] = 'green_olive';
-  foodArray[29][2] = 2;
-
-  foodArray[30][0] = 'green pepper';
-  foodArray[30][1] = 'green_pepper';
-  foodArray[30][2] = 3;
-
-  foodArray[31][0] = 'nice orange';
-  foodArray[31][1] = 'orange';
-  foodArray[31][2] = 4;
-
-  foodArray[32][0] = 'fresh orange pepper';
-  foodArray[32][1] = 'orange_pepper';
-  foodArray[32][2] = 3;
-
-  foodArray[33][0] = 'pak choi leaf';
-  foodArray[33][1] = 'pak_choi';
-  foodArray[33][2] = 1;
-
-  foodArray[34][0] = 'pear';
-  foodArray[34][1] = 'pear';
-  foodArray[34][2] = 3;
-
-  foodArray[35][0] = 'load of peas in their pod';
-  foodArray[35][1] = 'peas_in_pod';
-  foodArray[35][2] = 3;
-
-  foodArray[36][0] = 'few peas in the pod';
-  foodArray[36][1] = 'peas_in_pod2';
-  foodArray[36][2] = 2;
-
-  foodArray[37][0] = 'plum';
-  foodArray[37][1] = 'plum';
-  foodArray[37][2] = 3;
-
-  foodArray[38][0] = 'potato';
-  foodArray[38][1] = 'potato';
-  foodArray[38][2] = 2;
-
-  foodArray[39][0] = 'red chilli';
-  foodArray[39][1] = 'red_chilli';
-  foodArray[39][2] = 2;
-
-  foodArray[40][0] = 'red pepper';
-  foodArray[40][1] = 'red_pepper';
-  foodArray[40][2] = 3;
-
-  foodArray[41][0] = 'yellow pepper';
-  foodArray[41][1] = 'yellow_pepper';
-  foodArray[41][2] = 2;
-
-  foodArray[42][0] = 'tomato';
-  foodArray[42][1] = 'tomato';
-  foodArray[42][2] = 2;
-
-  foodArray[43][0] = 'veggie sausage';
-  foodArray[43][1] = 'veggie_sausage';
-  foodArray[43][2] = 5;
-
-  setFoodImageSource();		// pre-load food images
-
-}	// end of loadFood
 
 function getCookieValue(pairName, cookieString){
 // returns the value for the name/value pair, for the given name
@@ -768,8 +628,7 @@ function setTerrainCellSmallMap(mapTableDiv, row, col)
 	mapTableCell.style.backgroundColor ='#E6EFC2';
 }
 
-function showMovementArea()
-{
+function showMovementArea() {
 	var moveArea = document.getElementById('movementArea');
 	moveArea.innerHTML =
 		'Use the arrow keys to move, or click on the direction arrows below'
@@ -794,9 +653,8 @@ function showMovementArea()
 	mouseMoveHero.innerHTML='<img src="./web_images/hero_' + hero.type + '_thumb.png" title="the hero" />';
 }
 
-function showSpecialMapFeature(mapTable, row, col)
 // shows any special map features on the small map
-{
+function showSpecialMapFeature(mapTable, row, col) {
 	var mapRow;
 	var mapCell;
 	mapRow = mapTable.getElementsByTagName("tr")[row];
@@ -1491,25 +1349,30 @@ function checkForAttack() {
 } // end of checkForAttack()
 
 function processFoundFood(forageState, actionSpace){
-// "process" as in display the food and add health points . . .
+	// "process" as in display the food and add health points . . .
 	var foundPhrase;
-	if (forageState == 'On')
-		foundPhrase = 'You find a ';
-	else
-		foundPhrase = 'You stumble upon a ';
 
-	foodIdx = Math.floor(Math.random() * numFoods);
-	actionSpace.innerHTML = '<p>' + foundPhrase + foodArray[foodIdx][0] + '</p>'
-												+ '<img id="foodImage" title="the thing you found" style="float:left;"/>';
+	if (forageState) {
+		foundPhrase = 'You find a ';
+	}
+	else {
+		foundPhrase = 'You stumble upon a ';
+	}
+
+	var foodIdx = Math.floor(Math.random() * numFoods);
+	actionSpace.innerHTML = '<p>' + foundPhrase + foodArray[foodIdx].name + '</p>'
+												+ '<img id="foodImage" title="'
+												+  foodArray[foodIdx].name
+												+ '" style="float:left;"/>';
 
 	var foodPic = document.getElementById('foodImage');
-	foodPic.src = foodImageArray[foodIdx].src;
-	foodPic.title = foodArray[foodIdx][0];
-	hero.health = hero.health + foodArray[foodIdx][2];
+	foodPic.src = foodArray[foodIdx].image.src;
+	foodPic.title = foodArray[foodIdx].name;
+	hero.health = hero.health + foodArray[foodIdx].extraHealthPoints;
 	if (hero.health > hero.maxHealth)
 		hero.health = hero.maxHealth;
 	updateHeroStats();
-}	// end of processFoundFood
+}
 
 function checkForForage(forageState, posRowCell, posColumnCell) {
 	var actionSpace = document.getElementById('action');
