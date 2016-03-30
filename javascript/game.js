@@ -66,7 +66,6 @@ function cookiesAllowed() {
 **********************************/
 
 // We're using Object.freeze as these values shouldn't change, i.e. it's an immutable object . . .
-
 var gameSettings = Object.freeze({
 	numMonsterTypes: 19, 	// how many types of monsters there are in the game
 	attackRisk: 0.91,	   	// if the random number is higher than this (plus or minus modifiers), then you'll be attacked!
@@ -74,6 +73,16 @@ var gameSettings = Object.freeze({
 	numMonsterDiceRolls: 3,
 	numFoodTypes: 44			// types of different foods that can be found
 });
+
+// these values apply to the game as a whole, and may change during the course of a game . . .
+var gameState = {
+	inProgress: false,			// has the game started?
+	storyEvent: false,	     	// is a story event happening?
+	questDisplayed: false,    	// are we currently showing the current quest objective?
+	finalFight: false,        	// is the final battle happening?
+	monsterIdx:	0,					// used to indicate the currently battled monster
+	finalMonsterIndex: gameSettings.numMonsterTypes 	// the index number of the final monster.
+}
 
 var hero = {
 	name: "bozo",
@@ -86,8 +95,8 @@ var hero = {
 	moved: false,			// indicates if the hero has successfully moved on the map
 
 	// attributes connected with fighting . . .
-	fightOn : 'No',	        // indicates if a fight with a monster is ongoing
-	turnToFight: true,
+	fightOn : 'No',	   // indicates if a fight with a monster is: ongoing, just ended, or not on
+	turnToFight: true,	// if it's the hero's turn to fight or the monster's
 	health: 0,
 	attack: 0,
 	defence: 0,
@@ -155,12 +164,6 @@ function foodType(name, imageName, extraHealthPoints) {
 	var isFood = true;
 	this.image.src = makeImageSource(imageName, isFood);
 }
-
-var gameInProgress = false;
-var storyEvent = 'No';	        // is a story event happening?
-var questDisplayed = false;    // are we currently showing the current quest objective?
-var finalFight = false;        // is the final battle happening?
-var finalMonsterIndex = gameSettings.numMonsterTypes; 	// the index number of the final monster.
 
 function makeImageSource(imageName, isFood) {
 	if (isFood) {
@@ -233,10 +236,8 @@ function loadMonsterInfo() {
 	monsterArray[18]= new monster('Crazed King', 'crazed_king', 18, 11, 16);
 
 	// The final big boss-battle monster! . . .
-	monsterArray[finalMonsterIndex]= new monster('hideously evil GREEN SKULL', 'green_skull', 32, 16, 12);
+	monsterArray[gameState.finalMonsterIndex]= new monster('Hideously evil GREEN SKULL', 'green_skull', 32, 16, 12);
 }
-
-var monsterIdx;	// used to index the monster array
 
 /*  Food attributes
 1.  Name
@@ -326,33 +327,34 @@ function getCookieValue(pairName, cookieString){
 	for (i=0; i<cookieValuesArray.length; i++) {
 		var nameValuePair = cookieValuesArray[i];
 		var nameValuePairArray = nameValuePair.split('=');
-		if (nameValuePairArray[0] == pairName)
+		if (nameValuePairArray[0] === pairName) {
 			returnValue = nameValuePairArray[1];
+			break;
+		}
 	}
 	return returnValue;
-}	// end of getCookieValue
+}
 
-function startHeroPosition(gameState){
-
-	if (!gameState.gameInProgress)
-	{
+function startHeroPosition(stateOfGame){
+	if (!stateOfGame.inProgress) {
 		map.big.posRowCell = Math.floor(Math.random() * map.big.rows); // random starting row on LHS
 		map.big.posColumnCell = 0;
 		map.small.posRowCell = Math.floor(Math.random() * map.small.rows); // random starting row of small map;
 		map.small.posColumnCell = 0;  // on LHS
 	}
+
 	map.small.oldPosRowCell = map.small.posRowCell;
 	map.small.oldPosColumnCell = map.small.posColumnCell;
 	hero.bigOldposRowCell = map.big.posRowCell;
 	hero.bigOldPosColumnCell = map.big.posColumnCell;
-}	// end of startHeroPosition
+}
 
 function loadHeroImage() {
-	hero.image.src = './web_images/hero_' + hero.type + '.png';
+	hero.image.src = makeImageSource('hero_' + hero.type);
 	hero.image.title = hero.type + ' ' + hero.name;
 }
 
-function loadHeroInfo(gameSettings, map){
+function loadHeroInfo(gameSettings, map) {
 	var cookieValue = getCookie('jando');
 	hero.name = getCookieValue('name', cookieValue || 'You');
 	hero.health = parseInt(getCookieValue('health', cookieValue || 30));
@@ -363,7 +365,7 @@ function loadHeroInfo(gameSettings, map){
 	map.small.posColumnCell = parseInt(getCookieValue('posColumnCell', cookieValue) || 0);
 	map.big.posRowCell = parseInt(getCookieValue('bigPosRowCell', cookieValue) || 0);
 	map.big.posColumnCell = parseInt(getCookieValue('bigPosColumnCell', cookieValue) || 0);
-	gameInProgress = (getCookieValue('gameInProgress', cookieValue) == "Y") ? true : false;
+	gameState.inProgress = (getCookieValue('gameInProgress', cookieValue) === "Y") ? true : false;
 	hero.movePoints = parseInt(getCookieValue('movePoints', cookieValue) || 20);
 
 	hero.maxHealth = parseInt(getCookieValue('maxHeroHealth', cookieValue || 30));
@@ -376,16 +378,16 @@ function loadHeroInfo(gameSettings, map){
 
 	loadHeroImage();
 	var statsHeroImage = document.getElementById('statsHeroImage');
-	statsHeroImage.src = './web_images/hero_' + hero.type + '.png';
+	statsHeroImage.src = makeImageSource('hero_' + hero.type);
 	statsHeroImage.title = hero.type + ' ' + hero.name;
 
 	startHeroPosition(gameSettings);
-	if (!gameInProgress)
-		gameInProgress = true;
+	if (!gameState.inProgress)
+		gameState.inProgress = true;
 }
 
 function saveHeroInfo(){
-   var gameInProgress = (gameInProgress == true) ? "Y" : "N";
+   var inProgress = (gameState.inProgress === true) ? "Y" : "N";
 	var cookieValue  = "name=" + hero.name + ';'
 									+ "health=" + hero.health + ';'
 									+ "attack=" + hero.attack + ';'
@@ -395,7 +397,7 @@ function saveHeroInfo(){
 									+ "posColumnCell=" + map.small.posColumnCell + ';'
 									+ "bigPosRowCell=" + map.big.posRowCell + ';'
 									+ "bigPosColumnCell=" + map.big.posColumnCell + ';'
-									+ "gameInProgress=" + gameInProgress + ';'
+									+ "gameInProgress=" + inProgress + ';'
 									+ "movePoints=" + hero.movePoints + ';'
 									+ "maxHeroHealth=" + hero.maxHealth + ';'
 									+ "maxHeroAttack=" + hero.maxAttack + ';'
@@ -710,25 +712,22 @@ function offBigMap(tableRow, tableCol, bigTableRow, bigTableCol) {
 	return off_map_ind;
 } // end of off_map
 
-function checkDestReached(map)
-{
+function checkDestReached(map) {
 	if (terrainDestinationArray[map.big.nextDestination][0] == map.big.posRowCell &&
-	  terrainDestinationArray[map.big.nextDestination][1] == map.big.posColumnCell &&
-		terrainDestinationArray[map.big.nextDestination][2] == map.small.posRowCell &&
-	  terrainDestinationArray[map.big.nextDestination][3] == map.small.posColumnCell)
-	{
+	    terrainDestinationArray[map.big.nextDestination][1] == map.big.posColumnCell &&
+		 terrainDestinationArray[map.big.nextDestination][2] == map.small.posRowCell &&
+	    terrainDestinationArray[map.big.nextDestination][3] == map.small.posColumnCell) {
 		map.big.nextDestination = map.big.nextDestination + 1;
-		storyEvent = 'Yes';
-		if  (map.big.nextDestination == map.big.numTerrainTypes)  // final destination
-		{
+		gameState.storyEvent = true;
+
+		// final destination
+		if  (map.big.nextDestination == map.big.numTerrainTypes) {
 			alert('Who dares take the black feather???!!!!');
 			alert('Prepare yourself, for you will die!!!');
 			hero.fightOn = 'Yes';
-			finalFight=true;
+			gameState.finalFight = true;
 			startAttack();
-		}
-		else
-		{
+		} else {
 			displayDestination(map.big.nextDestination);
 		}
 	}
@@ -738,7 +737,7 @@ function processMovement(tableRow, tableCol, bigTableRow, bigTableCol) {
 	// see if the hero has moved off the current map into another map square, and
 	// also block movement off the playing area
 	hero.moved = false;
-	storyEvent = 'No';
+	gameState.storyEvent = false;
 	if ( offMap(tableRow, tableCol,tableRow, tableCol)) {
 		if  ( offBigMap(tableRow, tableCol, bigTableRow, bigTableCol))	// don't allow to move off playing area
 		{
@@ -833,7 +832,7 @@ function saveGame(){
 }
 
 function makeMapIfNotThere(mapTableDiv) {
-   	var tableExists = mapTableDiv.getElementsByTagName("table")[0];
+   var tableExists = mapTableDiv.getElementsByTagName("table")[0];
 	if (typeof tableExists == 'undefined') {
 	    createTableMap(mapTableDiv);
 	}
@@ -890,7 +889,7 @@ function showMap(bigMapShown){
 		document.getElementById('showMapButt').innerHTML = 'Show Small <u>M</u>ap';
 	}
 	// regardless of which map has been shown, we want to reset the questDisplayed status
-	questDisplayed = false;
+	gameState.questDisplayed = false;
 	questButt.innerHTML = 'Show <u>Q</u>uest';
 }
 
@@ -925,7 +924,7 @@ function showQuest(questShown, bigMapDisplayed){
 	charImageWords = terrainDestinationArray[map.big.nextDestination + 1][4].replace(/_/g,' ');
 
 	if (!questShown) {
-		questDisplayed = true;
+		gameState.questDisplayed = true;
 		var moveArea = document.getElementById('movementArea');
 		var questString;
 
@@ -1076,7 +1075,7 @@ function doHeroAttack() {
 	// simulate the rolling of three dice for the monster defence, take the highest value . . .
 	for (i=0; i <gameSettings.numMonsterDiceRolls; i++)
 	{
-		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[monsterIdx].attackPoints);
+		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[gameState.monsterIdx].attackPoints);
 		if (tempMonsterRoll > monsterDefenceRoll)
 			monsterDefenceRoll = tempMonsterRoll;
 	}
@@ -1089,7 +1088,7 @@ function doHeroAttack() {
     heroHit = 0;	// monster defence roll is larger, so no damage done
   }
 	monster.health = monster.health - heroHit;
-	var heroHitDisplay =  'You attack the ' + monsterArray[monsterIdx].name;
+	var heroHitDisplay =  'You attack the ' + monsterArray[gameState.monsterIdx].name;
 	if (heroHit == 0) {
 		heroHitDisplay = heroHitDisplay + ' and <strong>miss</strong>';
 		}
@@ -1131,7 +1130,7 @@ function doMonsterAttack(heroDefence) {
 
 	// simulate the rolling of three dice for the monster attack, take the highest value . . .
 	for (i=0; i <gameSettings.numMonsterDiceRolls; i++) {
-		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[monsterIdx].healthPoints);
+		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[gameState.monsterIdx].healthPoints);
 		if (tempMonsterRoll > monsterAttackRoll)
 			monsterAttackRoll = tempMonsterRoll;
 	}
@@ -1148,7 +1147,7 @@ function doMonsterAttack(heroDefence) {
 	if (monsterHit < 0) {
 		monsterHit = 0;	// hero defence roll is larger, so no damage done
 	}
-	var monsterHitDisplay = 'The ' + monsterArray[monsterIdx].name + ' attacks ';
+	var monsterHitDisplay = 'The ' + monsterArray[gameState.monsterIdx].name + ' attacks ';
 	if (monsterHit == 0) {
 		monsterHitDisplay = monsterHitDisplay + ' and <strong>misses</strong>';
 	}
@@ -1199,21 +1198,22 @@ function tellEndStory() {
 }
 
 function fightMonster() {
-	var experienceAdded = monsterArray[monsterIdx].healthPoints;
+	var experienceAdded = monsterArray[gameState.monsterIdx].healthPoints;
 	var newHeroExperience = hero.experience;
-	if (hero.turnToFight === true)
-	{
+
+	if (hero.turnToFight === true) {
 		doHeroAttack();
-		if (monster.health <= 0  && finalFight)
+		if (monster.health <= 0  && gameState.finalFight) {
 			tellEndStory();
-		else if (monster.health <= 0)
+		} else if (monster.health <= 0) {
 			showContJournButt() ;
-	}
-	else if (monster.health > 0)
+		}
+	} else if (monster.health > 0) {
 		doMonsterAttack(hero.defence);
+	}
 	updateHeroStats();
 	popMonsterStatsDisplay();
-} // end of fightMonster
+}
 
 function runAway() {
 	doMonsterAttack(hero.defence/2);
@@ -1314,19 +1314,19 @@ function prepareFightDiv() {
 
 function startAttack() {
 	prepareFightDiv();
-	monsterIdx = Math.floor(Math.random() * gameSettings.numMonsterTypes);
-	if (finalFight) {
-		monsterIdx = finalMonsterIndex;
+	gameState.monsterIdx = Math.floor(Math.random() * gameSettings.numMonsterTypes);
+	if (gameState.finalFight) {
+		gameState.monsterIdx = gameState.finalMonsterIndex;
 	}
-	var monsterName = monsterArray[monsterIdx].name;
-	monster.health = monsterArray[monsterIdx].healthPoints;
-	monster.attack = monsterArray[monsterIdx].attackPoints;
-	monster.monsterDefence = monsterArray[monsterIdx].defencePoints;
+	var monsterName = monsterArray[gameState.monsterIdx].name;
+	monster.health = monsterArray[gameState.monsterIdx].healthPoints;
+	monster.attack = monsterArray[gameState.monsterIdx].attackPoints;
+	monster.monsterDefence = monsterArray[gameState.monsterIdx].defencePoints;
 	var monsterEle = document.getElementById('monsterName');
 	monsterEle.innerHTML = monsterName;
 	var monsterPic = document.getElementById('monsterImage');
-	monsterPic.src = monsterArray[monsterIdx].image.src;
-	monsterPic.title = monsterArray[monsterIdx].name;
+	monsterPic.src = monsterArray[gameState.monsterIdx].image.src;
+	monsterPic.title = monsterArray[gameState.monsterIdx].name;
 	popMonsterStatsDisplay();
 	showFightButts();
 	hideOptButts();
@@ -1458,29 +1458,27 @@ function processAction(actionCode) {
 	if (hero.fightOn === 'No' )			// if there's no fight ongoing
 	{
 		 // if movement is requested . . .
-		if (actionCode >= 37 && actionCode <= 40 && !map.big.displayed && !questDisplayed) {
+		if (actionCode >= 37 && actionCode <= 40 && !map.big.displayed && !gameState.questDisplayed) {
 			calcMovement(actionCode)
 			processMovement(map.small.posRowCell,
 			                map.small.posColumnCell,
 			                map.big.posRowCell,
 			                map.big.posColumnCell);
 			drawHero();
-			if (hero.moved) {
-				if (storyEvent === 'No') {
-					checkForAttack();
-					if (hero.fightOn === 'No' ) {
-						checkForForage(hero.foraging, map.small.posRowCell, map.small.posColumnCell);
-					}
+			if (hero.moved && !gameState.storyEvent) {
+				checkForAttack();
+				if (hero.fightOn === 'No' ) {
+					checkForForage(hero.foraging, map.small.posRowCell, map.small.posColumnCell);
 				}
 			}
 		}
 
 		if (actionCode == 77 /* letter "m" for (m)ap  */
-			 && !questDisplayed)
+			 && !gameState.questDisplayed)
 			showMap(map.big.displayed);
 		if (actionCode == 81 /* letter "q" for (q)uest log */
 			 && !map.big.displayed)
-			showQuest(questDisplayed, map.big.displayed);
+			showQuest(gameState.questDisplayed, map.big.displayed);
 		if (actionCode == 83) // letter "s" for (s)leep
 			sleepHero();
 		if (actionCode == 79) // letter "o" for f(o)rage
