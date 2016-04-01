@@ -134,6 +134,15 @@ var map = {
   }
 };
 
+// Courtesy of Douglas Crockford . . .
+if (typeof Object.create !== 'function') {
+	Object.create = function (o) {
+		var F = function (o) {}
+		F.prototype = o;
+		return new F();
+	}
+}
+
 function monster(name, imageName, healthPoints, attackPoints, defencePoints) {
 	this.name = name;
 	this.healthPoints = healthPoints;
@@ -144,15 +153,20 @@ function monster(name, imageName, healthPoints, attackPoints, defencePoints) {
 	this.image.src = makeImageSource(imageName);
 }
 
-function terrainType(code, name, densityFactor, extraMovementPts, imageName) {
-	this.code = code;
-	this.name = name;
-	this.densityFactor = densityFactor;
-	this.extraMovementPts = extraMovementPts;
-	this.imageName = imageName;
+function TerrainType(terrainObj) {
+	this.code = terrainObj.code;
+	this.name = terrainObj.name;
+	this.densityFactor = terrainObj.densityFactor;
+	this.extraMovementPts = terrainObj.extraMovementPts;
+
+	if (terrainObj.hasOwnProperty('imageName')) {
+		this.imageName = terrainObj.imageName;
+	} else {
+		this.imageName = this.name;
+	}
 
 	this.image = new Image();
-	this.image.src = makeImageSource(imageName);
+	this.image.src = makeImageSource(this.imageName);
 }
 
 function foodType(name, imageName, extraHealthPoints) {
@@ -257,12 +271,12 @@ var foodArray = new Array(gameSettings.numFoodTypes);
 */
 
 function loadTerrain() {
-	terrainArray[0] = new terrainType(0, 'light grass', 0, 0, 'grass');
-	terrainArray[1] = new terrainType(1, 'low scrub', 0.1, 1, 'scrub');
-	terrainArray[2] = new terrainType(2, 'woods', 0.15, 2, 'tree2');
-	terrainArray[3] = new terrainType(3, 'forest', 0.3, 2, 'forest');
-	terrainArray[4] = new terrainType(4, 'hills', 0.35, 3, 'hills');
-	terrainArray[5] = new terrainType(5, 'mountains', 0.4, 4, 'mountains');
+	terrainArray[0] = new TerrainType({code: 0, name: 'light grass', densityFactor: 0, extraMovementPts: 0, imageName: 'grass'});
+	terrainArray[1] = new TerrainType({code: 1, name: 'low scrub', densityFactor: 0.1, extraMovementPts: 1, imageName: 'scrub'});
+	terrainArray[2] = new TerrainType({code: 2, name: 'woods', densityFactor: 0.15, extraMovementPts: 2});
+	terrainArray[3] = new TerrainType({code: 3, name: 'forest', densityFactor: 0.3, extraMovementPts: 2});
+	terrainArray[4] = new TerrainType({code: 4, name: 'hills', densityFactor: 0.35, extraMovementPts: 3});
+	terrainArray[5] = new TerrainType({code: 5, name: 'mountains', densityFactor: 0.4, extraMovementPts: 4});
 }	// end of loadTerrain
 
 /*
