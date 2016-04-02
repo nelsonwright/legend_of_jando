@@ -82,7 +82,7 @@ var gameState = {
 	finalFight: false,        	// is the final battle happening?
 	monsterIdx:	0,					// used to indicate the currently battled monster
 	finalMonsterIndex: gameSettings.numMonsterTypes 	// the index number of the final monster.
-}
+};
 
 var hero = {
 	name: "bozo",
@@ -107,6 +107,8 @@ var hero = {
 	level: 0,
 	experiencePerLevel: 4
 };
+
+var monster = {};
 
 var map = {
   // small map, i.e. the one your hero character moves around on
@@ -143,14 +145,20 @@ if (typeof Object.create !== 'function') {
 	}
 }
 
-function monster(name, imageName, healthPoints, attackPoints, defencePoints) {
-	this.name = name;
-	this.healthPoints = healthPoints;
-	this.attackPoints = attackPoints;
-	this.defencePoints = defencePoints;
+function Monster(monsterObj) {
+	this.name = monsterObj.name;
+	this.healthPoints = monsterObj.healthPoints;
+	this.attackPoints = monsterObj.attackPoints;
+	this.defencePoints = monsterObj.defencePoints;
+
+	if (monsterObj.hasOwnProperty('imageName')) {
+		this.imageName = monsterObj.imageName;
+	} else {
+		this.imageName = this.name;
+	}
 
 	this.image = new Image();
-	this.image.src = makeImageSource(imageName);
+	this.image.src = makeImageSource(this.imageName);
 }
 
 function TerrainType(terrainObj) {
@@ -227,30 +235,31 @@ var monsterArray = new Array(gameSettings.numMonsterTypes + 1); // add 1 to have
 
 // set up monsterArray with monster objects
 function loadMonsterInfo() {
-	monsterArray[0]= new monster('Turtle Rider', 'turtle_rider', 12, 6, 4);
-	monsterArray[1]= new monster('Horned Devil', 'horned_devil', 13, 7, 5);
-	monsterArray[2]= new monster('Squirm', 'squirm', 9, 4, 4);
-	monsterArray[3]= new monster('Bleh', 'bleh', 16, 8, 5);
-	monsterArray[4]= new monster('Scream', 'scream', 7, 6, 6);
-	monsterArray[5]= new monster('Warrior Ant', 'ant_warrior', 10, 4, 7);
-	monsterArray[6]= new monster('Drop', 'drop', 9, 4, 3);
-	monsterArray[7]= new monster('Ground Fish', 'ground_fish', 11, 6, 3);
-	monsterArray[8]= new monster('Snail', 'snail', 8, 6, 6);
-	monsterArray[9]= new monster('Strawberry', 'strawb', 7, 5, 3);
+	// name, imageName, healthPoints, attackPoints, defencePoints
+	monsterArray[0]= new Monster({name: 'Turtle Rider', imageName: 'turtle_rider', healthPoints: 12, attackPoints: 6, defencePoints: 4});
+	monsterArray[1]= new Monster({name: 'Horned Devil', imageName: 'horned_devil', healthPoints: 13, attackPoints: 7, defencePoints: 5});
+	monsterArray[2]= new Monster({name: 'Squirm', imageName: 'squirm', healthPoints: 9, attackPoints: 4, defencePoints: 4});
+	monsterArray[3]= new Monster({name: 'Bleh', imageName: 'bleh', healthPoints: 16, attackPoints: 8, defencePoints: 5});
+	monsterArray[4]= new Monster({name: 'Scream', imageName: 'scream', healthPoints: 7, attackPoints: 6, defencePoints: 6});
+	monsterArray[5]= new Monster({name: 'Warrior Ant', imageName: 'ant_warrior', healthPoints: 10, attackPoints: 4, defencePoints: 7});
+	monsterArray[6]= new Monster({name: 'Drop', imageName: 'drop', healthPoints: 9, attackPoints: 4, defencePoints: 3});
+	monsterArray[7]= new Monster({name: 'Ground Fish', imageName: 'ground_fish', healthPoints: 11, attackPoints: 6, defencePoints: 3});
+	monsterArray[8]= new Monster({name: 'Snail', imageName: 'snail', healthPoints: 8, attackPoints: 6, defencePoints: 6});
+	monsterArray[9]= new Monster({name: 'Strawberry', imageName: 'strawberry', healthPoints: 7, attackPoints: 5, defencePoints: 3});
 
-   // level 2 monsters (allegedly, but is this done anywhere . . . ?) . . .
-	monsterArray[10]= new monster('Flame Spirit', 'flame_spirit', 16, 9, 9);
-	monsterArray[11]= new monster('Bloat', 'bloat', 12, 7, 14);
-	monsterArray[12]= new monster('Star Man', 'starman', 6, 10, 5);
-	monsterArray[13]= new monster('Ninja', 'ninja', 8, 10, 7);
-	monsterArray[14]= new monster('Assassin', 'assassin', 14, 11, 6);
-	monsterArray[15]= new monster('Lightning Fish', 'lightning_fish', 15, 12, 7);
-	monsterArray[16]= new monster('Leosaur', 'leosaur', 19, 15, 11);
-	monsterArray[17]= new monster('Leecho', 'leecho', 21, 4, 16);
-	monsterArray[18]= new monster('Crazed King', 'crazed_king', 18, 11, 16);
+   // level 2 monsters (allegedly, but is this used anywhere . . . ?) . . .
+	monsterArray[10]= new Monster({name: 'Flame Spirit', imageName: 'flame_spirit', healthPoints: 16, attackPoints: 9, defencePoints: 9});
+	monsterArray[11]= new Monster({name: 'Bloat', imageName: 'bloat', healthPoints: 12, attackPoints: 7, defencePoints: 14});
+	monsterArray[12]= new Monster({name: 'Star Man', imageName: 'starman', healthPoints: 6, attackPoints: 10, defencePoints: 5});
+	monsterArray[13]= new Monster({name: 'Ninja', imageName: 'ninja', healthPoints: 8, attackPoints: 10, defencePoints: 7});
+	monsterArray[14]= new Monster({name: 'Assassin', imageName: 'assassin', healthPoints: 14, attackPoints: 11, defencePoints: 6});
+	monsterArray[15]= new Monster({name: 'Lightning Fish', imageName: 'lightning_fish', healthPoints: 15, attackPoints: 12, defencePoints: 7});
+	monsterArray[16]= new Monster({name: 'Leosaur', imageName: 'leosaur', healthPoints: 19, attackPoints: 15, defencePoints: 11});
+	monsterArray[17]= new Monster({name: 'Leecho', imageName: 'leecho', healthPoints: 21, attackPoints: 4, defencePoints: 16});
+	monsterArray[18]= new Monster({name: 'Crazed King', imageName: 'crazed_king', healthPoints: 18, attackPoints: 11, defencePoints: 16});
 
 	// The final big boss-battle monster! . . .
-	monsterArray[gameState.finalMonsterIndex]= new monster('Hideously evil GREEN SKULL', 'green_skull', 32, 16, 12);
+	monsterArray[gameState.finalMonsterIndex]= new Monster({name: 'Hideously evil GREEN SKULL', imageName: 'green_skull', healthPoints: 32, attackPoints: 16, defencePoints: 12});
 }
 
 /*  Food attributes
@@ -1344,7 +1353,7 @@ function startAttack() {
 	popMonsterStatsDisplay();
 	showFightButts();
 	hideOptButts();
-} // end of startAttack
+}
 
 function checkForAttack() {
 	var attackModifier = 0;
@@ -1354,7 +1363,7 @@ function checkForAttack() {
 		hero.fightOn = 'Yes';
 		startAttack();
 	}
-} // end of checkForAttack()
+}
 
 function processFoundFood(forageState, actionSpace){
 	// "process" as in display the food and add health points . . .
