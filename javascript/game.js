@@ -151,12 +151,7 @@ function Monster(monsterObj) {
 	this.attackPoints = monsterObj.attackPoints;
 	this.defencePoints = monsterObj.defencePoints;
 
-	if (monsterObj.hasOwnProperty('imageName')) {
-		this.imageName = monsterObj.imageName;
-	} else {
-		this.imageName = this.name;
-	}
-
+	this.imageName = deriveImageName(monsterObj);
 	this.image = new Image();
 	this.image.src = makeImageSource(this.imageName);
 }
@@ -167,12 +162,7 @@ function TerrainType(terrainObj) {
 	this.densityFactor = terrainObj.densityFactor;
 	this.extraMovementPts = terrainObj.extraMovementPts;
 
-	if (terrainObj.hasOwnProperty('imageName')) {
-		this.imageName = terrainObj.imageName;
-	} else {
-		this.imageName = this.name;
-	}
-
+	this.imageName = deriveImageName(terrainObj);
 	this.image = new Image();
 	this.image.src = makeImageSource(this.imageName);
 }
@@ -299,7 +289,7 @@ function loadFood() {
 	foodArray[0] = new foodType('squashy fig', 'fig', 3);
 	foodArray[1] = new foodType('loaf of bread', 'bread_1', 1);
 	foodArray[2] = new foodType('croissant', 'croissant', 2);
-	foodArray[3] = new foodType('brown egg', 'brown egg', 3);
+	foodArray[3] = new foodType('brown egg', 'brown_egg', 3);
 	foodArray[4] = new foodType('cucumber', 'cucumber', 1);
 	foodArray[5] = new foodType('glass of beer', 'glass_of_beer', 2);
 	foodArray[6] = new foodType('strawberry', 'strawberry', 2);
@@ -342,6 +332,16 @@ function loadFood() {
 	foodArray[43] = new foodType('veggie sausage', 'veggie_sausage', 5);
 }
 
+function deriveImageName(objectWithImage) {
+	var imageName;
+	if (objectWithImage.hasOwnProperty('imageName')) {
+		imageName = objectWithImage.imageName;
+	} else {
+		imageName = objectWithImage.name;
+	}
+	return imageName;
+}
+
 function getCookieValue(pairName, cookieString){
 // returns the value for the name/value pair, for the given name
 // if not found, returns null
@@ -358,7 +358,7 @@ function getCookieValue(pairName, cookieString){
 	return returnValue;
 }
 
-function startHeroPosition(stateOfGame){
+function startHeroPosition(stateOfGame) {
 	if (!stateOfGame.inProgress) {
 		map.big.posRowCell = Math.floor(Math.random() * map.big.rows); // random starting row on LHS
 		map.big.posColumnCell = 0;
@@ -377,7 +377,7 @@ function loadHeroImage() {
 	hero.image.title = hero.type + ' ' + hero.name;
 }
 
-function loadHeroInfo(gameSettings, map) {
+function extractValuesFromCookie() {
 	var cookieValue = getCookie('jando');
 	hero.name = getCookieValue('name', cookieValue || 'You');
 	hero.health = parseInt(getCookieValue('health', cookieValue || 30));
@@ -398,13 +398,20 @@ function loadHeroInfo(gameSettings, map) {
 	map.big.nextDestination = parseInt(getCookieValue('nextDestination', cookieValue) || 0);
 	hero.experience = parseInt(getCookieValue('heroExperience', cookieValue) || 0);
 	hero.level = parseInt(getCookieValue('heroLevel', cookieValue) || 1);
+}
 
-	loadHeroImage();
+function setupStatsHeroImage() {
 	var statsHeroImage = document.getElementById('statsHeroImage');
 	statsHeroImage.src = makeImageSource('hero_' + hero.type);
 	statsHeroImage.title = hero.type + ' ' + hero.name;
+}
 
+function loadHeroInfo(gameSettings, map) {
+	extractValuesFromCookie();
+	setupStatsHeroImage();
+	loadHeroImage();
 	startHeroPosition(gameSettings);
+
 	if (!gameState.inProgress)
 		gameState.inProgress = true;
 }
