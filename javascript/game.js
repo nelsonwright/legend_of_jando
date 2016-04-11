@@ -85,11 +85,11 @@ var gameState = {
 };
 
 var hero = {
-	name: "bozo",
+	name: "You",
 	image: new Image(),
 	type: "man",
-	movePoints: 0,
-	maxMovePoints: 0,
+	movePoints: 20,
+	maxMovePoints: 20,
 	foraging: false,     // are you foraging at the moment?
 	asleep: false,		   // indicates if you're sleeping
 	moved: false,			// indicates if the hero has successfully moved on the map
@@ -97,14 +97,14 @@ var hero = {
 	// attributes connected with fighting . . .
 	fightOn : 'No',	   // indicates if a fight with a monster is: ongoing, just ended, or not on
 	turnToFight: true,	// if it's the hero's turn to fight or the monster's
-	health: 0,
-	attack: 0,
-	defence: 0,
-	maxHealth: 0,
-	maxAttack: 0,
-	maxDefence: 0,
+	health: 30,
+	attack: 10,
+	defence: 8,
+	maxHealth: 30,
+	maxAttack: 10,
+	maxDefence: 8,
 	experience: 0,
-	level: 0,
+	level: 1,
 	experiencePerLevel: 4
 };
 
@@ -132,7 +132,7 @@ var map = {
     numTerrainTypes : 6,    // how many different terrain types there are
     displayed : false,      // indicates if the big map is being displayed
     nextDestination : 0		// holds the next destination level,
-    // corresponds to terrain type, i.e. starts at zero,which = light grass
+    								// corresponds to terrain type, i.e. starts at zero,which = light grass
   }
 };
 
@@ -151,12 +151,7 @@ function Monster(monsterObj) {
 	this.attackPoints = monsterObj.attackPoints;
 	this.defencePoints = monsterObj.defencePoints;
 
-	if (monsterObj.hasOwnProperty('imageName')) {
-		this.imageName = monsterObj.imageName;
-	} else {
-		this.imageName = this.name;
-	}
-
+	this.imageName = deriveImageName(monsterObj);
 	this.image = new Image();
 	this.image.src = makeImageSource(this.imageName);
 }
@@ -167,12 +162,7 @@ function TerrainType(terrainObj) {
 	this.densityFactor = terrainObj.densityFactor;
 	this.extraMovementPts = terrainObj.extraMovementPts;
 
-	if (terrainObj.hasOwnProperty('imageName')) {
-		this.imageName = terrainObj.imageName;
-	} else {
-		this.imageName = this.name;
-	}
-
+	this.imageName = deriveImageName(terrainObj);
 	this.image = new Image();
 	this.image.src = makeImageSource(this.imageName);
 }
@@ -299,7 +289,7 @@ function loadFood() {
 	foodArray[0] = new foodType('squashy fig', 'fig', 3);
 	foodArray[1] = new foodType('loaf of bread', 'bread_1', 1);
 	foodArray[2] = new foodType('croissant', 'croissant', 2);
-	foodArray[3] = new foodType('brown egg', 'brown egg', 3);
+	foodArray[3] = new foodType('brown egg', 'brown_egg', 3);
 	foodArray[4] = new foodType('cucumber', 'cucumber', 1);
 	foodArray[5] = new foodType('glass of beer', 'glass_of_beer', 2);
 	foodArray[6] = new foodType('strawberry', 'strawberry', 2);
@@ -342,6 +332,16 @@ function loadFood() {
 	foodArray[43] = new foodType('veggie sausage', 'veggie_sausage', 5);
 }
 
+function deriveImageName(objectWithImage) {
+	var imageName;
+	if (objectWithImage.hasOwnProperty('imageName')) {
+		imageName = objectWithImage.imageName;
+	} else {
+		imageName = objectWithImage.name;
+	}
+	return imageName;
+}
+
 function getCookieValue(pairName, cookieString){
 // returns the value for the name/value pair, for the given name
 // if not found, returns null
@@ -358,7 +358,44 @@ function getCookieValue(pairName, cookieString){
 	return returnValue;
 }
 
-function startHeroPosition(stateOfGame){
+function extractValuesFromCookie() {
+	var cookieValue = getCookie('jando');
+
+	if (cookieValue !== null) {
+		hero.name = getCookieValue('name', cookieValue || 'You');
+		hero.health = parseInt(getCookieValue('health', cookieValue || 30));
+		hero.attack = parseInt(getCookieValue('attack', cookieValue || 10));
+		hero.defence = parseInt(getCookieValue('defence', cookieValue || 8));
+		hero.type = getCookieValue('char', cookieValue || 'man');
+		map.small.posRowCell = parseInt(getCookieValue('posRowCell', cookieValue) || 0);
+		map.small.posColumnCell = parseInt(getCookieValue('posColumnCell', cookieValue) || 0);
+		map.big.posRowCell = parseInt(getCookieValue('bigPosRowCell', cookieValue) || 0);
+		map.big.posColumnCell = parseInt(getCookieValue('bigPosColumnCell', cookieValue) || 0);
+		gameState.inProgress = (getCookieValue('gameInProgress', cookieValue) === "Y") ? true : false;
+		hero.movePoints = parseInt(getCookieValue('movePoints', cookieValue) || 20);
+
+		hero.maxHealth = parseInt(getCookieValue('maxHeroHealth', cookieValue || 30));
+		hero.maxAttack = parseInt(getCookieValue('maxHeroAttack', cookieValue) || 10);
+		hero.maxDefence = parseInt(getCookieValue('maxHeroDefence', cookieValue) || 8);
+		hero.maxMovePoints = parseInt(getCookieValue('maxMovePoints', cookieValue) || 20);
+		map.big.nextDestination = parseInt(getCookieValue('nextDestination', cookieValue) || 0);
+		hero.experience = parseInt(getCookieValue('heroExperience', cookieValue) || 0);
+		hero.level = parseInt(getCookieValue('heroLevel', cookieValue) || 1);
+	}
+}
+
+function setupStatsHeroImage() {
+	var statsHeroImage = document.getElementById('statsHeroImage');
+	statsHeroImage.src = makeImageSource('hero_' + hero.type);
+	statsHeroImage.title = hero.type + ' ' + hero.name;
+}
+
+function loadHeroImage() {
+	hero.image.src = makeImageSource('hero_' + hero.type);
+	hero.image.title = hero.type + ' ' + hero.name;
+}
+
+function startHeroPosition(stateOfGame) {
 	if (!stateOfGame.inProgress) {
 		map.big.posRowCell = Math.floor(Math.random() * map.big.rows); // random starting row on LHS
 		map.big.posColumnCell = 0;
@@ -372,44 +409,16 @@ function startHeroPosition(stateOfGame){
 	hero.bigOldPosColumnCell = map.big.posColumnCell;
 }
 
-function loadHeroImage() {
-	hero.image.src = makeImageSource('hero_' + hero.type);
-	hero.image.title = hero.type + ' ' + hero.name;
-}
-
 function loadHeroInfo(gameSettings, map) {
-	var cookieValue = getCookie('jando');
-	hero.name = getCookieValue('name', cookieValue || 'You');
-	hero.health = parseInt(getCookieValue('health', cookieValue || 30));
-	hero.attack = parseInt(getCookieValue('attack', cookieValue || 10));
-	hero.defence = parseInt(getCookieValue('defence', cookieValue || 8));
-	hero.type = getCookieValue('char', cookieValue || 'man');
-	map.small.posRowCell = parseInt(getCookieValue('posRowCell', cookieValue) || 0);
-	map.small.posColumnCell = parseInt(getCookieValue('posColumnCell', cookieValue) || 0);
-	map.big.posRowCell = parseInt(getCookieValue('bigPosRowCell', cookieValue) || 0);
-	map.big.posColumnCell = parseInt(getCookieValue('bigPosColumnCell', cookieValue) || 0);
-	gameState.inProgress = (getCookieValue('gameInProgress', cookieValue) === "Y") ? true : false;
-	hero.movePoints = parseInt(getCookieValue('movePoints', cookieValue) || 20);
-
-	hero.maxHealth = parseInt(getCookieValue('maxHeroHealth', cookieValue || 30));
-	hero.maxAttack = parseInt(getCookieValue('maxHeroAttack', cookieValue) || 10);
-	hero.maxDefence = parseInt(getCookieValue('maxHeroDefence', cookieValue) || 8);
-	hero.maxMovePoints = parseInt(getCookieValue('maxMovePoints', cookieValue) || 20);
-	map.big.nextDestination = parseInt(getCookieValue('nextDestination', cookieValue) || 0);
-	hero.experience = parseInt(getCookieValue('heroExperience', cookieValue) || 0);
-	hero.level = parseInt(getCookieValue('heroLevel', cookieValue) || 1);
-
+	extractValuesFromCookie();
+	setupStatsHeroImage();
 	loadHeroImage();
-	var statsHeroImage = document.getElementById('statsHeroImage');
-	statsHeroImage.src = makeImageSource('hero_' + hero.type);
-	statsHeroImage.title = hero.type + ' ' + hero.name;
-
 	startHeroPosition(gameSettings);
-	if (!gameState.inProgress)
-		gameState.inProgress = true;
+
+	gameState.inProgress = true;
 }
 
-function saveHeroInfo(){
+function saveHeroInfo() {
    var inProgress = (gameState.inProgress === true) ? "Y" : "N";
 	var cookieValue  = "name=" + hero.name + ';'
 									+ "health=" + hero.health + ';'
@@ -430,8 +439,7 @@ function saveHeroInfo(){
 									+ "heroExperience=" + hero.experience + ';'
 									+ "heroLevel=" + hero.level
 									;
-	setCookie('jando', cookieValue, 365);  // cookie will expire in a year
-	//alert('map.big.posRowCell is: ' + map.big.posRowCell + ', and map.big.posColumnCell is: ' + map.big.posColumnCell);
+	setCookie('jando', cookieValue, 365);  // cookie will expire in a year?  Seems to be 6 weeks now
 }
 
 function loadTerrainTargetInfo()
@@ -586,48 +594,53 @@ function setTerrainTargetLocations(){
 	loadTerrainTargetInfo();
 }
 
+function decideTerrainType(column, numberOfTerrainTypes) {
+	var randomFactor = Math.random() ;
+	// the terrain type relates to the "code" attribute in the terrainArray
+	var terrainType = Math.ceil(column/2);
+
+	if (randomFactor < 0.25) {
+		terrainType = terrainType - 1;
+	} else if (randomFactor > 0.75) {
+		terrainType = terrainType + 1	;
+	}
+
+	// ensure we stay within the limits of the TerrainType codes, 0..numberOfTerrainTypes - 1
+	terrainType = Math.min(Math.max(0, terrainType), numberOfTerrainTypes - 1);
+	return terrainType;
+}
+
 function createBigMap() {
 	for (bigRow=0; bigRow < map.big.rows; bigRow++)
 		for (bigCol=0; bigCol < map.big.cols; bigCol++)	// for big map
 		{
-			// decide terrain type for this (large) map square . . .
-			var randomFactor = Math.random() ;
-			var terrType = Math.ceil(bigCol/2);
-			if (randomFactor < 0.25)
-				terrType = terrType - 1;
-			else if  ( randomFactor > 0.75)
-				terrType = terrType + 1	;
-			if (terrType < 0)
-				terrType = 0;
-			if (terrType > map.big.numTerrainTypes -1)
-				terrType = map.big.numTerrainTypes-1;
-
-			bigMapArray[bigRow][bigCol] = terrType;
+			// decide terrain type for this (large) map square . .
+			var terrainType = decideTerrainType(bigCol, map.big.numTerrainTypes);
+			bigMapArray[bigRow][bigCol] = terrainType;
 
 			// need to record location of each terrain type in the location array,
 			// indexed by terrain type.  Then we can have a target location for each terrain type
-			if (terrainLocArray[terrType].length > 0)
-				terrainLocArray[terrType] = terrainLocArray[terrType] + ';' + bigRow + ',' + bigCol;
+			if (terrainLocArray[terrainType].length > 0)
+				terrainLocArray[terrainType] = terrainLocArray[terrainType] + ';' + bigRow + ',' + bigCol;
 			else
-				terrainLocArray[terrType] = bigRow + ',' + bigCol;
+				terrainLocArray[terrainType] = bigRow + ',' + bigCol;
 		}
 		setTerrainTargetLocations();
-}	// end of createBigMap
+}
 
-function createMap(bigRow, bigCol) {
-	var terrType = bigMapArray[bigRow][bigCol];
-	var terrainFreq =  terrainArray[terrType].densityFactor;
+function createSmallMapTerrain(bigRow, bigCol) {
+	var terrainType = bigMapArray[bigRow][bigCol];
 
 	for (i=0; i <map.small.rows; i++) {
 		for (k=0; k <map.small.cols; k++) {
-			if (Math.random() < terrainFreq ) {
-				mapDetailArray[i][k] = terrType; 	// terrain type
+			if (Math.random() < terrainArray[terrainType].densityFactor ) {
+				mapDetailArray[i][k] = terrainType;
 			} else {
 				mapDetailArray[i][k] = 0;	// default to terrain type zero
 			}
 		}
 	}
-}	// end of createMap
+}
 
 function setTerrainCellSmallMap(mapTableDiv, row, col)
 {
@@ -789,7 +802,7 @@ function processMovement(tableRow, tableCol, bigTableRow, bigTableCol) {
 				map.big.posColumnCell= map.big.posColumnCell +1;
 				map.small.posColumnCell = 0; // left hand side of next map square
 			}
-			createMap(map.big.posRowCell, map.big.posColumnCell);
+			createSmallMapTerrain(map.big.posRowCell, map.big.posColumnCell);
 			showSmallMap(map.big.posRowCell, map.big.posColumnCel);
 			map.small.oldPosRowCell = map.small.posRowCell;
 			map.small.oldPosColumnCell = map.small.posColumnCell;
@@ -1184,6 +1197,7 @@ function doMonsterAttack(heroDefence) {
 	monsterFightPara.innerHTML = monsterHitDisplay;
 	animateFightMonster();
 	if (hero.health <= 0) {
+		gameState.inProgress = false;
 		sayHeroDead();
 	}
 
@@ -1532,7 +1546,7 @@ function start_game() {
   loadTerrain();
   loadFood();
   createBigMap();
-  createMap(map.big.posRowCell, map.big.posColumnCell);
+  createSmallMapTerrain(map.big.posRowCell, map.big.posColumnCell);
   showSmallMap(map.big.posRowCell, map.big.posColumnCell);
   drawHero();
   updateHeroStats();
