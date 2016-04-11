@@ -151,9 +151,7 @@ function Monster(monsterObj) {
 	this.attackPoints = monsterObj.attackPoints;
 	this.defencePoints = monsterObj.defencePoints;
 
-	this.imageName = deriveImageName(monsterObj);
-	this.image = new Image();
-	this.image.src = makeImageSource(this.imageName);
+	loadImageForType(this, monsterObj);
 }
 
 function TerrainType(terrainObj) {
@@ -162,19 +160,27 @@ function TerrainType(terrainObj) {
 	this.densityFactor = terrainObj.densityFactor;
 	this.extraMovementPts = terrainObj.extraMovementPts;
 
-	this.imageName = deriveImageName(terrainObj);
-	this.image = new Image();
-	this.image.src = makeImageSource(this.imageName);
+	loadImageForType(this, terrainObj);
 }
 
-function foodType(name, imageName, extraHealthPoints) {
-	this.name = name;
-	this.imageName = imageName;
-	this.extraHealthPoints = extraHealthPoints;
+function FoodType(foodObj) {
+	this.name = foodObj.name;
+	this.extraHealthPoints = foodObj.extraHealthPoints;
 
-	this.image = new Image();
-	var isFood = true;
-	this.image.src = makeImageSource(imageName, isFood);
+	loadImageForType(this, foodObj);
+}
+
+function loadImageForType(currType, paramObject) {
+	var isFood = false;
+
+	// not entirely sure this is the best way, but what the hey . . .
+	if (currType.constructor.name === 'FoodType') {
+		isFood = true;
+	}
+
+	currType.imageName = deriveImageName(paramObject);
+	currType.image = new Image();
+	currType.image.src = makeImageSource(currType.imageName, isFood);
 }
 
 function makeImageSource(imageName, isFood) {
@@ -210,7 +216,7 @@ terrainLocArray[i]=''; 	// set up terrainLocArray
 // that are displayed upon reaching a destination
 var terrainDestinationArray=new Array(map.big.numTerrainTypes + 1);	 // last destination is random location for treasure
 for (i=0; i <map.big.numTerrainTypes + 1; i++)
-terrainDestinationArray[i] = new Array(7); 	// set up Array
+terrainDestinationArray[i] = new Array(map.big.numTerrainTypes + 1);
 
 /*
 	Monster Attributes:
@@ -226,27 +232,27 @@ var monsterArray = new Array(gameSettings.numMonsterTypes + 1); // add 1 to have
 // set up monsterArray with monster objects
 function loadMonsterInfo() {
 	// name, imageName, healthPoints, attackPoints, defencePoints
-	monsterArray[0]= new Monster({name: 'Turtle Rider', imageName: 'turtle_rider', healthPoints: 12, attackPoints: 6, defencePoints: 4});
-	monsterArray[1]= new Monster({name: 'Horned Devil', imageName: 'horned_devil', healthPoints: 13, attackPoints: 7, defencePoints: 5});
-	monsterArray[2]= new Monster({name: 'Squirm', imageName: 'squirm', healthPoints: 9, attackPoints: 4, defencePoints: 4});
-	monsterArray[3]= new Monster({name: 'Bleh', imageName: 'bleh', healthPoints: 16, attackPoints: 8, defencePoints: 5});
-	monsterArray[4]= new Monster({name: 'Scream', imageName: 'scream', healthPoints: 7, attackPoints: 6, defencePoints: 6});
-	monsterArray[5]= new Monster({name: 'Warrior Ant', imageName: 'ant_warrior', healthPoints: 10, attackPoints: 4, defencePoints: 7});
-	monsterArray[6]= new Monster({name: 'Drop', imageName: 'drop', healthPoints: 9, attackPoints: 4, defencePoints: 3});
-	monsterArray[7]= new Monster({name: 'Ground Fish', imageName: 'ground_fish', healthPoints: 11, attackPoints: 6, defencePoints: 3});
-	monsterArray[8]= new Monster({name: 'Snail', imageName: 'snail', healthPoints: 8, attackPoints: 6, defencePoints: 6});
-	monsterArray[9]= new Monster({name: 'Strawberry', imageName: 'strawberry', healthPoints: 7, attackPoints: 5, defencePoints: 3});
+	monsterArray[0]= new Monster({name: 'Turtle Rider', healthPoints: 12, attackPoints: 6, defencePoints: 4});
+	monsterArray[1]= new Monster({name: 'Horned Devil', healthPoints: 13, attackPoints: 7, defencePoints: 5});
+	monsterArray[2]= new Monster({name: 'Squirm', healthPoints: 9, attackPoints: 4, defencePoints: 4});
+	monsterArray[3]= new Monster({name: 'Bleh', healthPoints: 16, attackPoints: 8, defencePoints: 5});
+	monsterArray[4]= new Monster({name: 'Scream', healthPoints: 7, attackPoints: 6, defencePoints: 6});
+	monsterArray[5]= new Monster({name: 'Warrior Ant', healthPoints: 10, attackPoints: 4, defencePoints: 7});
+	monsterArray[6]= new Monster({name: 'Drop', healthPoints: 9, attackPoints: 4, defencePoints: 3});
+	monsterArray[7]= new Monster({name: 'Ground Fish', healthPoints: 11, attackPoints: 6, defencePoints: 3});
+	monsterArray[8]= new Monster({name: 'Snail', healthPoints: 8, attackPoints: 6, defencePoints: 6});
+	monsterArray[9]= new Monster({name: 'Strawberry', healthPoints: 7, attackPoints: 5, defencePoints: 3});
 
    // level 2 monsters (allegedly, but is this used anywhere . . . ?) . . .
-	monsterArray[10]= new Monster({name: 'Flame Spirit', imageName: 'flame_spirit', healthPoints: 16, attackPoints: 9, defencePoints: 9});
-	monsterArray[11]= new Monster({name: 'Bloat', imageName: 'bloat', healthPoints: 12, attackPoints: 7, defencePoints: 14});
-	monsterArray[12]= new Monster({name: 'Star Man', imageName: 'starman', healthPoints: 6, attackPoints: 10, defencePoints: 5});
-	monsterArray[13]= new Monster({name: 'Ninja', imageName: 'ninja', healthPoints: 8, attackPoints: 10, defencePoints: 7});
-	monsterArray[14]= new Monster({name: 'Assassin', imageName: 'assassin', healthPoints: 14, attackPoints: 11, defencePoints: 6});
-	monsterArray[15]= new Monster({name: 'Lightning Fish', imageName: 'lightning_fish', healthPoints: 15, attackPoints: 12, defencePoints: 7});
-	monsterArray[16]= new Monster({name: 'Leosaur', imageName: 'leosaur', healthPoints: 19, attackPoints: 15, defencePoints: 11});
-	monsterArray[17]= new Monster({name: 'Leecho', imageName: 'leecho', healthPoints: 21, attackPoints: 4, defencePoints: 16});
-	monsterArray[18]= new Monster({name: 'Crazed King', imageName: 'crazed_king', healthPoints: 18, attackPoints: 11, defencePoints: 16});
+	monsterArray[10]= new Monster({name: 'Flame Spirit', healthPoints: 16, attackPoints: 9, defencePoints: 9});
+	monsterArray[11]= new Monster({name: 'Bloat', healthPoints: 12, attackPoints: 7, defencePoints: 14});
+	monsterArray[12]= new Monster({name: 'Star Man', healthPoints: 6, attackPoints: 10, defencePoints: 5});
+	monsterArray[13]= new Monster({name: 'Ninja', healthPoints: 8, attackPoints: 10, defencePoints: 7});
+	monsterArray[14]= new Monster({name: 'Assassin', healthPoints: 14, attackPoints: 11, defencePoints: 6});
+	monsterArray[15]= new Monster({name: 'Lightning Fish', healthPoints: 15, attackPoints: 12, defencePoints: 7});
+	monsterArray[16]= new Monster({name: 'Leosaur', healthPoints: 19, attackPoints: 15, defencePoints: 11});
+	monsterArray[17]= new Monster({name: 'Leecho', healthPoints: 21, attackPoints: 4, defencePoints: 16});
+	monsterArray[18]= new Monster({name: 'Crazed King', healthPoints: 18, attackPoints: 11, defencePoints: 16});
 
 	// The final big boss-battle monster! . . .
 	monsterArray[gameState.finalMonsterIndex]= new Monster({name: 'Hideously evil GREEN SKULL', imageName: 'green_skull', healthPoints: 32, attackPoints: 16, defencePoints: 12});
@@ -270,8 +276,8 @@ var foodArray = new Array(gameSettings.numFoodTypes);
 */
 
 function loadTerrain() {
-	terrainArray[0] = new TerrainType({code: 0, name: 'light grass', densityFactor: 0, extraMovementPts: 0, imageName: 'grass'});
-	terrainArray[1] = new TerrainType({code: 1, name: 'low scrub', densityFactor: 0.1, extraMovementPts: 1, imageName: 'scrub'});
+	terrainArray[0] = new TerrainType({code: 0, name: 'light grass', densityFactor: 0, extraMovementPts: 0});
+	terrainArray[1] = new TerrainType({code: 1, name: 'low scrub', densityFactor: 0.1, extraMovementPts: 1});
 	terrainArray[2] = new TerrainType({code: 2, name: 'woods', densityFactor: 0.15, extraMovementPts: 2});
 	terrainArray[3] = new TerrainType({code: 3, name: 'forest', densityFactor: 0.3, extraMovementPts: 2});
 	terrainArray[4] = new TerrainType({code: 4, name: 'hills', densityFactor: 0.35, extraMovementPts: 3});
@@ -286,50 +292,50 @@ function loadTerrain() {
 */
 
 function loadFood() {
-	foodArray[0] = new foodType('squashy fig', 'fig', 3);
-	foodArray[1] = new foodType('loaf of bread', 'bread_1', 1);
-	foodArray[2] = new foodType('croissant', 'croissant', 2);
-	foodArray[3] = new foodType('brown egg', 'brown_egg', 3);
-	foodArray[4] = new foodType('cucumber', 'cucumber', 1);
-	foodArray[5] = new foodType('glass of beer', 'glass_of_beer', 2);
-	foodArray[6] = new foodType('strawberry', 'strawberry', 2);
-	foodArray[7] = new foodType('husk of sweetcorn', 'sweetcorn', 3);
-	foodArray[8] = new foodType('watermelon', 'watermelon', 3);
-	foodArray[9] = new foodType('ripe acorn', 'ripe acorn', 1);
-	foodArray[10] = new foodType('shiny aubergine', 'aubergine', 3);
-	foodArray[11] = new foodType('half avacado', 'avacado', 3);
-	foodArray[12] = new foodType('black olive', 'black_olive', 1);
-	foodArray[13] = new foodType('bunch of blueberries', 'blueberries', 2);
-	foodArray[14] = new foodType('loaf of tasty bread', 'bread_2', 5);
-	foodArray[15] = new foodType('yam', 'yam', 4);
-	foodArray[16] = new foodType('couple of buns', 'buns', 4);
-	foodArray[17] = new foodType('cabbage', 'cabbage', 3);
-	foodArray[18] = new foodType('fancy cake', 'cake', 4);
-	foodArray[19] = new foodType('carrot', 'carrot', 3);
-	foodArray[20] = new foodType('stick of celery', 'celery', 1);
-	foodArray[21] = new foodType('smelly wheel of cheese', 'cheese_1', 5);
-	foodArray[22] = new foodType('wheel of cheese', 'cheese_2', 5);
-	foodArray[23] = new foodType('small bunch of cherries', 'cherries', 2);
-	foodArray[24] = new foodType('courgette', 'courgette', 3);
-	foodArray[25] = new foodType('couple of pale eggs', 'eggs', 5);
-	foodArray[26] = new foodType('clove of garlic', 'garlic', 3);
-	foodArray[27] = new foodType('bunch of grapes', 'grapes', 4);
-	foodArray[28] = new foodType('green chilli', 'green_chilli', 2);
-	foodArray[29] = new foodType('green olive', 'green_olive', 2);
-	foodArray[30] = new foodType('green pepper', 'green_pepper', 3);
-	foodArray[31] = new foodType('nice orange', 'orange', 4);
-	foodArray[32] = new foodType('fresh orange pepper', 'orange_pepper', 3);
-	foodArray[33] = new foodType('pak choi leaf', 'pak_choi', 1);
-	foodArray[34] = new foodType('pear', 'pear', 3);
-	foodArray[35] = new foodType('load of peas in their pod', 'peas_in_pod', 3);
-	foodArray[36] = new foodType('few peas in the pod', 'peas_in_pod2', 2);
-	foodArray[37] = new foodType('plum', 'plum', 3);
-	foodArray[38] = new foodType('potato', 'potato', 2);
-	foodArray[39] = new foodType('red chilli', 'red_chilli', 2);
-	foodArray[40] = new foodType('red pepper', 'red_pepper', 3);
-	foodArray[41] = new foodType('yellow pepper', 'yellow_pepper', 2);
-	foodArray[42] = new foodType('tomato', 'tomato', 2);
-	foodArray[43] = new foodType('veggie sausage', 'veggie_sausage', 5);
+	foodArray[0] = new FoodType({name: 'squashy fig', imageName: 'fig', extraHealthPoints: 3});
+	foodArray[1] = new FoodType({name: 'loaf of bread', imageName: 'bread_1', extraHealthPoints: 1});
+	foodArray[2] = new FoodType({name: 'croissant', extraHealthPoints:  2});
+	foodArray[3] = new FoodType({name: 'brown egg', extraHealthPoints: 3});
+	foodArray[4] = new FoodType({name: 'cucumber',  extraHealthPoints: 1});
+	foodArray[5] = new FoodType({name: 'glass of beer',  extraHealthPoints: 2});
+	foodArray[6] = new FoodType({name: 'strawberry', extraHealthPoints: 2});
+	foodArray[7] = new FoodType({name: 'husk of sweetcorn', imageName: 'sweetcorn', extraHealthPoints: 3});
+	foodArray[8] = new FoodType({name: 'watermelon', extraHealthPoints: 3});
+	foodArray[9] = new FoodType({name: 'ripe acorn', extraHealthPoints: 1});
+	foodArray[10] = new FoodType({name: 'shiny aubergine', imageName: 'aubergine', extraHealthPoints: 3});
+	foodArray[11] = new FoodType({name: 'half avacado', imageName: 'avacado', extraHealthPoints: 3});
+	foodArray[12] = new FoodType({name: 'black olive', extraHealthPoints: 1});
+	foodArray[13] = new FoodType({name: 'bunch of blueberries', imageName: 'blueberries', extraHealthPoints: 2});
+	foodArray[14] = new FoodType({name: 'loaf of tasty bread', imageName: 'bread_2', extraHealthPoints: 5});
+	foodArray[15] = new FoodType({name: 'yam',  extraHealthPoints: 4});
+	foodArray[16] = new FoodType({name: 'couple of buns', imageName: 'buns', extraHealthPoints: 4});
+	foodArray[17] = new FoodType({name: 'cabbage', extraHealthPoints: 3});
+	foodArray[18] = new FoodType({name: 'fancy cake', imageName: 'cake', extraHealthPoints: 4});
+	foodArray[19] = new FoodType({name: 'carrot',  extraHealthPoints: 3});
+	foodArray[20] = new FoodType({name: 'stick of celery', imageName: 'celery', extraHealthPoints: 1});
+	foodArray[21] = new FoodType({name: 'smelly wheel of cheese', imageName: 'cheese_1', extraHealthPoints: 5});
+	foodArray[22] = new FoodType({name: 'wheel of cheese', imageName: 'cheese_2', extraHealthPoints: 5});
+	foodArray[23] = new FoodType({name: 'small bunch of cherries', imageName: 'cherries', extraHealthPoints: 2});
+	foodArray[24] = new FoodType({name: 'courgette', extraHealthPoints: 3});
+	foodArray[25] = new FoodType({name: 'couple of pale eggs', imageName: 'eggs', extraHealthPoints: 5});
+	foodArray[26] = new FoodType({name: 'clove of garlic', imageName: 'garlic', extraHealthPoints: 3});
+	foodArray[27] = new FoodType({name: 'bunch of grapes', imageName: 'grapes', extraHealthPoints: 4});
+	foodArray[28] = new FoodType({name: 'green chilli', extraHealthPoints: 2});
+	foodArray[29] = new FoodType({name: 'green olive', extraHealthPoints: 2});
+	foodArray[30] = new FoodType({name: 'green pepper', extraHealthPoints: 3});
+	foodArray[32] = new FoodType({name: 'fresh orange pepper', imageName: 'orange_pepper', extraHealthPoints: 3});
+	foodArray[31] = new FoodType({name: 'nice orange', imageName: 'orange', extraHealthPoints: 4});
+	foodArray[33] = new FoodType({name: 'pak choi leaf', imageName: 'pak_choi', extraHealthPoints: 1});
+	foodArray[34] = new FoodType({name: 'pear', extraHealthPoints: 3});
+	foodArray[35] = new FoodType({name: 'load of peas in their pod', imageName: 'peas_in_pod', extraHealthPoints: 3});
+	foodArray[36] = new FoodType({name: 'few peas in the pod', imageName: 'peas_in_pod2', extraHealthPoints: 2});
+	foodArray[37] = new FoodType({name: 'plum', extraHealthPoints: 3});
+	foodArray[38] = new FoodType({name: 'potato',  extraHealthPoints: 2});
+	foodArray[39] = new FoodType({name: 'red chilli', extraHealthPoints: 2});
+	foodArray[41] = new FoodType({name: 'yellow pepper', extraHealthPoints: 2});
+	foodArray[40] = new FoodType({name: 'red pepper', extraHealthPoints: 3});
+	foodArray[42] = new FoodType({name: 'tomato', extraHealthPoints: 2});
+	foodArray[43] = new FoodType({name: 'veggie sausage', extraHealthPoints: 5});
 }
 
 function deriveImageName(objectWithImage) {
@@ -337,7 +343,9 @@ function deriveImageName(objectWithImage) {
 	if (objectWithImage.hasOwnProperty('imageName')) {
 		imageName = objectWithImage.imageName;
 	} else {
-		imageName = objectWithImage.name;
+		// if no, specific image name given, use the object's "name" property,
+		// replacing spaces with underscore, make lowercase
+		imageName = objectWithImage.name.replace(/ /g, "_").toLowerCase();
 	}
 	return imageName;
 }
