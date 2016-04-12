@@ -214,9 +214,9 @@ terrainLocArray[i]=''; 	// set up terrainLocArray
 // Used to hold row/col destination pairs on big map and small map,
 // indexed by terrain type.  Also used to hold character and map images
 // that are displayed upon reaching a destination
-var terrainDestinationArray=new Array(map.big.numTerrainTypes + 1);	 // last destination is random location for treasure
+var questArray=new Array(map.big.numTerrainTypes + 1);	 // last destination is random location for treasure
 for (i=0; i <map.big.numTerrainTypes + 1; i++)
-terrainDestinationArray[i] = new Array(map.big.numTerrainTypes + 1);
+questArray[i] = new Array(map.big.numTerrainTypes + 1);
 
 /*
 	Monster Attributes:
@@ -423,7 +423,7 @@ function loadHeroInfo(gameSettings, map) {
 	loadHeroImage();
 	startHeroPosition(gameSettings);
 
-	gameState.inProgress = true;
+	gameState.inProgress = true; // not entirely sure if we need this
 }
 
 function saveHeroInfo() {
@@ -450,10 +450,21 @@ function saveHeroInfo() {
 	setCookie('jando', cookieValue, 365);  // cookie will expire in a year?  Seems to be 6 weeks now
 }
 
-function loadTerrainTargetInfo()
-{
-	terrainDestinationArray[0][4] = 'blackbird';	// png image name of "start" character
-	terrainDestinationArray[0][5] =	'<p>'
+/*
+		Quest array
+		0. This quest destination (big map row)
+		1. This quest destination (big map column)
+		2. This quest destination (small map row)
+		3. This quest destination (small map column)
+		4. Image name of character to display at start of this quest
+		5. Text to display at start of this quest
+		6. Image that will appear on the small map as the destination for this quest
+
+*/
+
+function loadQuestInfo() {
+	questArray[0][4] = 'blackbird';	// png image name of "start" character
+	questArray[0][5] =	'<p>'
 		+ 'You find yourself in a wide, open land with long grasses. '
 		+ ' You see a crow perched on a branch, swaying slightly in the wind.'
 		+ '  It starts to sing, it\'s liquid, burbling sound almost resembling speech in a foreign tongue . . .'
@@ -463,11 +474,11 @@ function loadTerrainTargetInfo()
 		+' You suddenly realise that it <strong>is</strong> saying something.  You listen harder.'
 		+ '  It\'s hard to tell, but it almost sounds like, "Go to grasshopper, blue tent, light grass . . ." '
 		+'</p>'			;
-	terrainDestinationArray[0][6] =	'blue_tent';	// destination image that will appear on the small map
+	questArray[0][6] =	'blue_tent';	// destination image that will appear on the small map
 																							// in this terrain type
 
-	terrainDestinationArray[1][4] = 'grasshopper';	// image name of character
-	terrainDestinationArray[1][5] =	'<p>'
+	questArray[1][4] = 'grasshopper';	// image name of character
+	questArray[1][5] =	'<p>'
 		+ 'You see a huge grasshopper seated on a throne made of woven grasses.  Incredibly, it starts to speak:'
 		+'</p>'
 		+ '<p>'
@@ -481,10 +492,10 @@ function loadTerrainTargetInfo()
 		+ ' There is a meditating skelton that lives on a watchtower somewhere in the scrub that can help you.'
 		+ '  I don\'t know his exact wherabouts, I\'m afraid, but I\'ll tell my blackbird friends to let him know that you\'re coming."'
 		+ '</p>';
-	terrainDestinationArray[1][6] =	'watchtower';	// destination image
+	questArray[1][6] =	'watchtower';	// destination image
 
-	terrainDestinationArray[2][4] = 'meditating_skeleton';	// image name of character
-	terrainDestinationArray[2][5] =	'<p>'
+	questArray[2][4] = 'meditating_skeleton';	// image name of character
+	questArray[2][5] =	'<p>'
 		+ 'As you reach the top of the watchtower, a skeleton looks up: "Greetings my friend! You look tired from your journey.  Stay here and rest, I\'ve just finished my meditation for the day.'
 		+'</p>'
 		+ '<p>'
@@ -498,10 +509,10 @@ function loadTerrainTargetInfo()
 		+ '<p>'
 		+ 'Stay here as long as you like, this watchtower gives you a bit of perspective on life.  Help yourself to herbal tea."'
 		+'</p>';
-	terrainDestinationArray[2][6] =	'cave';	// destination image
+	questArray[2][6] =	'cave';	// destination image
 
-	terrainDestinationArray[3][4] = 'bear';	// image name of character
-	terrainDestinationArray[3][5] =	'<p>'
+	questArray[3][4] = 'bear';	// image name of character
+	questArray[3][5] =	'<p>'
 		+ 'You cautiously enter cave.  You think you here a rustling sound from somewhere in the darkness at the back.'
 		+ ' You decide to unwrap the honeycomb the skeleton gave you, and throw it forward.'
 		+'</p>'
@@ -515,10 +526,10 @@ function loadTerrainTargetInfo()
 		+ '<p>'
 		+ 'Now, if that\'s all, I have some honey to eat."'
 		+'</p>';
-	terrainDestinationArray[3][6] =	'tower';	// destination image
+	questArray[3][6] =	'tower';	// destination image
 
-	terrainDestinationArray[4][4] = 'boar';	// image name of character
-	terrainDestinationArray[4][5] =	'<p>'
+	questArray[4][4] = 'boar';	// image name of character
+	questArray[4][5] =	'<p>'
 		+ '"Hello!  I thought I heard someone knock on the tower door.  Sorry I took a while to answer, I was just upstairs finishing off an oil painting".'
 		+ ' By now, this sort of thing doesn\'t come as a surprise.  You explain that you seek a path through the mountains to find the lost black magic feather of your people.'
 		+'</p>'
@@ -531,10 +542,10 @@ function loadTerrainTargetInfo()
 		+'he normally roosts in a tree near the round castle tower".  Now, a spot of lunch?  I have some wonderful yellow courgettes".'
 		+'  After eating, you thank the boar for the repast, and set off for the hills . . .'
 		+'</p>';
-	terrainDestinationArray[4][6] =	'round_castle_tower';	// destination image
+	questArray[4][6] =	'round_castle_tower';	// destination image
 
-	terrainDestinationArray[5][4] = 'eagle';	// image name of character
-	terrainDestinationArray[5][5] =	'<p>'
+	questArray[5][4] = 'eagle';	// image name of character
+	questArray[5][5] =	'<p>'
 		+ 'You find the tree near the tower, and look up to see the eagle staring right at you with it\'s beady eye.  It looks unimpressed.'
 		+ '"What do you want around here?  Keep away, unless you want the green skull to scare you so much you\'ll run off a cliff edge in fright".'
 		+'</p>'
@@ -546,10 +557,10 @@ function loadTerrainTargetInfo()
 		+'<p>'
 		+' And with that, the eagle flaps off the branch, and soars into the sky . . .'
 		+'</p>'	;
-	terrainDestinationArray[5][6] =	'black_feather';	// destination image
+	questArray[5][6] =	'black_feather';	// destination image
 
-	terrainDestinationArray[6][4] = 'green_skull';	// image name of character
-	terrainDestinationArray[6][5] =	'<p>'
+	questArray[6][4] = 'green_skull';	// image name of character
+	questArray[6][5] =	'<p>'
 		+ 'You find the tree near the tower, and look up to see the eagle staring right at you with it\'s beady eye.  It looks unimpressed.'
 		+ '"What do you want around here?  Keep away, unless you want the green skull to scare you so much you\'ll run off a cliff edge in fright".'
 		+'</p>'
@@ -561,45 +572,43 @@ function loadTerrainTargetInfo()
 		+'<p>'
 		+' And with that, the eagle flaps off the branch, and soars into the sky . . .'
 		+'</p>'	;
-	terrainDestinationArray[6][6] =	'black_feather';	// destination image
+	questArray[6][6] =	'black_feather';	// destination image
 
 }
 
-function setTerrainTargetLocations(){
+function setQuestLocations() {
 	var thisTerrainCoords = new Array();
 	var thisTerrainRowCol = new Array();
 
 	// loop through the array by terrain type, randomly pick
 	// one of the locations, and assign it to the terrain destination array
-	for (i=0; i <map.big.numTerrainTypes; i++)
-	{
+	for (i=0; i <map.big.numTerrainTypes; i++) {
 		thisTerrainCoords = terrainLocArray[i].split(';');
 		var arrayLength = thisTerrainCoords.length;
 
 		// don't want to put the destination right in the same square as
 		// where the hero starts . . .
-		do
-		{
+		do {
 			var destLocation = Math.floor(Math.random() * arrayLength);
 			var thisTerrainRowCol = thisTerrainCoords[destLocation].split(',');
 			//assign large map row & col . . .
-			terrainDestinationArray[i][0] = parseInt(thisTerrainRowCol[0]);
-			terrainDestinationArray[i][1] = parseInt(thisTerrainRowCol[1]);
+			questArray[i][0] = parseInt(thisTerrainRowCol[0]);
+			questArray[i][1] = parseInt(thisTerrainRowCol[1]);
 		}
-		while (terrainDestinationArray[i][0] == map.big.posRowCell &&
-					  terrainDestinationArray[i][1] == map.big.posColumnCell) ;
+		while (questArray[i][0] == map.big.posRowCell &&
+			    questArray[i][1] == map.big.posColumnCell);
 
 		// now set the small map row & col . . .
-		terrainDestinationArray[i][2] = Math.floor(Math.random() * map.small.rows);
-		terrainDestinationArray[i][3] = Math.floor(Math.random() * map.small.cols);
+		questArray[i][2] = Math.floor(Math.random() * map.small.rows);
+		questArray[i][3] = Math.floor(Math.random() * map.small.cols);
 	}
 	// now do the same for the last location . . .
-	terrainDestinationArray[map.big.numTerrainTypes][0] = Math.floor(Math.random() * map.big.rows);
-	terrainDestinationArray[map.big.numTerrainTypes][1] = Math.floor(Math.random() * map.big.cols);
-	terrainDestinationArray[map.big.numTerrainTypes][2] = Math.floor(Math.random() * map.small.rows);
-	terrainDestinationArray[map.big.numTerrainTypes][3] = Math.floor(Math.random() * map.small.cols);
+	questArray[map.big.numTerrainTypes][0] = Math.floor(Math.random() * map.big.rows);
+	questArray[map.big.numTerrainTypes][1] = Math.floor(Math.random() * map.big.cols);
+	questArray[map.big.numTerrainTypes][2] = Math.floor(Math.random() * map.small.rows);
+	questArray[map.big.numTerrainTypes][3] = Math.floor(Math.random() * map.small.cols);
 
-	loadTerrainTargetInfo();
+	loadQuestInfo();
 }
 
 function decideTerrainType(column, numberOfTerrainTypes) {
@@ -620,8 +629,7 @@ function decideTerrainType(column, numberOfTerrainTypes) {
 
 function createBigMap() {
 	for (bigRow=0; bigRow < map.big.rows; bigRow++)
-		for (bigCol=0; bigCol < map.big.cols; bigCol++)	// for big map
-		{
+		for (bigCol=0; bigCol < map.big.cols; bigCol++)	{
 			// decide terrain type for this (large) map square . .
 			var terrainType = decideTerrainType(bigCol, map.big.numTerrainTypes);
 			bigMapArray[bigRow][bigCol] = terrainType;
@@ -633,7 +641,7 @@ function createBigMap() {
 			else
 				terrainLocArray[terrainType] = bigRow + ',' + bigCol;
 		}
-		setTerrainTargetLocations();
+		setQuestLocations();
 }
 
 function createSmallMapTerrain(bigRow, bigCol) {
@@ -700,7 +708,7 @@ function showSpecialMapFeature(mapTable, row, col) {
 	mapRow = mapTable.getElementsByTagName("tr")[row];
 	mapCell = mapRow.getElementsByTagName("td")[col];
 	mapCell.innerHTML ='<img title="the destination" src="./web_images/'
-	+ terrainDestinationArray[map.big.nextDestination][6]
+	+ questArray[map.big.nextDestination][6]
 	+ '.png"/>';
 }
 
@@ -714,12 +722,12 @@ function showSmallMap(bigRow, bigCol) {
 			setTerrainCellSmallMap(mapTableDiv, i, k);
 		}
 		// check if this is a destination big map square . . .
-		if (terrainDestinationArray[map.big.nextDestination][0] == bigRow &&
-			  terrainDestinationArray[map.big.nextDestination][1] == bigCol)
+		if (questArray[map.big.nextDestination][0] == bigRow &&
+			  questArray[map.big.nextDestination][1] == bigCol)
 		{
 			showSpecialMapFeature(mapTableDiv,
-								  terrainDestinationArray[map.big.nextDestination][2],
-								  terrainDestinationArray[map.big.nextDestination][3]);
+								  questArray[map.big.nextDestination][2],
+								  questArray[map.big.nextDestination][3]);
 		}
 }	// end of drawMapDetail
 
@@ -757,10 +765,10 @@ function offBigMap(tableRow, tableCol, bigTableRow, bigTableCol) {
 } // end of off_map
 
 function checkDestReached(map) {
-	if (terrainDestinationArray[map.big.nextDestination][0] == map.big.posRowCell &&
-	    terrainDestinationArray[map.big.nextDestination][1] == map.big.posColumnCell &&
-		 terrainDestinationArray[map.big.nextDestination][2] == map.small.posRowCell &&
-	    terrainDestinationArray[map.big.nextDestination][3] == map.small.posColumnCell) {
+	if (questArray[map.big.nextDestination][0] == map.big.posRowCell &&
+	    questArray[map.big.nextDestination][1] == map.big.posColumnCell &&
+		 questArray[map.big.nextDestination][2] == map.small.posRowCell &&
+	    questArray[map.big.nextDestination][3] == map.small.posColumnCell) {
 		map.big.nextDestination = map.big.nextDestination + 1;
 		gameState.storyEvent = true;
 
@@ -944,7 +952,7 @@ function addRowClone(tblId,rowNum)
   tblBody.appendChild(newNode);
 }
 
-function createTableMap(mapTable){
+function createTableMap(mapTable) {
 	mapTable.innerHTML = '<table id="tableMap"><tbody>' +
 	'<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>' +
 	'<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>' +
@@ -964,8 +972,8 @@ function showQuest(questShown, bigMapDisplayed){
 	var destImageWords;
 	var charImageWords;
 
-	destImageWords = terrainDestinationArray[map.big.nextDestination][6].replace(/_/g,' ');
-	charImageWords = terrainDestinationArray[map.big.nextDestination + 1][4].replace(/_/g,' ');
+	destImageWords = questArray[map.big.nextDestination][6].replace(/_/g,' ');
+	charImageWords = questArray[map.big.nextDestination + 1][4].replace(/_/g,' ');
 
 	if (!questShown) {
 		gameState.questDisplayed = true;
@@ -974,14 +982,14 @@ function showQuest(questShown, bigMapDisplayed){
 
 		moveArea.innerHTML = '&nbsp;';
 		questString =	'<div style = "position:absolute;width:360px">'
-			        +   '<h3>Quest Log</h3>';
+			        +   '<h3>Your Quest</h3>';
 		if (map.big.nextDestination == 5) {
 			questString = questString +	'Go where the eagle told you, to meet your destiny . . .'
 			+ '<p>'
 			+ 'Go to row '
-		   + parseInt(terrainDestinationArray[map.big.nextDestination][0] + 1)
+		   + parseInt(questArray[map.big.nextDestination][0] + 1)
 			+ ', column '
-				+	 parseInt(terrainDestinationArray[map.big.nextDestination][1] + 1)
+				+	 parseInt(questArray[map.big.nextDestination][1] + 1)
 			+ ' on your map.'
 			+ '</p>'
 		} else {
@@ -990,7 +998,7 @@ function showQuest(questShown, bigMapDisplayed){
 			+ ', who lives in a '
 			+ destImageWords
 			+ ' like this  '
-			+ '<img src="./web_images/' + terrainDestinationArray[map.big.nextDestination][6] + '.png" />'
+			+ '<img src="./web_images/' + questArray[map.big.nextDestination][6] + '.png" />'
 			+ ' '
 			+ '. You can find the '
 			+ destImageWords
@@ -1266,7 +1274,7 @@ function runAway() {
 	// if you're not dead after trying to run away, show the "continue journey" button
 	if (hero.health > 0)
 		showContJournButt() ;
-} // end of runAway
+}
 
 function continueJourney() {
 	// first, hide the whole fight button area . . .
@@ -1276,7 +1284,7 @@ function continueJourney() {
 	var continueButt = document.getElementById('contJournButt');
 	continueButt.style.visibility="hidden";
 	endFight();
-}	// end of continueJourney
+}
 
 function setHeroImage() {
 	var fightHeroImg = document.getElementById('fightHeroImage');
@@ -1284,19 +1292,19 @@ function setHeroImage() {
 	fightHeroImg.title = hero.type + ' ' + hero.name;
 }
 
-function setDestinationHTML(nextDestination){
+function setDestinationHTML(nextDestination) {
 	var returnHTML;
 	returnHTML =
        	'<div id="theHero" style="float:left;">'
 		+	'<img id = "destinationImage" style="float:right; padding-left:15px"/>'
-		+ terrainDestinationArray[nextDestination][5]
+		+ questArray[nextDestination][5]
 		+ '</div>';
 	return returnHTML;
 }
 
 	function setDestinationImage(nextDestination) {
 	var destImage = document.getElementById('destinationImage');
-	destImage.src = './web_images/' + terrainDestinationArray[nextDestination][4] + '.png';
+	destImage.src = './web_images/' + questArray[nextDestination][4] + '.png';
 	destImage.title = 'a curious character';
 }
 
