@@ -112,26 +112,26 @@ var monster = {};
 
 var map = {
   // small map, i.e. the one your hero character moves around on
-  small : {
-    rows : 8,
-    cols : 10, // size of the map you move around in
-    posRowCell : null,
-    posColumnCell : null,	// map-cordinates of the hero
-	 oldPosRowCell:0,
-	 oldPosColumnCell:0 // the previous co-ordinates
+  small: {
+    rows: 8,
+    cols: 10, // size of the map you move around in
+    posRowCell: 0,
+    posColumnCell: 0,	// map-cordinates of the hero
+	 oldPosRowCell: 0,
+	 oldPosColumnCell: 0 // the previous co-ordinates
   },
   // big map, i.e the overview of the whole area
-  big : {
-    rows : 8,
-    cols : 10, // size of the overall big scale map
-    posRowCell : null,
-    posColumnCell : null,	// big map-cordinates of the hero
-	 bigOldposRowCell:0,
-	 bigOldPosColumnCell:0, // the previous co-ordinates
-    terrainAttributes : 6,	// number of attributes of the particular terrain
-    numTerrainTypes : 6,    // how many different terrain types there are
-    displayed : false,      // indicates if the big map is being displayed
-    nextDestination : 0		// holds the next destination level,
+  big: {
+    rows: 8,
+    cols: 10, // size of the overall big scale map
+    posRowCell: 0,
+    posColumnCell: 0,	// big map-cordinates of the hero
+	 bigOldposRowCell: 0,
+	 bigOldPosColumnCell: 0, // the previous co-ordinates
+    terrainAttributes: 6,	// number of attributes of the particular terrain
+    numTerrainTypes: 6,    // how many different terrain types there are
+    displayed: false,      // indicates if the big map is being displayed
+    nextDestination: 0		// holds the next destination level,
     								// corresponds to terrain type, i.e. starts at zero,which = light grass
   }
 };
@@ -206,10 +206,16 @@ var terrainArray=new Array(map.big.numTerrainTypes);
 for (i=0; i <map.big.numTerrainTypes; i++)
 terrainArray[i]=new Array(map.big.terrainAttributes);
 
-// Used to hold row/col locations on big map, indexed by terrain type
+/* Used to hold terrain row/col pairs (locations) on the big map, indexed by terrain type, eg:
+	0: 0,1;1,0;2,0;3,1;4,0;4,1;6,0;6,2;7,0 // light grass in row 1, col 2, row 1, col 3, etc
+	1: 0,0;0,2;1,1;1,2;2,1;2,2;3,0;3,2;4,2;5,0;5,1;5,2;5,4;6,1;7,2
+	 . . . etc . . . up to  . . .
+	5: 0,9;1,9;2,7;2,8;2,9;3,9;4,9;7,9  //  mountains would be present on row 1, column 10, row 2, col 10, etc
+	We need to save these locations, so we can pick randomly pick one as the destination for each quest
+*/
 var terrainLocArray=new Array(map.big.numTerrainTypes);
 for (i=0; i <map.big.numTerrainTypes; i++)
-terrainLocArray[i]=''; 	// set up terrainLocArray
+terrainLocArray[i]=''; 	// set up terrainLocArray with blank as default
 
 // Used to hold row/col destination pairs on big map and small map,
 // indexed by terrain type.  Also used to hold character and map images
@@ -580,18 +586,22 @@ function setQuestLocations() {
 	var thisTerrainCoords = new Array();
 	var thisTerrainRowCol = new Array();
 
-	// loop through the array by terrain type, randomly pick
-	// one of the locations, and assign it to the terrain destination array
+	// Loop through the terrain locations array by terrain type, randomly pick
+	// one of the locations for that terrain type, and assign it to the terrain destination array
+	// This provides a destination for the quest related to that terrain type
+
 	for (i=0; i <map.big.numTerrainTypes; i++) {
+		// the locations are row,column pairs delimited by semicolons, eg 0,4;1,4;2,4; etc
 		thisTerrainCoords = terrainLocArray[i].split(';');
 		var arrayLength = thisTerrainCoords.length;
 
 		// don't want to put the destination right in the same square as
 		// where the hero starts . . .
 		do {
+			// randomly pick one of the pairs of co-ordinates . . .
 			var destLocation = Math.floor(Math.random() * arrayLength);
 			var thisTerrainRowCol = thisTerrainCoords[destLocation].split(',');
-			//assign large map row & col . . .
+			//assign large map row & column . . .
 			questArray[i][0] = parseInt(thisTerrainRowCol[0]);
 			questArray[i][1] = parseInt(thisTerrainRowCol[1]);
 		}
@@ -658,12 +668,11 @@ function createSmallMapTerrain(bigRow, bigCol) {
 	}
 }
 
-function setTerrainCellSmallMap(mapTableDiv, row, col)
-{
-    var terrType;
+function setTerrainCellSmallMap(mapTableDiv, row, col) {
+	var terrType;
 	var terrEle;
-      var mapTableRow;
-      var mapTableCell;
+	var mapTableRow;
+	var mapTableCell;
 
 	mapTableRow = mapTableDiv.getElementsByTagName("tr")[row];
 	mapTableCell = mapTableRow.getElementsByTagName("td")[col];
@@ -716,20 +725,21 @@ function showSmallMap(bigRow, bigCol) {
 	var mapTableDiv = document.getElementById('mapTableDiv');
 	makeMapIfNotThere(mapTableDiv);
 	showMovementArea();
-	for (i=0; i <map.small.rows; i++)
-		for (k=0; k <map.small.cols; k++)
-		{
+
+	for (i=0; i <map.small.rows; i++) {
+		for (k=0; k <map.small.cols; k++) {
 			setTerrainCellSmallMap(mapTableDiv, i, k);
 		}
+
 		// check if this is a destination big map square . . .
-		if (questArray[map.big.nextDestination][0] == bigRow &&
-			  questArray[map.big.nextDestination][1] == bigCol)
-		{
+		if (questArray[map.big.nextDestination][0] === bigRow &&
+			  questArray[map.big.nextDestination][1] === bigCol) {
 			showSpecialMapFeature(mapTableDiv,
 								  questArray[map.big.nextDestination][2],
 								  questArray[map.big.nextDestination][3]);
 		}
-}	// end of drawMapDetail
+	}
+}
 
 function drawHero() {
 	var mapTableDiv = document.getElementById('mapTableDiv');
@@ -790,36 +800,42 @@ function processMovement(tableRow, tableCol, bigTableRow, bigTableCol) {
 	// also block movement off the playing area
 	hero.moved = false;
 	gameState.storyEvent = false;
+
 	if ( offMap(tableRow, tableCol,tableRow, tableCol)) {
-		if  ( offBigMap(tableRow, tableCol, bigTableRow, bigTableCol))	// don't allow to move off playing area
-		{
+		if  ( offBigMap(tableRow, tableCol, bigTableRow, bigTableCol))	{
+		// don't allow to move off playing area
+
 			map.small.posRowCell = map.small.oldPosRowCell;
 			map.small.posColumnCell = map.small.oldPosColumnCell;
-		}
-		else	// swap to next map square . . .
-		{
-			if (tableRow < 0) // have moved up to next square
-			{
+		} else {
+		// swap to next map square . . .
+
+			if (tableRow < 0) {
+			// have moved up to next square
 				map.big.posRowCell = map.big.posRowCell -1;
 				map.small.posRowCell = map.small.rows -1; // bottom of next map square
 			}
-			if (tableRow > map.small.rows -1) // have moved down to next square
-			{
+
+			if (tableRow > map.small.rows -1) {
+			// have moved down to next square
 				map.big.posRowCell = map.big.posRowCell +1;
 				map.small.posRowCell = 0; // bottom of next map square
 			}
-			if (tableCol < 0) // have moved left to next square
-			{
+
+			if (tableCol < 0) {
+			// have moved left to next square
 				map.big.posColumnCell = map.big.posColumnCell -1;
-					map.small.posColumnCell = map.small.cols -1;		// right hand side of next map square
+				map.small.posColumnCell = map.small.cols -1;		// right hand side of next map square
 			}
-			if (tableCol > map.small.cols -1) // have moved right to next square
-			{
+
+			if (tableCol > map.small.cols -1) {
+			// have moved right to next square
 				map.big.posColumnCell= map.big.posColumnCell +1;
 				map.small.posColumnCell = 0; // left hand side of next map square
 			}
+
 			createSmallMapTerrain(map.big.posRowCell, map.big.posColumnCell);
-			showSmallMap(map.big.posRowCell, map.big.posColumnCel);
+			showSmallMap(map.big.posRowCell, map.big.posColumnCell);
 			map.small.oldPosRowCell = map.small.posRowCell;
 			map.small.oldPosColumnCell = map.small.posColumnCell;
 			drawHero();
@@ -828,8 +844,11 @@ function processMovement(tableRow, tableCol, bigTableRow, bigTableCol) {
           // still on this map square . . . .
           var terrType = mapDetailArray[tableRow][tableCol];
           var terrainMovementCost = 1 + terrainArray[terrType].extraMovementPts;
-          if (hero.foraging)
+
+          if (hero.foraging) {
               terrainMovementCost = terrainMovementCost * 2;
+			  }
+
           if (updateMovePoints(terrainMovementCost))	{
               var mapTableDiv = document.getElementById('mapTableDiv');
               setTerrainCellSmallMap(mapTableDiv, map.small.oldPosRowCell, map.small.oldPosColumnCell);
@@ -844,7 +863,7 @@ function processMovement(tableRow, tableCol, bigTableRow, bigTableCol) {
               $("#sleepButt").effect("highlight",{"color": "#A52A2A", "background-color": "white"}).focus();
           }
       }
-} // end of processMovement
+}
 
 function showFightButts() {
 	document.getElementById('fight').style.visibility="visible";
@@ -860,25 +879,26 @@ function hideFightButts() {
 	document.getElementById('runAwayButt').style.visibility = "hidden";
 }
 
-function showOptButts(){
+function showOptButts() {
 	document.getElementById('optButts').style.visibility = "visible";
 }
 
-function hideOptButts(){
+function hideOptButts() {
 	document.getElementById('optButts').style.visibility = "hidden";
 }
 
-function startNewGame(){
+function startNewGame() {
 	var newGame = true;
+
 	if (hero.health > 0)
 		newGame = confirm('Are you sure you would like to quit this game and start a new one?');
 	if (newGame === true ) {
 		deleteCookie('jando');
 		window.location="./index.html";
 	}
-}	// startNewGame
+}
 
-function saveGame(){
+function saveGame() {
 	saveHeroInfo();
 	alert('Game Saved');
 }
@@ -890,7 +910,7 @@ function makeMapIfNotThere(mapTableDiv) {
 	}
 }
 
-function showBigMap(){
+function showBigMap() {
 	var mapTableDiv = document.getElementById('mapTableDiv');
 	var mapRow;
 	var mapCell;
@@ -925,28 +945,27 @@ function showBigMapKey(moveArea) {
 	moveArea.innerHTML = moveArea.innerHTML + '</div>';
 }
 
-function showMap(bigMapShown){
+function showMap(bigMapShown) {
 	var moveArea = document.getElementById('movementArea');
 	var questButt = document.getElementById('showQuestButt');
-	if (bigMapShown)
-	{
-		showSmallMap(map.big.posRowCell,map.big.posColumnCell);
+	if (bigMapShown) {
+		showSmallMap(map.big.posRowCell, map.big.posColumnCell);
 		drawHero();
 		map.big.displayed = false;
 		document.getElementById('showMapButt').innerHTML = 'Show Big <u>M</u>ap';
-	} else	{
+	} else {
 		showBigMap();
 		showBigMapKey(moveArea);
 		map.big.displayed = true;
 		document.getElementById('showMapButt').innerHTML = 'Show Small <u>M</u>ap';
 	}
+
 	// regardless of which map has been shown, we want to reset the questDisplayed status
 	gameState.questDisplayed = false;
 	questButt.innerHTML = 'Show <u>Q</u>uest';
 }
 
-function addRowClone(tblId,rowNum)
-{
+function addRowClone(tblId,rowNum) {
   var tblBody = document.getElementById(tblId).tBodies[0];
   var newNode = tblBody.rows[rowNum].cloneNode(true);
   tblBody.appendChild(newNode);
@@ -958,8 +977,7 @@ function createTableMap(mapTable) {
 	'<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>' +
 	'<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>' +
 	'</tbody></table>';
-	for (i=0; i <map.small.rows-1; i++)
-	{
+	for (i=0; i <map.small.rows-1; i++) {
 		addRowClone('tableMap',i);
 	}
 }
@@ -1014,8 +1032,7 @@ function showQuest(questShown, bigMapDisplayed){
     questString = questString + '</div>';
     mapTableDiv.innerHTML = questString;
     questButt.innerHTML = 'Hide <u>Q</u>uest';
-	}
-	else {
+	} else {
 		mapTableDiv.removeChild(mapTableDiv.childNodes[0]);
 		createTableMap(mapTableDiv);
 		questButt.innerHTML = 'Show <u>Q</u>uest';
@@ -1024,9 +1041,10 @@ function showQuest(questShown, bigMapDisplayed){
 	}
 }
 
-function updateMovePoints(movePointsToUse){
+function updateMovePoints(movePointsToUse) {
 	var canMove = false;
 	document.getElementById('maxHeroMovePoints').innerHTML = hero.maxMovePoints;
+
 	if (hero.movePoints - movePointsToUse >= 0) {
 		canMove = true;
 		hero.movePoints = hero.movePoints - movePointsToUse;
@@ -1036,7 +1054,7 @@ function updateMovePoints(movePointsToUse){
 	return canMove;
 }
 
-function levelUpHero(){
+function levelUpHero() {
 	hero.maxHealth = hero.maxHealth + 1;
 	hero.maxAttack = hero.maxAttack + 1;
 	hero.maxDefence = hero.maxDefence + 1;
@@ -1064,7 +1082,7 @@ function updateHeroStats() {
 
 }
 
-function popMonsterStatsDisplay(){
+function popMonsterStatsDisplay() {
 	var monsterDispEle = document.getElementById('monsterHealthDisplay');
 	monsterDispEle.innerHTML = monster.health;
 	monsterDispEle = document.getElementById('monsterAttackDisplay');
@@ -1117,25 +1135,25 @@ function doHeroAttack() {
 	var heroHit;
 
 	// simulate the rolling of three dice for the hero's attack, take the highest value . . .
-	for (i=0; i <gameSettings.numHeroDiceRolls; i++)
-	{
+	for (i=0; i <gameSettings.numHeroDiceRolls; i++) {
 		tempHeroRoll = Math.ceil(Math.random() * hero.attack);
-		if (tempHeroRoll > heroAttackRoll)
+		if (tempHeroRoll > heroAttackRoll) {
 			heroAttackRoll = tempHeroRoll;
+		}
 	}
 
 	// simulate the rolling of three dice for the monster defence, take the highest value . . .
-	for (i=0; i <gameSettings.numMonsterDiceRolls; i++)
-	{
+	for (i=0; i <gameSettings.numMonsterDiceRolls; i++) {
 		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[gameState.monsterIdx].attackPoints);
-		if (tempMonsterRoll > monsterDefenceRoll)
+		if (tempMonsterRoll > monsterDefenceRoll) {
 			monsterDefenceRoll = tempMonsterRoll;
+		}
 	}
 
 	// see if the hero has managed to make a hit . . .
 	heroHit = heroAttackRoll - monsterDefenceRoll;
-
 	monsterFightPara.innerHTML = '&nbsp;';
+
 	if (heroHit < 0) {
     heroHit = 0;	// monster defence roll is larger, so no damage done
   }
@@ -1143,8 +1161,7 @@ function doHeroAttack() {
 	var heroHitDisplay =  'You attack the ' + monsterArray[gameState.monsterIdx].name;
 	if (heroHit == 0) {
 		heroHitDisplay = heroHitDisplay + ' and <strong>miss</strong>';
-		}
-		else if (monster.health <= 0)  {
+	} else if (monster.health <= 0)  {
 				monster.health = 0;
 				heroHitDisplay = heroHitDisplay + ' and do <strong>' + heroHit + '</strong>' + ' damage,'
 												+ ' and slay the creature.';
@@ -1156,7 +1173,7 @@ function doHeroAttack() {
 	hero.turnToFight = false;
 	animateFightHero();
 	fightPara.innerHTML = heroHitDisplay;
-}	// end of doHeroAttack
+}
 
 function sayHeroDead() {
 	hideFightButts();
@@ -1183,8 +1200,9 @@ function doMonsterAttack(heroDefence) {
 	// simulate the rolling of three dice for the monster attack, take the highest value . . .
 	for (i=0; i <gameSettings.numMonsterDiceRolls; i++) {
 		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[gameState.monsterIdx].healthPoints);
-		if (tempMonsterRoll > monsterAttackRoll)
+		if (tempMonsterRoll > monsterAttackRoll) {
 			monsterAttackRoll = tempMonsterRoll;
+		}
 	}
 
 	// simulate the rolling of three dice for the hero's defence, take the highest value . . .
@@ -1218,7 +1236,7 @@ function doMonsterAttack(heroDefence) {
 	}
 
 	hero.turnToFight = true; // do we need this . . . ????
-}	// end of monsterAttack
+}
 
 function endFight() {
 	var fightEle = document.getElementById('fight');
@@ -1233,7 +1251,7 @@ function endFight() {
 	showOptButts();
 	hero.fightOn = 'No';
 	hero.turnToFight = true;	// reset to give first hit next time.
-}	//
+}
 
 function showContJournButt() {
 	document.getElementById('fightButts').style.visibility="visible";
@@ -1242,7 +1260,7 @@ function showContJournButt() {
 	document.getElementById('contJournButt').style.visibility="visible";
 	$("#contJournButt").focus();
 	hero.fightOn = 'JustEnded';
-}	// end of showContJournButt
+}
 
 function tellEndStory() {
 	alert('And Jando returned home and lived to be a ripe old age . . . THE END');
@@ -1302,7 +1320,7 @@ function setDestinationHTML(nextDestination) {
 	return returnHTML;
 }
 
-	function setDestinationImage(nextDestination) {
+function setDestinationImage(nextDestination) {
 	var destImage = document.getElementById('destinationImage');
 	destImage.src = './web_images/' + questArray[nextDestination][4] + '.png';
 	destImage.title = 'a curious character';
@@ -1368,6 +1386,7 @@ function prepareFightDiv() {
 function startAttack() {
 	prepareFightDiv();
 	gameState.monsterIdx = Math.floor(Math.random() * gameSettings.numMonsterTypes);
+
 	if (gameState.finalFight) {
 		gameState.monsterIdx = gameState.finalMonsterIndex;
 	}
@@ -1387,8 +1406,9 @@ function startAttack() {
 
 function checkForAttack() {
 	var attackModifier = 0;
-	if (hero.foraging)
+	if (hero.foraging) {
 		attackModifier = -0.05;
+	}
 	if (Math.random() > gameSettings.attackRisk + attackModifier) {
 		hero.fightOn = 'Yes';
 		startAttack();
@@ -1439,7 +1459,7 @@ function checkForForage(forageState, posRowCell, posColumnCell) {
 		else
 			actionSpace.innerHTML = '&nbsp';
 	}
-} // end of checkForForage()
+}
 
 function sleepHero() {
 	alert('You sleep, perchance to dream . . .');
@@ -1449,67 +1469,61 @@ function sleepHero() {
 
 function setForageStatus(butt) {
 	var buttState = butt.innerHTML;
-	if (!hero.foraging)
-	{
+	if (!hero.foraging) {
 		hero.foraging = true;
 		butt.innerHTML = 'Stop f<u>o</u>raging';
-	}
-	else
-	{
+	} else {
 		hero.foraging = false;
 		butt.innerHTML = 'F<u>o</u>rage'	;
 	}
-}		// end of setForageStatus
-
-function calcMovement(uniCode)
-{
-	//alert(uniCode);
-	switch (uniCode)
-		{
-			case 37: // left arrow
-				map.small.posColumnCell = map.small.posColumnCell -1;
-			break;
-			case 38: // up arrow
-				map.small.posRowCell = map.small.posRowCell -1;
-			break;
-			case 39: // right arrow
-				map.small.posColumnCell = map.small.posColumnCell + 1;
-			break;
-			case 40: // down arrow
-				map.small.posRowCell = map.small.posRowCell + 1;
-			break;
-			default : null;
-		}
-}	// end of calcMovement
-
-function arrowImageMouseOver(arrowImage)
-{
-	var arrowDirection = arrowImage.title	;
-	if (arrowImage.src.search('over') == -1)	// if not currently highlighted
-		// swap for highlighted arrow img . . .
-		arrowImage.src = './web_images/arrow_' + arrowDirection + '_big_over.png';
-	else
-		// replace with ordinary image
-		arrowImage.src = './web_images/arrow_' + arrowDirection + '_big.png';
 }
 
-function clickedAnArrow(arrowImage)
-{
+function calcMovement(uniCode) {
+	switch (uniCode) {
+		case 37: // left arrow
+			map.small.posColumnCell = map.small.posColumnCell -1;
+			break;
+		case 38: // up arrow
+			map.small.posRowCell = map.small.posRowCell -1;
+			break;
+		case 39: // right arrow
+			map.small.posColumnCell = map.small.posColumnCell + 1;
+			break;
+		case 40: // down arrow
+			map.small.posRowCell = map.small.posRowCell + 1;
+			break;
+		default : null;
+	}
+}
+
+function arrowImageMouseOver(arrowImage) {
+	var arrowDirection = arrowImage.title	;
+
+	// if not currently highlighted
+	if (arrowImage.src.search('over') == -1) {
+		// swap for highlighted arrow img . . .
+		arrowImage.src = './web_images/arrow_' + arrowDirection + '_big_over.png';
+	}	else {
+		// replace with ordinary image
+		arrowImage.src = './web_images/arrow_' + arrowDirection + '_big.png';
+	}
+}
+
+function clickedAnArrow(arrowImage) {
 	var unicode = 0;
 	var arrowDirection = arrowImage.title;
-	switch (arrowDirection)
-	{
+	switch (arrowDirection) {
 		case 'left' :	unicode = 37; 	break;
 		case 'up'   :	unicode = 38;	break;
 		case 'right':	unicode = 39;	break;
 		case 'down' :	unicode = 40;	break;
 	}
 	processAction(unicode);
-}	//	end of clickedAnArrow
+}
 
 function processAction(actionCode) {
-	if (hero.fightOn === 'No' )			// if there's no fight ongoing
-	{
+	// if there's no fight ongoing
+	if (hero.fightOn === 'No' ) {
 		 // if movement is requested . . .
 		if (actionCode >= 37 && actionCode <= 40 && !map.big.displayed && !gameState.questDisplayed) {
 			calcMovement(actionCode)
@@ -1547,14 +1561,14 @@ function processAction(actionCode) {
 	if (hero.fightOn === 'JustEnded')  // The fight has just ended, so allow a (C)ontinue Journey
 			if (actionCode == 67)	// letter "c" for (C)ontinue Journey
 				continueJourney();
-} // end of processAction
+}
 
 function pressed_a_key(e) {
 	var unicode=e.keyCode? e.keyCode : e.charCode;
 	/* if (e.altKey || e.ctrlKey || e.shiftKey)
  		 alert("you pressed one of the 'Alt', 'Ctrl', or 'Shift' keys"); */
 	processAction(unicode);
-} // end of pressed_a_key
+}
 
 function start_game() {
   loadMonsterInfo();
@@ -1570,4 +1584,4 @@ function start_game() {
   document.getElementById('map_loading').style.display = "none";
   displayDestination(map.big.nextDestination);
   document.getElementById('mapTableDiv').focus();
-}	// end of start_game
+}
