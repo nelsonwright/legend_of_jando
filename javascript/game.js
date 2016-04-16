@@ -71,7 +71,7 @@ var gameSettings = Object.freeze({
 	attackRisk: 0.91,	   	// if the random number is higher than this (plus or minus modifiers), then you'll be attacked!
 	numHeroDiceRolls: 3, 	// this equates to how many dice are rolled
 	numMonsterDiceRolls: 3,
-	numFoodTypes: 44			// types of different foods that can be found
+	numFoods: 44			// types of different foods that can be found
 });
 
 // these values apply to the game as a whole, and may change during the course of a game . . .
@@ -154,7 +154,7 @@ function Monster(monsterObj) {
 	loadImageForType(this, monsterObj);
 }
 
-function TerrainType(terrainObj) {
+function Terrain(terrainObj) {
 	this.code = terrainObj.code;
 	this.name = terrainObj.name;
 	this.densityFactor = terrainObj.densityFactor;
@@ -163,18 +163,24 @@ function TerrainType(terrainObj) {
 	loadImageForType(this, terrainObj);
 }
 
-function FoodType(foodObj) {
+function Food(foodObj) {
 	this.name = foodObj.name;
 	this.extraHealthPoints = foodObj.extraHealthPoints;
 
 	loadImageForType(this, foodObj);
 }
 
+function Quest(questObj) {
+	this.destination = {big: {}, small: {} };
+	this.destination.big.row = questObj.big.row;
+	this.destination.big.col = questObj.big.col;
+}
+
 function loadImageForType(currType, paramObject) {
 	var isFood = false;
 
 	// not entirely sure this is the best way, but what the hey . . .
-	if (currType.constructor.name === 'FoodType') {
+	if (currType.constructor.name === 'Food') {
 		isFood = true;
 	}
 
@@ -213,9 +219,9 @@ terrainArray[i]=new Array(map.big.terrainAttributes);
 	5: 0,9;1,9;2,7;2,8;2,9;3,9;4,9;7,9  //  mountains would be present on row 1, column 10, row 2, col 10, etc
 	We need to save these locations, so we can pick randomly pick one as the destination for each quest
 */
-var terrainLocArray=new Array(map.big.numTerrainTypes);
+var terrainLocationsArray=new Array(map.big.numTerrainTypes);
 for (i=0; i <map.big.numTerrainTypes; i++)
-terrainLocArray[i]=''; 	// set up terrainLocArray with blank as default
+terrainLocationsArray[i]=''; 	// set up terrainLocationsArray with blank as default
 
 // Used to hold row/col destination pairs on big map and small map,
 // indexed by terrain type.  Also used to hold character and map images
@@ -223,15 +229,6 @@ terrainLocArray[i]=''; 	// set up terrainLocArray with blank as default
 var questArray=new Array(map.big.numTerrainTypes + 1);	 // last destination is random location for treasure
 for (i=0; i <map.big.numTerrainTypes + 1; i++)
 questArray[i] = new Array(map.big.numTerrainTypes + 1);
-
-/*
-	Monster Attributes:
-	1	Name
-	2	Image name (assumed suffix of .png)
-	3	Health
-	4	Attack
-	5	Defence
-*/
 
 var monsterArray = new Array(gameSettings.numMonsterTypes + 1); // add 1 to have room for final boss battle monster
 
@@ -270,7 +267,7 @@ function loadMonsterInfo() {
 3.  Health points boost
 */
 
-var foodArray = new Array(gameSettings.numFoodTypes);
+var foodArray = new Array(gameSettings.numFoods);
 
 /*
 	Terrain Attributes:
@@ -282,13 +279,13 @@ var foodArray = new Array(gameSettings.numFoodTypes);
 */
 
 function loadTerrain() {
-	terrainArray[0] = new TerrainType({code: 0, name: 'light grass', densityFactor: 0, extraMovementPts: 0});
-	terrainArray[1] = new TerrainType({code: 1, name: 'low scrub', densityFactor: 0.1, extraMovementPts: 1});
-	terrainArray[2] = new TerrainType({code: 2, name: 'woods', densityFactor: 0.15, extraMovementPts: 2});
-	terrainArray[3] = new TerrainType({code: 3, name: 'forest', densityFactor: 0.3, extraMovementPts: 2});
-	terrainArray[4] = new TerrainType({code: 4, name: 'hills', densityFactor: 0.35, extraMovementPts: 3});
-	terrainArray[5] = new TerrainType({code: 5, name: 'mountains', densityFactor: 0.4, extraMovementPts: 4});
-}	// end of loadTerrain
+	terrainArray[0] = new Terrain({code: 0, name: 'light grass', densityFactor: 0, extraMovementPts: 0});
+	terrainArray[1] = new Terrain({code: 1, name: 'low scrub', densityFactor: 0.1, extraMovementPts: 1});
+	terrainArray[2] = new Terrain({code: 2, name: 'woods', densityFactor: 0.15, extraMovementPts: 2});
+	terrainArray[3] = new Terrain({code: 3, name: 'forest', densityFactor: 0.3, extraMovementPts: 2});
+	terrainArray[4] = new Terrain({code: 4, name: 'hills', densityFactor: 0.35, extraMovementPts: 3});
+	terrainArray[5] = new Terrain({code: 5, name: 'mountains', densityFactor: 0.4, extraMovementPts: 4});
+}
 
 /*
 	Food Attributes:
@@ -298,59 +295,60 @@ function loadTerrain() {
 */
 
 function loadFood() {
-	foodArray[0] = new FoodType({name: 'squashy fig', imageName: 'fig', extraHealthPoints: 3});
-	foodArray[1] = new FoodType({name: 'loaf of bread', imageName: 'bread_1', extraHealthPoints: 1});
-	foodArray[2] = new FoodType({name: 'croissant', extraHealthPoints:  2});
-	foodArray[3] = new FoodType({name: 'brown egg', extraHealthPoints: 3});
-	foodArray[4] = new FoodType({name: 'cucumber',  extraHealthPoints: 1});
-	foodArray[5] = new FoodType({name: 'glass of beer',  extraHealthPoints: 2});
-	foodArray[6] = new FoodType({name: 'strawberry', extraHealthPoints: 2});
-	foodArray[7] = new FoodType({name: 'husk of sweetcorn', imageName: 'sweetcorn', extraHealthPoints: 3});
-	foodArray[8] = new FoodType({name: 'watermelon', extraHealthPoints: 3});
-	foodArray[9] = new FoodType({name: 'ripe acorn', extraHealthPoints: 1});
-	foodArray[10] = new FoodType({name: 'shiny aubergine', imageName: 'aubergine', extraHealthPoints: 3});
-	foodArray[11] = new FoodType({name: 'half avacado', imageName: 'avacado', extraHealthPoints: 3});
-	foodArray[12] = new FoodType({name: 'black olive', extraHealthPoints: 1});
-	foodArray[13] = new FoodType({name: 'bunch of blueberries', imageName: 'blueberries', extraHealthPoints: 2});
-	foodArray[14] = new FoodType({name: 'loaf of tasty bread', imageName: 'bread_2', extraHealthPoints: 5});
-	foodArray[15] = new FoodType({name: 'yam',  extraHealthPoints: 4});
-	foodArray[16] = new FoodType({name: 'couple of buns', imageName: 'buns', extraHealthPoints: 4});
-	foodArray[17] = new FoodType({name: 'cabbage', extraHealthPoints: 3});
-	foodArray[18] = new FoodType({name: 'fancy cake', imageName: 'cake', extraHealthPoints: 4});
-	foodArray[19] = new FoodType({name: 'carrot',  extraHealthPoints: 3});
-	foodArray[20] = new FoodType({name: 'stick of celery', imageName: 'celery', extraHealthPoints: 1});
-	foodArray[21] = new FoodType({name: 'smelly wheel of cheese', imageName: 'cheese_1', extraHealthPoints: 5});
-	foodArray[22] = new FoodType({name: 'wheel of cheese', imageName: 'cheese_2', extraHealthPoints: 5});
-	foodArray[23] = new FoodType({name: 'small bunch of cherries', imageName: 'cherries', extraHealthPoints: 2});
-	foodArray[24] = new FoodType({name: 'courgette', extraHealthPoints: 3});
-	foodArray[25] = new FoodType({name: 'couple of pale eggs', imageName: 'eggs', extraHealthPoints: 5});
-	foodArray[26] = new FoodType({name: 'clove of garlic', imageName: 'garlic', extraHealthPoints: 3});
-	foodArray[27] = new FoodType({name: 'bunch of grapes', imageName: 'grapes', extraHealthPoints: 4});
-	foodArray[28] = new FoodType({name: 'green chilli', extraHealthPoints: 2});
-	foodArray[29] = new FoodType({name: 'green olive', extraHealthPoints: 2});
-	foodArray[30] = new FoodType({name: 'green pepper', extraHealthPoints: 3});
-	foodArray[32] = new FoodType({name: 'fresh orange pepper', imageName: 'orange_pepper', extraHealthPoints: 3});
-	foodArray[31] = new FoodType({name: 'nice orange', imageName: 'orange', extraHealthPoints: 4});
-	foodArray[33] = new FoodType({name: 'pak choi leaf', imageName: 'pak_choi', extraHealthPoints: 1});
-	foodArray[34] = new FoodType({name: 'pear', extraHealthPoints: 3});
-	foodArray[35] = new FoodType({name: 'load of peas in their pod', imageName: 'peas_in_pod', extraHealthPoints: 3});
-	foodArray[36] = new FoodType({name: 'few peas in the pod', imageName: 'peas_in_pod2', extraHealthPoints: 2});
-	foodArray[37] = new FoodType({name: 'plum', extraHealthPoints: 3});
-	foodArray[38] = new FoodType({name: 'potato',  extraHealthPoints: 2});
-	foodArray[39] = new FoodType({name: 'red chilli', extraHealthPoints: 2});
-	foodArray[41] = new FoodType({name: 'yellow pepper', extraHealthPoints: 2});
-	foodArray[40] = new FoodType({name: 'red pepper', extraHealthPoints: 3});
-	foodArray[42] = new FoodType({name: 'tomato', extraHealthPoints: 2});
-	foodArray[43] = new FoodType({name: 'veggie sausage', extraHealthPoints: 5});
+	foodArray[0] = new Food({name: 'squashy fig', imageName: 'fig', extraHealthPoints: 3});
+	foodArray[1] = new Food({name: 'loaf of bread', imageName: 'bread_1', extraHealthPoints: 1});
+	foodArray[2] = new Food({name: 'croissant', extraHealthPoints:  2});
+	foodArray[3] = new Food({name: 'brown egg', extraHealthPoints: 3});
+	foodArray[4] = new Food({name: 'cucumber',  extraHealthPoints: 1});
+	foodArray[5] = new Food({name: 'glass of beer',  extraHealthPoints: 2});
+	foodArray[6] = new Food({name: 'strawberry', extraHealthPoints: 2});
+	foodArray[7] = new Food({name: 'husk of sweetcorn', imageName: 'sweetcorn', extraHealthPoints: 3});
+	foodArray[8] = new Food({name: 'watermelon', extraHealthPoints: 3});
+	foodArray[9] = new Food({name: 'ripe acorn', extraHealthPoints: 1});
+	foodArray[10] = new Food({name: 'shiny aubergine', imageName: 'aubergine', extraHealthPoints: 3});
+	foodArray[11] = new Food({name: 'half avacado', imageName: 'avacado', extraHealthPoints: 3});
+	foodArray[12] = new Food({name: 'black olive', extraHealthPoints: 1});
+	foodArray[13] = new Food({name: 'bunch of blueberries', imageName: 'blueberries', extraHealthPoints: 2});
+	foodArray[14] = new Food({name: 'loaf of tasty bread', imageName: 'bread_2', extraHealthPoints: 5});
+	foodArray[15] = new Food({name: 'yam',  extraHealthPoints: 4});
+	foodArray[16] = new Food({name: 'couple of buns', imageName: 'buns', extraHealthPoints: 4});
+	foodArray[17] = new Food({name: 'cabbage', extraHealthPoints: 3});
+	foodArray[18] = new Food({name: 'fancy cake', imageName: 'cake', extraHealthPoints: 4});
+	foodArray[19] = new Food({name: 'carrot',  extraHealthPoints: 3});
+	foodArray[20] = new Food({name: 'stick of celery', imageName: 'celery', extraHealthPoints: 1});
+	foodArray[21] = new Food({name: 'smelly wheel of cheese', imageName: 'cheese_1', extraHealthPoints: 5});
+	foodArray[22] = new Food({name: 'wheel of cheese', imageName: 'cheese_2', extraHealthPoints: 5});
+	foodArray[23] = new Food({name: 'small bunch of cherries', imageName: 'cherries', extraHealthPoints: 2});
+	foodArray[24] = new Food({name: 'courgette', extraHealthPoints: 3});
+	foodArray[25] = new Food({name: 'couple of pale eggs', imageName: 'eggs', extraHealthPoints: 5});
+	foodArray[26] = new Food({name: 'clove of garlic', imageName: 'garlic', extraHealthPoints: 3});
+	foodArray[27] = new Food({name: 'bunch of grapes', imageName: 'grapes', extraHealthPoints: 4});
+	foodArray[28] = new Food({name: 'green chilli', extraHealthPoints: 2});
+	foodArray[29] = new Food({name: 'green olive', extraHealthPoints: 2});
+	foodArray[30] = new Food({name: 'green pepper', extraHealthPoints: 3});
+	foodArray[32] = new Food({name: 'fresh orange pepper', imageName: 'orange_pepper', extraHealthPoints: 3});
+	foodArray[31] = new Food({name: 'nice orange', imageName: 'orange', extraHealthPoints: 4});
+	foodArray[33] = new Food({name: 'pak choi leaf', imageName: 'pak_choi', extraHealthPoints: 1});
+	foodArray[34] = new Food({name: 'pear', extraHealthPoints: 3});
+	foodArray[35] = new Food({name: 'load of peas in their pod', imageName: 'peas_in_pod', extraHealthPoints: 3});
+	foodArray[36] = new Food({name: 'few peas in the pod', imageName: 'peas_in_pod2', extraHealthPoints: 2});
+	foodArray[37] = new Food({name: 'plum', extraHealthPoints: 3});
+	foodArray[38] = new Food({name: 'potato',  extraHealthPoints: 2});
+	foodArray[39] = new Food({name: 'red chilli', extraHealthPoints: 2});
+	foodArray[41] = new Food({name: 'yellow pepper', extraHealthPoints: 2});
+	foodArray[40] = new Food({name: 'red pepper', extraHealthPoints: 3});
+	foodArray[42] = new Food({name: 'tomato', extraHealthPoints: 2});
+	foodArray[43] = new Food({name: 'veggie sausage', extraHealthPoints: 5});
 }
 
 function deriveImageName(objectWithImage) {
 	var imageName;
+
 	if (objectWithImage.hasOwnProperty('imageName')) {
 		imageName = objectWithImage.imageName;
 	} else {
-		// if no, specific image name given, use the object's "name" property,
-		// replacing spaces with underscore, make lowercase
+		// if no specific image name given, use the object's "name" property,
+		// replacing spaces with underscore, and making it all lowercase
 		imageName = objectWithImage.name.replace(/ /g, "_").toLowerCase();
 	}
 	return imageName;
@@ -361,6 +359,7 @@ function getCookieValue(pairName, cookieString){
 // if not found, returns null
 	var returnValue = null;
 	var cookieValuesArray = cookieString.split(';');
+
 	for (i=0; i<cookieValuesArray.length; i++) {
 		var nameValuePair = cookieValuesArray[i];
 		var nameValuePairArray = nameValuePair.split('=');
@@ -468,123 +467,122 @@ function saveHeroInfo() {
 
 */
 
-function loadQuestInfo() {
-	questArray[0][4] = 'blackbird';	// png image name of "start" character
-	questArray[0][5] =	'<p>'
-		+ 'You find yourself in a wide, open land with long grasses. '
-		+ ' You see a crow perched on a branch, swaying slightly in the wind.'
-		+ '  It starts to sing, it\'s liquid, burbling sound almost resembling speech in a foreign tongue . . .'
-		+ '</p>'
-		+ '<p>'
-		+ 'Quite strange, that look in it\'s eye, as if it was trying to communicate.  Really rather odd.'
-		+' You suddenly realise that it <strong>is</strong> saying something.  You listen harder.'
-		+ '  It\'s hard to tell, but it almost sounds like, "Go to grasshopper, blue tent, light grass . . ." '
-		+'</p>'			;
-	questArray[0][6] =	'blue_tent';	// destination image that will appear on the small map
-																							// in this terrain type
+function getQuestData() {
+	// this array assumes that the index is the same as the index used in the terrainArray,
+	// i.e. index 0 = first position in the arraay = light grass, 1 = low scrub, etc
+	var questData = {
+		quest:
+		[
+			{	imageNameOfStartCharacter: 'blackbird',
+				storyTextHtml: '<p>'
+					+ 'You find yourself in a wide, open land with long grasses. '
+					+ ' You see a crow perched on a branch, swaying slightly in the wind.'
+					+ '  It starts to sing, it\'s liquid, burbling sound almost resembling speech in a foreign tongue . . .'
+					+ '</p>'
+					+ '<p>'
+					+ 'Quite strange, that look in it\'s eye, as if it was trying to communicate.  Really rather odd.'
+					+' You suddenly realise that it <strong>is</strong> saying something.  You listen harder.'
+					+ '  It\'s hard to tell, but it almost sounds like, "Go to grasshopper, blue tent, light grass . . ." '
+					+'</p>',
+				destinationImageName: 'blue_tent'
+			},
+			{	imageNameOfStartCharacter: 'grasshopper',
+				storyTextHtml: '<p>'
+					+ 'You see a huge grasshopper seated on a throne made of woven grasses.  Incredibly, it starts to speak:'
+					+'</p>'
+					+ '<p>'
+					+ '"Ah, do come in, my dear fellow, I\'ve been expecting you.  My friend the blackbird said you may pay me a visit.'
+					+ ' Please don\'t be alarmed, I may be as big as a good-sized goat and live in a blue tent, but I will not harm you.'
+					+ ' Would you mind closing the tent flap . . . ?  Thank you, there\'s a bit of a chill breeze from the east today."'
+					+'</p>'
+					+ '<p>'
+					+ '"So, you seek a path through the hills, do you?  All in good time, but first you must traverse the woods, and a man can lose his way there. '
+					+ ' I don\'t know the way myself, as it is dangerous even for a giant grasshopper. '
+					+ ' There is a meditating skelton that lives on a watchtower somewhere in the scrub that can help you.'
+					+ '  I don\'t know his exact wherabouts, I\'m afraid, but I\'ll tell my blackbird friends to let him know that you\'re coming."'
+					+ '</p>',
+				destinationImageName: 'watchtower'
+			},
+			{	imageNameOfStartCharacter: 'meditating_skeleton',
+				storyTextHtml: '<p>'
+					+ 'As you reach the top of the watchtower, a skeleton looks up: "Greetings my friend! You look tired from your journey.  Stay here and rest, I\'ve just finished my meditation for the day.'
+					+'</p>'
+					+ '<p>'
+					+ 'The way through the hills is through the dark forests, but first you must find the black bear of the woods.'
+					+ ' He doesn\'t like visitors especially, so be sure to be polite if you do see him.  A present of honey wouldn\'t do any harm either.'
+					+ ' In fact, I\'ve got some here, take it along with my regards.'
+					+'</p>'
+					+ '<p>'
+					+ 'Where in the woods?  I\'m not too sure about that, all I know is that he lives in a cave somewhere, I think he moves around according to the seasons.'
+					+'</p>'
+					+ '<p>'
+					+ 'Stay here as long as you like, this watchtower gives you a bit of perspective on life.  Help yourself to herbal tea."'
+					+'</p>',
+				destinationImageName: 'cave'
+			},
+			{	imageNameOfStartCharacter: 'bear',
+				storyTextHtml: '<p>'
+					+ 'You cautiously enter cave.  You think you here a rustling sound from somewhere in the darkness at the back.'
+					+ ' You decide to unwrap the honeycomb the skeleton gave you, and throw it forward.'
+					+'</p>'
+					+ '<p>'
+					+ 'A deep voice rumbles, "Who are you, and why are you throwing this excellent honey around in my cave?  Speak, before I rip you to pieces!"'
+					+'</p>'
+					+ '<p>'
+					+ 'Trembling, you politely explain why you are here, and that you seek a way through the hills.  The bear looks at you suspiciously, then sniffs the honey and sighs deeply.'
+					+ ' "As you have brought such fine honey from my friend the skeleton, I will tell you.  Seek out my friend the boar who dwells in a tower in the forest.'
+					+'</p>'
+					+ '<p>'
+					+ 'Now, if that\'s all, I have some honey to eat."'
+					+'</p>',
+				destinationImageName: 'tower'
+			},
+			{	imageNameOfStartCharacter: 'boar',
+				storyTextHtml: '<p>'
+					+ '"Hello!  I thought I heard someone knock on the tower door.  Sorry I took a while to answer, I was just upstairs finishing off an oil painting".'
+					+ ' By now, this sort of thing doesn\'t come as a surprise.  You explain that you seek a path through the mountains to find the lost black magic feather of your people.'
+					+'</p>'
+					+'<p>'
+					+ '"Hmm".  The boar ruminates, whilst washing his brushes under the tap. "You do know that\'s guarded, don\'t you?"  By a truly evil floating green skull?"'
+					+' However, I see you are set on this foolishness.  Well, so be it.  I only know the feather is somewhere in the mountains."'
+					+'</p>'
+					+'<p>'
+					+'The boar appears to decide something, and says, "But if you\'re going anyway, make sure you speak to the old eagle,'
+					+'he normally roosts in a tree near the round castle tower".  Now, a spot of lunch?  I have some wonderful yellow courgettes".'
+					+'  After eating, you thank the boar for the repast, and set off for the hills . . .'
+					+'</p>',
+				destinationImageName: 'round_castle_tower'
+			},
+			{	imageNameOfStartCharacter: 'eagle',
+				storyTextHtml: '<p>'
+					+ 'You find the tree near the tower, and look up to see the eagle staring right at you with it\'s beady eye.  It looks unimpressed.'
+					+ '"What do you want around here?  Keep away, unless you want the green skull to scare you so much you\'ll run off a cliff edge in fright".'
+					+'</p>'
+					+'<p>'
+					+ 'You explain that you\'re searching for the magic black feather, and will have it or die in the attempt.  Seeing that you\'re serious the old bird says, '
+					+ '"Very well.  I have asked my friend the beetle, (who has been riding in your backpack), to mark it in your quest log. '
+					+ 'Once there, you will find the green skull, and the  black feather.  Good luck, but I fear I will not see you again!"'
+					+'</p>'
+					+'<p>'
+					+' And with that, the eagle flaps off the branch, and soars into the sky . . .'
+					+'</p>',
+				destinationImageName: 'black_feather'
+			},
+			{	imageNameOfStartCharacter: 'green_skull',
+				storyTextHtml: '<p>'
+					+'</p>',
+				destinationImageName: 'black_feather'
+			},
+		]
+	};
 
-	questArray[1][4] = 'grasshopper';	// image name of character
-	questArray[1][5] =	'<p>'
-		+ 'You see a huge grasshopper seated on a throne made of woven grasses.  Incredibly, it starts to speak:'
-		+'</p>'
-		+ '<p>'
-		+ '"Ah, do come in, my dear fellow, I\'ve been expecting you.  My friend the blackbird said you may pay me a visit.'
-		+ ' Please don\'t be alarmed, I may be as big as a good-sized goat and live in a blue tent, but I will not harm you.'
-		+ ' Would you mind closing the tent flap . . . ?  Thank you, there\'s a bit of a chill breeze from the east today."'
-		+'</p>'
-		+ '<p>'
-		+ '"So, you seek a path through the hills, do you?  All in good time, but first you must traverse the woods, and a man can lose his way there. '
-		+ ' I don\'t know the way myself, as it is dangerous even for a giant grasshopper. '
-		+ ' There is a meditating skelton that lives on a watchtower somewhere in the scrub that can help you.'
-		+ '  I don\'t know his exact wherabouts, I\'m afraid, but I\'ll tell my blackbird friends to let him know that you\'re coming."'
-		+ '</p>';
-	questArray[1][6] =	'watchtower';	// destination image
-
-	questArray[2][4] = 'meditating_skeleton';	// image name of character
-	questArray[2][5] =	'<p>'
-		+ 'As you reach the top of the watchtower, a skeleton looks up: "Greetings my friend! You look tired from your journey.  Stay here and rest, I\'ve just finished my meditation for the day.'
-		+'</p>'
-		+ '<p>'
-		+ 'The way through the hills is through the dark forests, but first you must find the black bear of the woods.'
-		+ ' He doesn\'t like visitors especially, so be sure to be polite if you do see him.  A present of honey wouldn\'t do any harm either.'
-		+ ' In fact, I\'ve got some here, take it along with my regards.'
-		+'</p>'
-		+ '<p>'
-		+ 'Where in the woods?  I\'m not too sure about that, all I know is that he lives in a cave somewhere, I think he moves around according to the seasons.'
-		+'</p>'
-		+ '<p>'
-		+ 'Stay here as long as you like, this watchtower gives you a bit of perspective on life.  Help yourself to herbal tea."'
-		+'</p>';
-	questArray[2][6] =	'cave';	// destination image
-
-	questArray[3][4] = 'bear';	// image name of character
-	questArray[3][5] =	'<p>'
-		+ 'You cautiously enter cave.  You think you here a rustling sound from somewhere in the darkness at the back.'
-		+ ' You decide to unwrap the honeycomb the skeleton gave you, and throw it forward.'
-		+'</p>'
-		+ '<p>'
-		+ 'A deep voice rumbles, "Who are you, and why are you throwing this excellent honey around in my cave?  Speak, before I rip you to pieces!"'
-		+'</p>'
-		+ '<p>'
-		+ 'Trembling, you politely explain why you are here, and that you seek a way through the hills.  The bear looks at you suspiciously, then sniffs the honey and sighs deeply.'
-		+ ' "As you have brought such fine honey from my friend the skeleton, I will tell you.  Seek out my friend the boar who dwells in a tower in the forest.'
-		+'</p>'
-		+ '<p>'
-		+ 'Now, if that\'s all, I have some honey to eat."'
-		+'</p>';
-	questArray[3][6] =	'tower';	// destination image
-
-	questArray[4][4] = 'boar';	// image name of character
-	questArray[4][5] =	'<p>'
-		+ '"Hello!  I thought I heard someone knock on the tower door.  Sorry I took a while to answer, I was just upstairs finishing off an oil painting".'
-		+ ' By now, this sort of thing doesn\'t come as a surprise.  You explain that you seek a path through the mountains to find the lost black magic feather of your people.'
-		+'</p>'
-		+'<p>'
-		+ '"Hmm".  The boar ruminates, whilst washing his brushes under the tap. "You do know that\'s guarded, don\'t you?"  By a truly evil floating green skull?"'
-		+' However, I see you are set on this foolishness.  Well, so be it.  I only know the feather is somewhere in the mountains."'
-		+'</p>'
-		+'<p>'
-		+'The boar appears to decide something, and says, "But if you\'re going anyway, make sure you speak to the old eagle,'
-		+'he normally roosts in a tree near the round castle tower".  Now, a spot of lunch?  I have some wonderful yellow courgettes".'
-		+'  After eating, you thank the boar for the repast, and set off for the hills . . .'
-		+'</p>';
-	questArray[4][6] =	'round_castle_tower';	// destination image
-
-	questArray[5][4] = 'eagle';	// image name of character
-	questArray[5][5] =	'<p>'
-		+ 'You find the tree near the tower, and look up to see the eagle staring right at you with it\'s beady eye.  It looks unimpressed.'
-		+ '"What do you want around here?  Keep away, unless you want the green skull to scare you so much you\'ll run off a cliff edge in fright".'
-		+'</p>'
-		+'<p>'
-		+ 'You explain that you\'re searching for the magic black feather, and will have it or die in the attempt.  Seeing that you\'re serious the old bird says, '
-		+ '"Very well.  I have asked my friend the beetle, (who has been riding in your backpack), to mark it in your quest log. '
-		+ 'Once there, you will find the green skull, and the  black feather.  Good luck, but I fear I will not see you again!"'
-		+'</p>'
-		+'<p>'
-		+' And with that, the eagle flaps off the branch, and soars into the sky . . .'
-		+'</p>'	;
-	questArray[5][6] =	'black_feather';	// destination image
-
-	questArray[6][4] = 'green_skull';	// image name of character
-	questArray[6][5] =	'<p>'
-		+ 'You find the tree near the tower, and look up to see the eagle staring right at you with it\'s beady eye.  It looks unimpressed.'
-		+ '"What do you want around here?  Keep away, unless you want the green skull to scare you so much you\'ll run off a cliff edge in fright".'
-		+'</p>'
-		+'<p>'
-		+ 'You explain that you\'re searching for the magic black feather, and will have it or die in the attempt.  Seeing that you\'re serious the old bird says, '
-		+ '"Very well.  I have asked my friend the beetle, (who has been riding in your backpack), to mark it in your quest log. '
-		+ 'Once there, you will find the green skull, and the  black feather.  Good luck, but I fear I will not see you again!"'
-		+'</p>'
-		+'<p>'
-		+' And with that, the eagle flaps off the branch, and soars into the sky . . .'
-		+'</p>'	;
-	questArray[6][6] =	'black_feather';	// destination image
-
+	return questData;
 }
 
 function setQuestLocations() {
 	var thisTerrainCoords = new Array();
 	var thisTerrainRowCol = new Array();
+	var questData = getQuestData();
 
 	// Loop through the terrain locations array by terrain type, randomly pick
 	// one of the locations for that terrain type, and assign it to the terrain destination array
@@ -592,7 +590,7 @@ function setQuestLocations() {
 
 	for (i=0; i <map.big.numTerrainTypes; i++) {
 		// the locations are row,column pairs delimited by semicolons, eg 0,4;1,4;2,4; etc
-		thisTerrainCoords = terrainLocArray[i].split(';');
+		thisTerrainCoords = terrainLocationsArray[i].split(';');
 		var arrayLength = thisTerrainCoords.length;
 
 		// don't want to put the destination right in the same square as
@@ -605,20 +603,26 @@ function setQuestLocations() {
 			questArray[i][0] = parseInt(thisTerrainRowCol[0]);
 			questArray[i][1] = parseInt(thisTerrainRowCol[1]);
 		}
-		while (questArray[i][0] == map.big.posRowCell &&
-			    questArray[i][1] == map.big.posColumnCell);
+		while (questArray[i][0] === map.big.posRowCell &&
+			    questArray[i][1] === map.big.posColumnCell);
 
-		// now set the small map row & col . . .
-		questArray[i][2] = Math.floor(Math.random() * map.small.rows);
-		questArray[i][3] = Math.floor(Math.random() * map.small.cols);
+		// now set the small map row & col, but don't put it underneath where the hero is . . .
+		do {
+			questArray[i][2] = Math.floor(Math.random() * map.small.rows);
+			questArray[i][3] = Math.floor(Math.random() * map.small.cols);
+		}
+		while (questArray[i][2] === map.small.posRowCell &&
+				 questArray[i][3] === map.small.posColumnCell);
+
+		questArray[i][4] = questData.quest[i].imageNameOfStartCharacter;
+		questArray[i][5] = questData.quest[i].storyTextHtml;
+		questArray[i][6] = questData.quest[i].destinationImageName;
 	}
 	// now do the same for the last location . . .
 	questArray[map.big.numTerrainTypes][0] = Math.floor(Math.random() * map.big.rows);
 	questArray[map.big.numTerrainTypes][1] = Math.floor(Math.random() * map.big.cols);
 	questArray[map.big.numTerrainTypes][2] = Math.floor(Math.random() * map.small.rows);
 	questArray[map.big.numTerrainTypes][3] = Math.floor(Math.random() * map.small.cols);
-
-	loadQuestInfo();
 }
 
 function decideTerrainType(column, numberOfTerrainTypes) {
@@ -632,7 +636,7 @@ function decideTerrainType(column, numberOfTerrainTypes) {
 		terrainType = terrainType + 1	;
 	}
 
-	// ensure we stay within the limits of the TerrainType codes, 0..numberOfTerrainTypes - 1
+	// ensure we stay within the limits of the Terrain codes, ie. 0..numberOfTerrainTypes - 1
 	terrainType = Math.min(Math.max(0, terrainType), numberOfTerrainTypes - 1);
 	return terrainType;
 }
@@ -646,10 +650,10 @@ function createBigMap() {
 
 			// need to record location of each terrain type in the location array,
 			// indexed by terrain type.  Then we can have a target location for each terrain type
-			if (terrainLocArray[terrainType].length > 0)
-				terrainLocArray[terrainType] = terrainLocArray[terrainType] + ';' + bigRow + ',' + bigCol;
+			if (terrainLocationsArray[terrainType].length > 0)
+				terrainLocationsArray[terrainType] = terrainLocationsArray[terrainType] + ';' + bigRow + ',' + bigCol;
 			else
-				terrainLocArray[terrainType] = bigRow + ',' + bigCol;
+				terrainLocationsArray[terrainType] = bigRow + ',' + bigCol;
 		}
 		setQuestLocations();
 }
@@ -1426,7 +1430,7 @@ function processFoundFood(forageState, actionSpace){
 		foundPhrase = 'You stumble upon a ';
 	}
 
-	var foodIdx = Math.floor(Math.random() * gameSettings.numFoodTypes);
+	var foodIdx = Math.floor(Math.random() * gameSettings.numFoods);
 	actionSpace.innerHTML = '<p>' + foundPhrase + foodArray[foodIdx].name + '</p>'
 												+ '<img id="foodImage" title="'
 												+  foodArray[foodIdx].name
