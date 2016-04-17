@@ -579,44 +579,46 @@ function getQuestData() {
 	return questData;
 }
 
-function setQuestLocations() {
+function populateQuestArray(terrainCode, terrainQuestData) {
 	var thisTerrainCoords = new Array();
 	var thisTerrainRowCol = new Array();
+
+	// the locations are row,column pairs delimited by semicolons, eg 0,4;1,4;2,4; etc
+	thisTerrainCoords = terrainLocationsArray[terrainCode].split(';');
+	var arrayLength = thisTerrainCoords.length;
+
+	// don't want to put the destination right in the same square as
+	// where the hero starts . . .
+	do {
+		// randomly pick one of the pairs of co-ordinates . . .
+		var destLocation = Math.floor(Math.random() * arrayLength);
+		thisTerrainRowCol = thisTerrainCoords[destLocation].split(',');
+		//assign large map row & column . . .
+		questArray[terrainCode][0] = parseInt(thisTerrainRowCol[0]);
+		questArray[terrainCode][1] = parseInt(thisTerrainRowCol[1]);
+	}
+	while (questArray[terrainCode][0] === map.big.posRowCell &&
+			 questArray[terrainCode][1] === map.big.posColumnCell);
+
+	// now set the small map row & col, don't allow it to be at the edge of the map
+	questArray[terrainCode][2] = Math.floor(Math.random() * (map.small.rows - 2) + 1);
+	questArray[terrainCode][3] = Math.floor(Math.random() * (map.small.cols -2) + 1);
+
+	questArray[terrainCode][4] = terrainQuestData.imageNameOfStartCharacter;
+	questArray[terrainCode][5] = terrainQuestData.storyTextHtml;
+	questArray[terrainCode][6] = terrainQuestData.destinationImageName;
+}
+
+function setQuestLocations() {
 	var questData = getQuestData();
 
 	// Loop through the terrain locations array by terrain type, randomly pick
 	// one of the locations for that terrain type, and assign it to the terrain destination array
 	// This provides a destination for the quest related to that terrain type
+	// Just pass in the data from questData that is needed for the quest for that terrain
 
-	for (i=0; i <map.big.numTerrainTypes; i++) {
-		// the locations are row,column pairs delimited by semicolons, eg 0,4;1,4;2,4; etc
-		thisTerrainCoords = terrainLocationsArray[i].split(';');
-		var arrayLength = thisTerrainCoords.length;
-
-		// don't want to put the destination right in the same square as
-		// where the hero starts . . .
-		do {
-			// randomly pick one of the pairs of co-ordinates . . .
-			var destLocation = Math.floor(Math.random() * arrayLength);
-			var thisTerrainRowCol = thisTerrainCoords[destLocation].split(',');
-			//assign large map row & column . . .
-			questArray[i][0] = parseInt(thisTerrainRowCol[0]);
-			questArray[i][1] = parseInt(thisTerrainRowCol[1]);
-		}
-		while (questArray[i][0] === map.big.posRowCell &&
-			    questArray[i][1] === map.big.posColumnCell);
-
-		// now set the small map row & col, but don't put it underneath where the hero is . . .
-		do {
-			questArray[i][2] = Math.floor(Math.random() * map.small.rows);
-			questArray[i][3] = Math.floor(Math.random() * map.small.cols);
-		}
-		while (questArray[i][2] === map.small.posRowCell &&
-				 questArray[i][3] === map.small.posColumnCell);
-
-		questArray[i][4] = questData.quest[i].imageNameOfStartCharacter;
-		questArray[i][5] = questData.quest[i].storyTextHtml;
-		questArray[i][6] = questData.quest[i].destinationImageName;
+	for (terrainCode=0; terrainCode <map.big.numTerrainTypes; terrainCode++) {
+		populateQuestArray(terrainCode, questData.quest[terrainCode]);
 	}
 	// now do the same for the last location . . .
 	questArray[map.big.numTerrainTypes][0] = Math.floor(Math.random() * map.big.rows);
