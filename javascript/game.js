@@ -579,44 +579,46 @@ function getQuestData() {
 	return questData;
 }
 
-function setQuestLocations() {
+function populateQuestArray(terrainCode, terrainQuestData) {
 	var thisTerrainCoords = new Array();
 	var thisTerrainRowCol = new Array();
+
+	// the locations are row,column pairs delimited by semicolons, eg 0,4;1,4;2,4; etc
+	thisTerrainCoords = terrainLocationsArray[terrainCode].split(';');
+	var arrayLength = thisTerrainCoords.length;
+
+	// don't want to put the destination right in the same square as
+	// where the hero starts . . .
+	do {
+		// randomly pick one of the pairs of co-ordinates . . .
+		var destLocation = Math.floor(Math.random() * arrayLength);
+		thisTerrainRowCol = thisTerrainCoords[destLocation].split(',');
+		//assign large map row & column . . .
+		questArray[terrainCode][0] = parseInt(thisTerrainRowCol[0]);
+		questArray[terrainCode][1] = parseInt(thisTerrainRowCol[1]);
+	}
+	while (questArray[terrainCode][0] === map.big.posRowCell &&
+			 questArray[terrainCode][1] === map.big.posColumnCell);
+
+	// now set the small map row & col, don't allow it to be at the edge of the map
+	questArray[terrainCode][2] = Math.floor(Math.random() * (map.small.rows - 2) + 1);
+	questArray[terrainCode][3] = Math.floor(Math.random() * (map.small.cols -2) + 1);
+
+	questArray[terrainCode][4] = terrainQuestData.imageNameOfStartCharacter;
+	questArray[terrainCode][5] = terrainQuestData.storyTextHtml;
+	questArray[terrainCode][6] = terrainQuestData.destinationImageName;
+}
+
+function setQuestLocations() {
 	var questData = getQuestData();
 
 	// Loop through the terrain locations array by terrain type, randomly pick
 	// one of the locations for that terrain type, and assign it to the terrain destination array
 	// This provides a destination for the quest related to that terrain type
+	// Just pass in the data from questData that is needed for the quest for that terrain
 
-	for (i=0; i <map.big.numTerrainTypes; i++) {
-		// the locations are row,column pairs delimited by semicolons, eg 0,4;1,4;2,4; etc
-		thisTerrainCoords = terrainLocationsArray[i].split(';');
-		var arrayLength = thisTerrainCoords.length;
-
-		// don't want to put the destination right in the same square as
-		// where the hero starts . . .
-		do {
-			// randomly pick one of the pairs of co-ordinates . . .
-			var destLocation = Math.floor(Math.random() * arrayLength);
-			var thisTerrainRowCol = thisTerrainCoords[destLocation].split(',');
-			//assign large map row & column . . .
-			questArray[i][0] = parseInt(thisTerrainRowCol[0]);
-			questArray[i][1] = parseInt(thisTerrainRowCol[1]);
-		}
-		while (questArray[i][0] === map.big.posRowCell &&
-			    questArray[i][1] === map.big.posColumnCell);
-
-		// now set the small map row & col, but don't put it underneath where the hero is . . .
-		do {
-			questArray[i][2] = Math.floor(Math.random() * map.small.rows);
-			questArray[i][3] = Math.floor(Math.random() * map.small.cols);
-		}
-		while (questArray[i][2] === map.small.posRowCell &&
-				 questArray[i][3] === map.small.posColumnCell);
-
-		questArray[i][4] = questData.quest[i].imageNameOfStartCharacter;
-		questArray[i][5] = questData.quest[i].storyTextHtml;
-		questArray[i][6] = questData.quest[i].destinationImageName;
+	for (terrainCode=0; terrainCode <map.big.numTerrainTypes; terrainCode++) {
+		populateQuestArray(terrainCode, questData.quest[terrainCode]);
 	}
 	// now do the same for the last location . . .
 	questArray[map.big.numTerrainTypes][0] = Math.floor(Math.random() * map.big.rows);
@@ -642,14 +644,15 @@ function decideTerrainType(column, numberOfTerrainTypes) {
 }
 
 function createBigMap() {
+	var terrainType;
+
 	for (bigRow=0; bigRow < map.big.rows; bigRow++)
-		for (bigCol=0; bigCol < map.big.cols; bigCol++)	{
-			// decide terrain type for this (large) map square . .
-			var terrainType = decideTerrainType(bigCol, map.big.numTerrainTypes);
+		for (bigCol=0; bigCol < map.big.cols; bigCol++) {
+			terrainType = decideTerrainType(bigCol, map.big.numTerrainTypes);
 			bigMapArray[bigRow][bigCol] = terrainType;
 
-			// need to record location of each terrain type in the location array,
-			// indexed by terrain type.  Then we can have a target location for each terrain type
+			// need to record location of each terrain type in the locations array,
+			// indexed by terrain type.  Then we use this to generate a quest destination for each terrain type
 			if (terrainLocationsArray[terrainType].length > 0)
 				terrainLocationsArray[terrainType] = terrainLocationsArray[terrainType] + ';' + bigRow + ',' + bigCol;
 			else
@@ -661,41 +664,56 @@ function createBigMap() {
 function createSmallMapTerrain(bigRow, bigCol) {
 	var terrainType = bigMapArray[bigRow][bigCol];
 
-	for (i=0; i <map.small.rows; i++) {
-		for (k=0; k <map.small.cols; k++) {
-			if (Math.random() < terrainArray[terrainType].densityFactor ) {
-				mapDetailArray[i][k] = terrainType;
+	for (row=0; row <map.small.rows; row++) {
+		for (col=0; col <map.small.cols; col++) {
+			if (Math.random() < terrainArray[terrainType].densityFactor) {
+				mapDetailArray[row][col] = terrainType;
 			} else {
-				mapDetailArray[i][k] = 0;	// default to terrain type zero
+				mapDetailArray[row][col] = 0;	// default to terrain type zero
 			}
 		}
 	}
 }
 
+function getMapCell(mapTableDiv, row, col) {
+	var smallMapRow;
+	var smallMapCell;
+
+	smallMapRow = mapTableDiv.getElementsByTagName("tr")[row];
+	smallMapCell = smallMapRow.getElementsByTagName("td")[col];
+	return smallMapCell;
+}
+
+function getCellImageTag(mapTableDiv, row, col) {
+	smallMapCell = getMapCell(mapTableDiv, row, col);
+	smallMapCell.innerHTML = '<img  />';
+	return smallMapCell.firstChild;
+}
+
+function setSmallMapCellColour(mapTableDiv, row, col, colour) {
+	smallMapCell = getMapCell(mapTableDiv, row, col);
+	smallMapCell.style.backgroundColor = colour;
+}
+
 function setTerrainCellSmallMap(mapTableDiv, row, col) {
 	var terrType;
-	var terrEle;
-	var mapTableRow;
-	var mapTableCell;
+	var cellImageTag;
 
-	mapTableRow = mapTableDiv.getElementsByTagName("tr")[row];
-	mapTableCell = mapTableRow.getElementsByTagName("td")[col];
 	terrType = mapDetailArray[row][col];
-	mapTableCell.innerHTML = '<img  />';
-	terrEle = mapTableCell.firstChild;
-	terrEle.src = terrainArray[terrType].image.src;
-	terrEle.title = terrainArray[terrType].name;
-	terrEle.alt = terrainArray[terrType].name;
-	mapTableCell.style.backgroundColor ='#E6EFC2';
+	cellImageTag = getCellImageTag(mapTableDiv, row, col);
+
+	cellImageTag.src = terrainArray[terrType].image.src;
+	cellImageTag.title = terrainArray[terrType].name;
+	cellImageTag.alt = terrainArray[terrType].name;
+	setSmallMapCellColour(mapTableDiv, row, col, '#E6EFC2')
 }
 
 function showMovementArea() {
 	var moveArea = document.getElementById('movementArea');
-	moveArea.innerHTML =
-		'Use the arrow keys to move, or click on the direction arrows below'
-	+'<br />'
-	+'<br />'
-		+'<div style="font-family:courier,monospace">'
+	moveArea.innerHTML = 'Use the arrow keys to move, or click on the direction arrows below'
+			+ '<br />'
+			+ '<br />'
+			+ '<div style="font-family:courier,monospace">'
 			+	'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
 			+	'<img src="./web_images/arrow_up_big.png" title="up" onClick="clickedAnArrow(this)"'
 			+	'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />'
@@ -715,14 +733,13 @@ function showMovementArea() {
 }
 
 // shows any special map features on the small map
-function showSpecialMapFeature(mapTable, row, col) {
-	var mapRow;
-	var mapCell;
-	mapRow = mapTable.getElementsByTagName("tr")[row];
-	mapCell = mapRow.getElementsByTagName("td")[col];
-	mapCell.innerHTML ='<img title="the destination" src="./web_images/'
-	+ questArray[map.big.nextDestination][6]
-	+ '.png"/>';
+function showSpecialMapFeature(mapTableDiv, row, col) {
+	var cellImageTag;
+
+	cellImageTag = getCellImageTag(mapTableDiv, row, col);
+	cellImageTag.src = makeImageSource(questArray[map.big.nextDestination][6]);
+	cellImageTag.title = "the quest destination";
+	cellImageTag.alt = "the quest destination";
 }
 
 function showSmallMap(bigRow, bigCol) {
@@ -737,7 +754,7 @@ function showSmallMap(bigRow, bigCol) {
 
 		// check if this is a destination big map square . . .
 		if (questArray[map.big.nextDestination][0] === bigRow &&
-			  questArray[map.big.nextDestination][1] === bigCol) {
+			 questArray[map.big.nextDestination][1] === bigCol) {
 			showSpecialMapFeature(mapTableDiv,
 								  questArray[map.big.nextDestination][2],
 								  questArray[map.big.nextDestination][3]);
@@ -747,42 +764,39 @@ function showSmallMap(bigRow, bigCol) {
 
 function drawHero() {
 	var mapTableDiv = document.getElementById('mapTableDiv');
-	var mapRow = mapTableDiv.getElementsByTagName("tr")[map.small.oldPosRowCell];
-	var mapCell = mapRow.getElementsByTagName("td")[map.small.oldPosColumnCell];
+	var mapCellImageTag = getCellImageTag(mapTableDiv, map.small.posRowCell, map.small.posColumnCell);
+
+	mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
+	mapCellImageTag.title = "the hero";
+	mapCellImageTag.alt = "the hero";
+	mapCellImageTag.id = "theHeroImg"
+
+	// should move this somewhere else at some point
 	map.small.oldPosRowCell = map.small.posRowCell;
 	map.small.oldPosColumnCell = map.small.posColumnCell;
+}
 
-	var mapRow = mapTableDiv.getElementsByTagName("tr")[map.small.posRowCell];
-	var mapCell = mapRow.getElementsByTagName("td")[map.small.posColumnCell];
-	mapCell.innerHTML='<img src="./web_images/hero_' + hero.type + '_thumb.png" title="the hero" id="theHeroImg" />';
-} // end of draw_map
+function isOffSmallMap(tableRow, tableCol) {
+	return tableRow < 0 || tableRow > map.small.rows -1 ||
+			 tableCol < 0 || tableCol > map.small.cols -1;
+}
 
-function offMap(tableRow, tableCol) {
+function isOffBigMap(tableRow, tableCol, bigTableRow, bigTableCol) {
 	var off_map_ind = false;
-	if ((tableRow < 0 || tableRow > map.small.rows -1)
-    ||  (tableCol < 0 || tableCol > map.small.cols -1))
-		 off_map_ind = true;
-	return off_map_ind;
-} // end of off_map
 
-function offBigMap(tableRow, tableCol, bigTableRow, bigTableCol) {
-	var off_map_ind = false;
-	if (tableRow < 0 &&bigTableRow == 0)
-		off_map_ind = true;
-	else if (tableRow >  map.small.rows -1 &&  bigTableRow == map.big.rows-1)
-		off_map_ind = true;
-	else if (tableCol < 0 && bigTableCol == 0)
-		off_map_ind = true;
-	else if (tableCol >  map.small.cols -1 &&  bigTableCol == map.big.cols-1)
-		off_map_ind = true;
+	off_map_ind =  (tableRow < 0 && bigTableRow === 0) || // off at the top
+						(tableRow >  map.small.rows - 1 &&  bigTableRow === map.big.rows - 1) || // off the bottom
+						(tableCol < 0 && bigTableCol === 0) || // off the left
+						(tableCol >  map.small.cols - 1 &&  bigTableCol === map.big.cols - 1); // off the right
+
 	return off_map_ind;
-} // end of off_map
+}
 
 function checkDestReached(map) {
-	if (questArray[map.big.nextDestination][0] == map.big.posRowCell &&
-	    questArray[map.big.nextDestination][1] == map.big.posColumnCell &&
-		 questArray[map.big.nextDestination][2] == map.small.posRowCell &&
-	    questArray[map.big.nextDestination][3] == map.small.posColumnCell) {
+	if (questArray[map.big.nextDestination][0] === map.big.posRowCell &&
+	    questArray[map.big.nextDestination][1] === map.big.posColumnCell &&
+		 questArray[map.big.nextDestination][2] === map.small.posRowCell &&
+	    questArray[map.big.nextDestination][3] === map.small.posColumnCell) {
 		map.big.nextDestination = map.big.nextDestination + 1;
 		gameState.storyEvent = true;
 
@@ -805,8 +819,8 @@ function processMovement(tableRow, tableCol, bigTableRow, bigTableCol) {
 	hero.moved = false;
 	gameState.storyEvent = false;
 
-	if ( offMap(tableRow, tableCol,tableRow, tableCol)) {
-		if  ( offBigMap(tableRow, tableCol, bigTableRow, bigTableCol))	{
+	if ( isOffSmallMap(tableRow, tableCol,tableRow, tableCol)) {
+		if  ( isOffBigMap(tableRow, tableCol, bigTableRow, bigTableCol))	{
 		// don't allow to move off playing area
 
 			map.small.posRowCell = map.small.oldPosRowCell;
@@ -918,7 +932,7 @@ function showBigMap() {
 	var mapTableDiv = document.getElementById('mapTableDiv');
 	var mapRow;
 	var mapCell;
-	var terrEle;
+	var cellImageTag;
 	makeMapIfNotThere(mapTableDiv);
 
 	for (i=0; i <map.small.rows; i++)
@@ -927,9 +941,9 @@ function showBigMap() {
 			mapRow = mapTableDiv.getElementsByTagName("tr")[i];
 			mapCell = mapRow.getElementsByTagName("td")[k];
 			mapCell.innerHTML='<img  />';
-			terrEle = mapCell.firstChild;
-			terrEle.src = makeImageSource(terrainArray[terrType].imageName);
-			terrEle.title = terrainArray[terrType].name;
+			cellImageTag = mapCell.firstChild;
+			cellImageTag.src = makeImageSource(terrainArray[terrType].imageName);
+			cellImageTag.title = terrainArray[terrType].name;
 		}
 		// show where on the big map the hero is . . .
 		mapRow = mapTableDiv.getElementsByTagName("tr")[map.big.posRowCell];
