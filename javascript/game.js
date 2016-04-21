@@ -1196,55 +1196,54 @@ function animateFightHero() {
 function animateFightMonster() {
 	resetFightHero();
 	advanceFightMonster();
-}	// end of animateFightMonster
+}
 
-function doHeroAttack() {
-	var thisHeroAttackRoll;
-	var thisMonsterAttackRoll;
-	var fightPara = document.getElementById('fightDamage');
-	var monsterFightPara = document.getElementById('monsterFightDamage');
-	var tempHeroRoll;
-	var tempMonsterRoll;
-	var heroAttackRoll = 0;
-	var monsterDefenceRoll = 0;
-	var heroHit;
+function getHeroDiceRoll(fightPoints) {
+	var heroDiceRoll = 0;
 
 	// simulate the rolling of three dice for the hero's attack, take the highest value . . .
 	for (i=0; i <gameSettings.numHeroDiceRolls; i++) {
-		tempHeroRoll = Math.ceil(Math.random() * hero.attack);
-		if (tempHeroRoll > heroAttackRoll) {
-			heroAttackRoll = tempHeroRoll;
-		}
+		heroDiceRoll = Math.max(heroDiceRoll, Math.ceil(Math.random() * fightPoints));
 	}
+	return heroDiceRoll;
+}
+
+function getMonsterDiceRoll(fightPoints) {
+	var monsterDiceRoll = 0;
 
 	// simulate the rolling of three dice for the monster defence, take the highest value . . .
 	for (i=0; i <gameSettings.numMonsterDiceRolls; i++) {
-		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[gameState.monsterIdx].attackPoints);
-		if (tempMonsterRoll > monsterDefenceRoll) {
-			monsterDefenceRoll = tempMonsterRoll;
-		}
+		monsterDiceRoll = Math.max(monsterDiceRoll, Math.ceil(Math.random() * fightPoints));
 	}
+	return monsterDiceRoll;
+}
+
+function doHeroAttack() {
+	var fightPara = document.getElementById('fightDamage');
+	var monsterFightPara = document.getElementById('monsterFightDamage');
+	var heroHit;
+	var heroHitDisplay;
 
 	// see if the hero has managed to make a hit . . .
-	heroHit = heroAttackRoll - monsterDefenceRoll;
+	heroHit = Math.max(0, getHeroDiceRoll(hero.attack) - getMonsterDiceRoll(monsterArray[gameState.monsterIdx].defencePoints));
 	monsterFightPara.innerHTML = '&nbsp;';
 
-	if (heroHit < 0) {
-    heroHit = 0;	// monster defence roll is larger, so no damage done
-  }
 	monster.health = monster.health - heroHit;
-	var heroHitDisplay =  'You attack the ' + monsterArray[gameState.monsterIdx].name;
+	heroHitDisplay =  'You attack the ' + monsterArray[gameState.monsterIdx].name;
+
 	if (heroHit == 0) {
 		heroHitDisplay = heroHitDisplay + ' and <strong>miss</strong>';
-	} else if (monster.health <= 0)  {
-				monster.health = 0;
-				heroHitDisplay = heroHitDisplay + ' and do <strong>' + heroHit + '</strong>' + ' damage,'
-												+ ' and slay the creature.';
-				hero.experience	= hero.experience + 1;
-			}
-			else {
-				heroHitDisplay = heroHitDisplay + ' and do <strong>' + heroHit + '</strong>' + ' damage';
-			}
+	} else {
+	if (monster.health <= 0)  {
+			monster.health = 0;
+			heroHitDisplay = heroHitDisplay + ' and do <strong>' + heroHit + '</strong>' + ' damage,'
+											+ ' and slay the creature.';
+			hero.experience	= hero.experience + 1;
+		}
+		else {
+			heroHitDisplay = heroHitDisplay + ' and do <strong>' + heroHit + '</strong>' + ' damage';
+		}
+	}
 	hero.turnToFight = false;
 	animateFightHero();
 	fightPara.innerHTML = heroHitDisplay;
@@ -1258,53 +1257,43 @@ function sayHeroDead() {
 	document.getElementById('showQuestButt').style.visibility = "hidden";
 	// do something else here a bit more dramatic possibly . . .
 	// (to do with being dead)
+
 	// ensure start new game button is visiblem and has the focus . . .
 	document.getElementById('gameButts').style.visibility = "visible";
 	document.getElementById('heroHealth').innerHTML= 0;
 	document.getElementById('startNewGame').focus();
 }
 
-function doMonsterAttack(heroDefence) {
+function doMonsterAttack(runningAway) {
 	var monsterFightPara = document.getElementById('monsterFightDamage');
-	var tempHeroRoll;
-	var tempMonsterRoll;
-	var heroDefenceRoll = 0;
-	var monsterAttackRoll = 0;
 	var monsterHit;
-
-	// simulate the rolling of three dice for the monster attack, take the highest value . . .
-	for (i=0; i <gameSettings.numMonsterDiceRolls; i++) {
-		tempMonsterRoll = Math.ceil(Math.random() * monsterArray[gameState.monsterIdx].healthPoints);
-		if (tempMonsterRoll > monsterAttackRoll) {
-			monsterAttackRoll = tempMonsterRoll;
-		}
-	}
-
-	// simulate the rolling of three dice for the hero's defence, take the highest value . . .
-	for (i=0; i <gameSettings.numHeroDiceRolls; i++) {
-		tempHeroRoll = Math.ceil(Math.random() * heroDefence);
-		if (tempHeroRoll > heroDefenceRoll)
-			heroDefenceRoll = tempHeroRoll;
-	}
+	var monsterHitDisplay;
 
 	// has the monster done any damage . . . ?
-	monsterHit = monsterAttackRoll - heroDefenceRoll;
-	if (monsterHit < 0) {
-		monsterHit = 0;	// hero defence roll is larger, so no damage done
+	if (runningAway) {
+		monsterHit = Math.floor(getMonsterDiceRoll(monsterArray[gameState.monsterIdx].attackPoints) / 2);
+	} else {
+		monsterHit = Math.max(0, getMonsterDiceRoll(monsterArray[gameState.monsterIdx].attackPoints) - getHeroDiceRoll(hero.defence))
 	}
-	var monsterHitDisplay = 'The ' + monsterArray[gameState.monsterIdx].name + ' attacks ';
+
+	monsterHitDisplay = 'The ' + monsterArray[gameState.monsterIdx].name + ' attacks ';
+
 	if (monsterHit == 0) {
 		monsterHitDisplay = monsterHitDisplay + ' and <strong>misses</strong>';
 	}
-	else
+	else {
 		monsterHitDisplay = monsterHitDisplay + ' and does <strong>' + monsterHit + '</strong>' + ' damage';
+	}
 	hero.health = hero.health - monsterHit;
+
 	if (hero.health <= 0) {
 		hero.health = 0;
 		monsterHitDisplay = monsterHitDisplay + '.  You have been killed!';
 	}
+
 	monsterFightPara.innerHTML = monsterHitDisplay;
 	animateFightMonster();
+
 	if (hero.health <= 0) {
 		gameState.inProgress = false;
 		sayHeroDead();
@@ -1355,14 +1344,15 @@ function fightMonster() {
 			showContJournButt() ;
 		}
 	} else if (monster.health > 0) {
-		doMonsterAttack(hero.defence);
+		doMonsterAttack(false); // we're not running away
 	}
 	updateHeroStats();
 	popMonsterStatsDisplay();
 }
 
 function runAway() {
-	doMonsterAttack(hero.defence/2);
+	var runningAway = true;
+	doMonsterAttack(runningAway);
 	updateHeroStats();
 	// if you're not dead after trying to run away, show the "continue journey" button
 	if (hero.health > 0)
