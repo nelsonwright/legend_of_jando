@@ -865,6 +865,11 @@ function nvl(value1, value2) {
 	return value1;
 }
 
+// a shorter function name for "Math.max"
+function max(value1, value2) {
+	return Math.max(value1, value2);
+}
+
 function showNextSmallMapSquare(tableRow, tableCol) {
 	var newHeroCoords = {
 		smallRow: null,
@@ -1198,24 +1203,45 @@ function animateFightMonster() {
 	advanceFightMonster();
 }
 
-function getHeroDiceRoll(fightPoints) {
-	var heroDiceRoll = 0;
+function highestDiceRoll(numberOfDiceRolls, fightPoints) {
+	var highestDice = 0;
 
-	// simulate the rolling of three dice for the hero's attack, take the highest value . . .
-	for (i=0; i <gameSettings.numHeroDiceRolls; i++) {
-		heroDiceRoll = Math.max(heroDiceRoll, Math.ceil(Math.random() * fightPoints));
+	for (i=0; i < numberOfDiceRolls; i++) {
+		highestDice = Math.max(highestDice, Math.ceil(Math.random() * fightPoints));
 	}
-	return heroDiceRoll;
+	return highestDice;
+}
+
+function getHeroDiceRoll(fightPoints) {
+	// simulate the rolling of multiple dice for the hero's attack/defence fight points, take the highest value . . .
+	return highestDiceRoll(gameSettings.numHeroDiceRolls, fightPoints);
 }
 
 function getMonsterDiceRoll(fightPoints) {
-	var monsterDiceRoll = 0;
+	// simulate the rolling of multiple dice for the monster attack/defence fight points, take the highest value . . .
+	return highestDiceRoll(gameSettings.numMonsterDiceRolls, fightPoints);
+}
 
-	// simulate the rolling of three dice for the monster defence, take the highest value . . .
-	for (i=0; i <gameSettings.numMonsterDiceRolls; i++) {
-		monsterDiceRoll = Math.max(monsterDiceRoll, Math.ceil(Math.random() * fightPoints));
+function getHeroHitDisplay(heroHit) {
+	var heroHitDisplay =  'You attack the ' + monsterArray[gameState.monsterIdx].name;
+
+	if (heroHit == 0) {
+		heroHitDisplay = heroHitDisplay + ' and <strong>miss</strong>';
+	} else {
+	if (monster.health <= 0) {
+			heroHitDisplay = heroHitDisplay + ' and do <strong>' + heroHit + '</strong>' + ' damage,'
+											+ ' and slay the creature.';
+	} else {
+			heroHitDisplay = heroHitDisplay + ' and do <strong>' + heroHit + '</strong>' + ' damage';
+		}
 	}
-	return monsterDiceRoll;
+	return heroHitDisplay;
+}
+
+function adjustHeroExperience() {
+	if (monster.health <= 0) {
+		hero.experience = hero.experience + 1;
+	}
 }
 
 function doHeroAttack() {
@@ -1224,26 +1250,14 @@ function doHeroAttack() {
 	var heroHit;
 	var heroHitDisplay;
 
-	// see if the hero has managed to make a hit . . .
-	heroHit = Math.max(0, getHeroDiceRoll(hero.attack) - getMonsterDiceRoll(monsterArray[gameState.monsterIdx].defencePoints));
+	// see if the hero managed to make a hit on the monster . . .
+	heroHit = max(0, getHeroDiceRoll(hero.attack) - getMonsterDiceRoll(monsterArray[gameState.monsterIdx].defencePoints));
+	monster.health = max(0, monster.health - heroHit);
+
 	monsterFightPara.innerHTML = '&nbsp;';
+	heroHitDisplay = getHeroHitDisplay(heroHit);
+	adjustHeroExperience();
 
-	monster.health = monster.health - heroHit;
-	heroHitDisplay =  'You attack the ' + monsterArray[gameState.monsterIdx].name;
-
-	if (heroHit == 0) {
-		heroHitDisplay = heroHitDisplay + ' and <strong>miss</strong>';
-	} else {
-	if (monster.health <= 0)  {
-			monster.health = 0;
-			heroHitDisplay = heroHitDisplay + ' and do <strong>' + heroHit + '</strong>' + ' damage,'
-											+ ' and slay the creature.';
-			hero.experience	= hero.experience + 1;
-		}
-		else {
-			heroHitDisplay = heroHitDisplay + ' and do <strong>' + heroHit + '</strong>' + ' damage';
-		}
-	}
 	hero.turnToFight = false;
 	animateFightHero();
 	fightPara.innerHTML = heroHitDisplay;
@@ -1271,9 +1285,9 @@ function doMonsterAttack(runningAway) {
 
 	// has the monster done any damage . . . ?
 	if (runningAway) {
-		monsterHit = Math.floor(getMonsterDiceRoll(monsterArray[gameState.monsterIdx].attackPoints) / 2);
+		monsterHit = Math.floor(getMonsterDiceRoll(monsterArray[gameState.monsterIdx].attackPoints) / 1.5 );
 	} else {
-		monsterHit = Math.max(0, getMonsterDiceRoll(monsterArray[gameState.monsterIdx].attackPoints) - getHeroDiceRoll(hero.defence))
+		monsterHit = max(0, getMonsterDiceRoll(monsterArray[gameState.monsterIdx].attackPoints) - getHeroDiceRoll(hero.defence))
 	}
 
 	monsterHitDisplay = 'The ' + monsterArray[gameState.monsterIdx].name + ' attacks ';
@@ -1284,6 +1298,7 @@ function doMonsterAttack(runningAway) {
 	else {
 		monsterHitDisplay = monsterHitDisplay + ' and does <strong>' + monsterHit + '</strong>' + ' damage';
 	}
+
 	hero.health = hero.health - monsterHit;
 
 	if (hero.health <= 0) {
