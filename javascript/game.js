@@ -71,7 +71,28 @@ var gameSettings = Object.freeze({
 	attackRisk: 0.91,	   	// if the random number is higher than this (plus or minus modifiers), then you'll be attacked!
 	numHeroDiceRolls: 3, 	// this equates to how many dice are rolled
 	numMonsterDiceRolls: 3,
-	numFoods: 44			// types of different foods that can be found
+	numFoods: 44,			// types of different foods that can be found
+	foragingSuccessLevel: 0.89, // the random number generated (between 0 - 1) must be higher than this for food to be found when foraging
+	foodFindLevel: 0.99 // the random number generated (between 0 - 1) must be higher than this for food to be found when NOT foraging
+});
+
+// these are the unicode values for the keyboard keys when pressed
+var key = Object.freeze({
+	// arrow keys . . .
+	up: 38,
+	down: 40,
+	left: 37,
+	right: 39,
+	isArrowKey: function(actionCode) {
+		return actionCode >= 37 && actionCode <= 40;
+	},
+	map: 77, // letter "m" for (m)ap
+	questLog: 81, // letter "q" for (q)uest log
+	sleep: 83, // letter "s" for (s)leep
+	forage: 79, // letter "o" for f(o)rage
+	fight: 70, // letter "f" for (F)ight
+	runAway: 82, // letter "r" for (R)un Away
+	continueJourney: 67 // letter "c" for (C)ontinue Journey
 });
 
 // these values apply to the game as a whole, and may change during the course of a game . . .
@@ -108,6 +129,7 @@ var hero = {
 	experiencePerLevel: 4
 };
 
+// this is the monster that is currently being fought
 var monster = {};
 
 var map = {
@@ -304,7 +326,7 @@ function loadFood() {
 	foodArray[6] = new Food({name: 'strawberry', extraHealthPoints: 2});
 	foodArray[7] = new Food({name: 'husk of sweetcorn', imageName: 'sweetcorn', extraHealthPoints: 3});
 	foodArray[8] = new Food({name: 'watermelon', extraHealthPoints: 3});
-	foodArray[9] = new Food({name: 'ripe acorn', extraHealthPoints: 1});
+	foodArray[9] = new Food({name: 'ripe acorn', imageName: 'acorn', extraHealthPoints: 1});
 	foodArray[10] = new Food({name: 'shiny aubergine', imageName: 'aubergine', extraHealthPoints: 3});
 	foodArray[11] = new Food({name: 'half avacado', imageName: 'avacado', extraHealthPoints: 3});
 	foodArray[12] = new Food({name: 'black olive', extraHealthPoints: 1});
@@ -859,7 +881,7 @@ function calculateNewHeroCoords(tableRow, tableCol) {
 
 // a function to return an alernative value if the first value is null
 function nvl(value1, value2) {
-	if (value1 === null) {
+	if (typeof value1 === 'undefined' || value1 === null) {
 		return value2;
 	}
 	return value1;
@@ -943,9 +965,11 @@ function processMovement(tableRow, tableCol, bigTableRow, bigTableCol) {
 function showFightButts() {
 	document.getElementById('fight').style.visibility="visible";
 	document.getElementById('fightButts').style.visibility = "visible";
-	document.getElementById('fightButt').style.visibility = "visible";
 	document.getElementById('runAwayButt').style.visibility = "visible";
 	document.getElementById('optButts').style.visibility = "hidden";
+	var fightButton = document.getElementById('fightButt');
+	fightButton.style.visibility = "visible";
+	fightButton.focus();
 }
 
 function hideFightButts() {
@@ -1122,6 +1146,7 @@ function showQuest(questShown, bigMapDisplayed){
 }
 
 function updateMovePoints(movePointsToUse) {
+	var movePointsToUse = nvl(movePointsToUse, 0);
 	var canMove = false;
 	document.getElementById('maxHeroMovePoints').innerHTML = hero.maxMovePoints;
 
@@ -1148,28 +1173,27 @@ function levelUpHero() {
 function updateHeroStats() {
 	if (hero.experience >= hero.level * hero.experiencePerLevel) {
 		levelUpHero();
-  }
+	}
 	document.getElementById('heroName').innerHTML = hero.name;
-	document.getElementById('heroHealth').innerHTML= hero.health;
-	document.getElementById('heroAttack').innerHTML=hero.attack;
-	document.getElementById('heroDefence').innerHTML=hero.defence;
-	document.getElementById('maxHeroHealth').innerHTML= hero.maxHealth;
-	document.getElementById('maxHeroAttack').innerHTML=hero.maxAttack;
-	document.getElementById('maxHeroDefence').innerHTML=hero.maxDefence;
-	document.getElementById('heroExp').innerHTML=hero.experience;
-	document.getElementById('heroLevel').innerHTML=hero.level;
-	document.getElementById('heroLevelTarget').innerHTML=hero.level * hero.experiencePerLevel;
-
+	document.getElementById('heroHealth').innerHTML = hero.health;
+	document.getElementById('heroAttack').innerHTML = hero.attack;
+	document.getElementById('heroDefence').innerHTML = hero.defence;
+	document.getElementById('maxHeroHealth').innerHTML = hero.maxHealth;
+	document.getElementById('maxHeroAttack').innerHTML = hero.maxAttack;
+	document.getElementById('maxHeroDefence').innerHTML = hero.maxDefence;
+	document.getElementById('heroExp').innerHTML = hero.experience;
+	document.getElementById('heroLevel').innerHTML = hero.level;
+	document.getElementById('heroLevelTarget').innerHTML = hero.level * hero.experiencePerLevel;
 }
 
-function popMonsterStatsDisplay() {
+function showMonsterStatsDisplay() {
 	var monsterDispEle = document.getElementById('monsterHealthDisplay');
 	monsterDispEle.innerHTML = monster.health;
 	monsterDispEle = document.getElementById('monsterAttackDisplay');
 	monsterDispEle.innerHTML = monster.attack;
 	monsterDispEle = document.getElementById('monsterDefenceDisplay');
 	monsterDispEle.innerHTML = monster.monsterDefence;
-}		// end of popMonsterStatsDisplay
+}
 
 function resetFightMonster() {
 	// re-set the monster to original position . . .
@@ -1181,7 +1205,7 @@ function resetFightHero() {
 	// retreat the hero . . .
 	var heroPicSpan = document.getElementById("theHero");
 	heroPicSpan.style.paddingLeft = 0 + "px";
-}	// end of resetFightHero
+}
 
 function advanceFightHero() {
 	var heroPicSpan = document.getElementById("theHero");
@@ -1269,28 +1293,18 @@ function sayHeroDead() {
 	document.getElementById('saveGame').style.visibility = "hidden";
 	document.getElementById('showMap').style.visibility = "hidden";
 	document.getElementById('showQuestButt').style.visibility = "hidden";
+
 	// do something else here a bit more dramatic possibly . . .
 	// (to do with being dead)
 
-	// ensure start new game button is visiblem and has the focus . . .
+	// ensure start new game button is visible, and has the focus . . .
 	document.getElementById('gameButts').style.visibility = "visible";
-	document.getElementById('heroHealth').innerHTML= 0;
+	document.getElementById('heroHealth').innerHTML = 0;
 	document.getElementById('startNewGame').focus();
 }
 
-function doMonsterAttack(runningAway) {
-	var monsterFightPara = document.getElementById('monsterFightDamage');
-	var monsterHit;
-	var monsterHitDisplay;
-
-	// has the monster done any damage . . . ?
-	if (runningAway) {
-		monsterHit = Math.floor(getMonsterDiceRoll(monsterArray[gameState.monsterIdx].attackPoints) / 1.5 );
-	} else {
-		monsterHit = max(0, getMonsterDiceRoll(monsterArray[gameState.monsterIdx].attackPoints) - getHeroDiceRoll(hero.defence))
-	}
-
-	monsterHitDisplay = 'The ' + monsterArray[gameState.monsterIdx].name + ' attacks ';
+function calculateMonsterHitDisplay(monsterHit) {
+	var monsterHitDisplay = 'The ' + monsterArray[gameState.monsterIdx].name + ' attacks ';
 
 	if (monsterHit == 0) {
 		monsterHitDisplay = monsterHitDisplay + ' and <strong>misses</strong>';
@@ -1299,14 +1313,25 @@ function doMonsterAttack(runningAway) {
 		monsterHitDisplay = monsterHitDisplay + ' and does <strong>' + monsterHit + '</strong>' + ' damage';
 	}
 
-	hero.health = hero.health - monsterHit;
-
 	if (hero.health <= 0) {
-		hero.health = 0;
 		monsterHitDisplay = monsterHitDisplay + '.  You have been killed!';
 	}
+	return monsterHitDisplay;
+}
 
-	monsterFightPara.innerHTML = monsterHitDisplay;
+function doMonsterAttack(runningAway) {
+	var monsterFightPara = document.getElementById('monsterFightDamage');
+	var monsterHit;
+
+	// has the monster done any damage . . . ?
+	if (runningAway) {
+		monsterHit = Math.floor(getMonsterDiceRoll(monsterArray[gameState.monsterIdx].attackPoints) / 1.5 );
+	} else {
+		monsterHit = max(0, getMonsterDiceRoll(monsterArray[gameState.monsterIdx].attackPoints) - getHeroDiceRoll(hero.defence))
+	}
+
+	hero.health = max(0, hero.health - monsterHit);
+	monsterFightPara.innerHTML = calculateMonsterHitDisplay(monsterHit);;
 	animateFightMonster();
 
 	if (hero.health <= 0) {
@@ -1314,22 +1339,27 @@ function doMonsterAttack(runningAway) {
 		sayHeroDead();
 	}
 
-	hero.turnToFight = true; // do we need this . . . ????
+	hero.turnToFight = true;
+}
+
+function clearFightDisplay() {
+	var fightEle = document.getElementById('fight');
+	var fightPara = document.getElementById('fightDamage');
+	var monsterFightPara = document.getElementById('monsterFightDamage');
+
+	fightEle.style.visibility="hidden";
+	fightPara.innerHTML = '&nbsp;';
+	monsterFightPara.innerHTML = '&nbsp;';
 }
 
 function endFight() {
-	var fightEle = document.getElementById('fight');
-	fightEle.style.visibility="hidden";
-	var fightPara = document.getElementById('fightDamage');
-	fightPara.innerHTML = '&nbsp;';
-	var monsterFightPara = document.getElementById('monsterFightDamage');
-	monsterFightPara.innerHTML = '&nbsp;';
+	clearFightDisplay();
 	resetFightMonster();
 	resetFightHero();
 	hideFightButts();
 	showOptButts();
 	hero.fightOn = 'No';
-	hero.turnToFight = true;	// reset to give first hit next time.
+	hero.turnToFight = true;	// reset to give hero first hit next time.
 }
 
 function showContJournButt() {
@@ -1347,13 +1377,17 @@ function tellEndStory() {
 	sayHeroDead(); // the hero isn't, but it hides the buttons
 }
 
+function defeatedFinalMonster() {
+	return monster.health <= 0  && gameState.finalFight;
+}
+
 function fightMonster() {
 	var experienceAdded = monsterArray[gameState.monsterIdx].healthPoints;
 	var newHeroExperience = hero.experience;
 
 	if (hero.turnToFight === true) {
 		doHeroAttack();
-		if (monster.health <= 0  && gameState.finalFight) {
+		if (defeatedFinalMonster()) {
 			tellEndStory();
 		} else if (monster.health <= 0) {
 			showContJournButt() ;
@@ -1361,12 +1395,14 @@ function fightMonster() {
 	} else if (monster.health > 0) {
 		doMonsterAttack(false); // we're not running away
 	}
+
 	updateHeroStats();
-	popMonsterStatsDisplay();
+	showMonsterStatsDisplay();
 }
 
 function runAway() {
 	var runningAway = true;
+
 	doMonsterAttack(runningAway);
 	updateHeroStats();
 	// if you're not dead after trying to run away, show the "continue journey" button
@@ -1412,7 +1448,7 @@ function displayDestination(nextDestination){
 	setDestinationImage(nextDestination);
 };
 
-function setFightDivHTML(){
+function getFightDivHTML(){
 	var returnHTML;
 	returnHTML =
 	      '<div id="fight" style="visibility:hidden">'
@@ -1451,15 +1487,15 @@ function setFightDivHTML(){
 		+	'</td>'
 		+	'</tr>'
 		+	'</table>'
-		+ '</div> <!-- end of  theMonster DIV -->'
-		+ '</div>  <!-- end of theMonsterAndStats DIV -->'
-	   + '</div> <!-- end of fight DIV -->';
+		+ '</div>'
+		+ '</div>'
+	   + '</div>';
 		return returnHTML;
 }
 
 function prepareFightDiv() {
 	var actionSpace = document.getElementById('action');
-	actionSpace.innerHTML = setFightDivHTML();
+	actionSpace.innerHTML = getFightDivHTML();
 	setHeroImage();
 }
 
@@ -1470,22 +1506,24 @@ function startAttack() {
 	if (gameState.finalFight) {
 		gameState.monsterIdx = gameState.finalMonsterIndex;
 	}
-	var monsterName = monsterArray[gameState.monsterIdx].name;
+
 	monster.health = monsterArray[gameState.monsterIdx].healthPoints;
 	monster.attack = monsterArray[gameState.monsterIdx].attackPoints;
 	monster.monsterDefence = monsterArray[gameState.monsterIdx].defencePoints;
 	var monsterEle = document.getElementById('monsterName');
-	monsterEle.innerHTML = monsterName;
+	monsterEle.innerHTML = monsterArray[gameState.monsterIdx].name;
 	var monsterPic = document.getElementById('monsterImage');
 	monsterPic.src = monsterArray[gameState.monsterIdx].image.src;
 	monsterPic.title = monsterArray[gameState.monsterIdx].name;
-	popMonsterStatsDisplay();
+
+	showMonsterStatsDisplay();
 	showFightButts();
 	hideOptButts();
 }
 
 function checkForAttack() {
 	var attackModifier = 0;
+
 	if (hero.foraging) {
 		attackModifier = -0.05;
 	}
@@ -1495,81 +1533,93 @@ function checkForAttack() {
 	}
 }
 
-function processFoundFood(forageState, actionSpace){
-	// "process" as in display the food and add health points . . .
-	var foundPhrase;
+function calculateFoundPhrase(forageState) {
+	return forageState ? 'You find a ' : 'You stumble upon a ';
+}
 
-	if (forageState) {
-		foundPhrase = 'You find a ';
-	}
-	else {
-		foundPhrase = 'You stumble upon a ';
-	}
-
+function processFoundFood(forageState) {
+	// display the food found, and add health points . . .
 	var foodIdx = Math.floor(Math.random() * gameSettings.numFoods);
-	actionSpace.innerHTML = '<p>' + foundPhrase + foodArray[foodIdx].name + '</p>'
-												+ '<img id="foodImage" title="'
-												+  foodArray[foodIdx].name
-												+ '" style="float:left;"/>';
+	var actionSpace = document.getElementById('action');
+
+	actionSpace.innerHTML = '<p>'
+		+ calculateFoundPhrase(forageState)
+		+ foodArray[foodIdx].name
+		+ '</p>'
+		+ '<img id="foodImage" title="'
+		+  foodArray[foodIdx].name
+		+ '" style="float:left;"/>';
 
 	var foodPic = document.getElementById('foodImage');
 	foodPic.src = foodArray[foodIdx].image.src;
 	foodPic.title = foodArray[foodIdx].name;
-	hero.health = hero.health + foodArray[foodIdx].extraHealthPoints;
-	if (hero.health > hero.maxHealth)
-		hero.health = hero.maxHealth;
+	hero.health = Math.min(hero.maxHealth, hero.health + foodArray[foodIdx].extraHealthPoints);
 	updateHeroStats();
 }
 
-function checkForForage(forageState, posRowCell, posColumnCell) {
+function foodSuccessfullyForaged(forageModifier) {
+	return Math.random() > gameSettings.foragingSuccessLevel - forageModifier;
+}
+
+function foodStumbledUpon() {
+	return Math.random() > gameSettings.foodFindLevel;
+}
+
+function checkIfFoodForaged(forageState, terrType) {
+	var actionSpace = document.getElementById('action');
+	// I can't quite remember how this works, but I think you're more likely to find food in
+	// terrain that's harder to pass through . . .
+	var forageModifier = terrainArray[terrType].extraMovementPts;
+	forageModifier = ((1/map.big.numTerrainTypes) / 2) * forageModifier;
+
+	if (foodSuccessfullyForaged(forageModifier)) {
+		processFoundFood(forageState);
+	} else {
+		actionSpace.innerHTML = '<p>Haven\'t found anything . . .</p>';
+	}
+}
+
+function checkIfFoodFound(forageState, posRowCell, posColumnCell) {
 	var actionSpace = document.getElementById('action');
 	var terrType = mapDetailArray[posRowCell][posColumnCell];
-	var forageModifier = terrainArray[terrType].extraMovementPts;
+	actionSpace.innerHTML = '&nbsp';
 
 	if (hero.foraging) {
-		forageModifier = ((1/map.big.numTerrainTypes) / 2) * forageModifier ;
-		if (Math.random() > 0.89 - forageModifier) // success!
-			processFoundFood(forageState, actionSpace);
-		else
-			actionSpace.innerHTML = '<p>Haven\'t found anything . . .</p>';
+		checkIfFoodForaged(forageState, terrType);
 	}
-	else {
-		if (Math.random() > 0.99)
-			processFoundFood(forageState, actionSpace);
-		else
-			actionSpace.innerHTML = '&nbsp';
+	else if (foodStumbledUpon()) {
+		processFoundFood(forageState);
 	}
 }
 
 function sleepHero() {
 	alert('You sleep, perchance to dream . . .');
 	hero.movePoints = hero.maxMovePoints;
-	updateMovePoints(0);
-}		// end of sleepHero
+	updateMovePoints();
+}
 
-function setForageStatus(butt) {
-	var buttState = butt.innerHTML;
-	if (!hero.foraging) {
-		hero.foraging = true;
-		butt.innerHTML = 'Stop f<u>o</u>raging';
-	} else {
+function toggleForageStatus(butt) {
+	if (hero.foraging) {
 		hero.foraging = false;
 		butt.innerHTML = 'F<u>o</u>rage'	;
+	} else {
+		hero.foraging = true;
+		butt.innerHTML = 'Stop f<u>o</u>raging';
 	}
 }
 
-function calcMovement(uniCode) {
+function determineDirection(uniCode) {
 	switch (uniCode) {
-		case 37: // left arrow
-			map.small.posColumnCell = map.small.posColumnCell -1;
+		case key.left:
+			map.small.posColumnCell = map.small.posColumnCell - 1;
 			break;
-		case 38: // up arrow
-			map.small.posRowCell = map.small.posRowCell -1;
+		case key.up:
+			map.small.posRowCell = map.small.posRowCell - 1;
 			break;
-		case 39: // right arrow
+		case key.right:
 			map.small.posColumnCell = map.small.posColumnCell + 1;
 			break;
-		case 40: // down arrow
+		case key.down:
 			map.small.posRowCell = map.small.posRowCell + 1;
 			break;
 		default : null;
@@ -1601,67 +1651,101 @@ function clickedAnArrow(arrowImage) {
 	processAction(unicode);
 }
 
-function processAction(actionCode) {
-	// if there's no fight ongoing
-	if (hero.fightOn === 'No' ) {
-		 // if movement is requested . . .
-		if (actionCode >= 37 && actionCode <= 40 && !map.big.displayed && !gameState.questDisplayed) {
-			calcMovement(actionCode)
-			processMovement(map.small.posRowCell,
-			                map.small.posColumnCell,
-			                map.big.posRowCell,
-			                map.big.posColumnCell);
-			drawHero();
-			if (hero.moved && !gameState.storyEvent) {
-				checkForAttack();
-				if (hero.fightOn === 'No' ) {
-					checkForForage(hero.foraging, map.small.posRowCell, map.small.posColumnCell);
-				}
-			}
-		}
-
-		if (actionCode == 77 /* letter "m" for (m)ap  */
-			 && !gameState.questDisplayed)
-			showMap(map.big.displayed);
-		if (actionCode == 81 /* letter "q" for (q)uest log */
-			 && !map.big.displayed)
-			showQuest(gameState.questDisplayed, map.big.displayed);
-		if (actionCode == 83) // letter "s" for (s)leep
-			sleepHero();
-		if (actionCode == 79) // letter "o" for f(o)rage
-			setForageStatus(document.getElementById('forageButt'));
-	}
-	if (hero.fightOn === 'Yes' && hero.health > 0)	// fight is ongoing
-	{
-			if (actionCode == 70)	// letter "f" for (F)ight
-				fightMonster();
-			if (actionCode == 82)	// letter "r" for (R)un Away
-			runAway();
-	}
-	if (hero.fightOn === 'JustEnded')  // The fight has just ended, so allow a (C)ontinue Journey
-			if (actionCode == 67)	// letter "c" for (C)ontinue Journey
-				continueJourney();
+function heroMovementAttempted(actionCode) {
+	return key.isArrowKey(actionCode) && !map.big.displayed && !gameState.questDisplayed
 }
 
-function pressed_a_key(e) {
-	var unicode=e.keyCode? e.keyCode : e.charCode;
+function checkForMovement(actionCode) {
+  if (heroMovementAttempted(actionCode)) {
+	  determineDirection(actionCode)
+	  processMovement(map.small.posRowCell,
+							map.small.posColumnCell,
+							map.big.posRowCell,
+							map.big.posColumnCell);
+	  drawHero();
+	  if (hero.moved && !gameState.storyEvent) {
+		  checkForAttack();
+		  if (hero.fightOn === 'No' ) {
+			  checkIfFoodFound(hero.foraging, map.small.posRowCell, map.small.posColumnCell);
+		  }
+	  }
+  }
+}
+
+function checkNonMovementActions(actionCode) {
+	if (actionCode == key.map && !gameState.questDisplayed) {
+		showMap(map.big.displayed);
+	}
+
+	if (actionCode == key.questLog && !map.big.displayed) {
+		showQuest(gameState.questDisplayed, map.big.displayed);
+	}
+
+	if (actionCode == key.sleep) {
+		sleepHero();
+	}
+
+	if (actionCode == key.forage) {
+		toggleForageStatus(document.getElementById('forageButt'));
+	}
+}
+
+function checkForFightOrRun(actionCode) {
+	if (actionCode === key.fight) {
+		fightMonster();
+	}
+
+	if (actionCode === key.runAway) {
+		runAway();
+	}
+}
+
+function processAction(actionCode) {
+	if (hero.fightOn === 'No') {
+		checkForMovement(actionCode);
+		checkNonMovementActions(actionCode);
+	}
+
+	if (hero.fightOn === 'Yes' && hero.health > 0) {
+		checkForFightOrRun(actionCode);
+	}
+
+	if (hero.fightOn === 'JustEnded' && actionCode === key.continueJourney) {
+		continueJourney();
+	}
+}
+
+function pressedAKey(e) {
+	var unicode = e.keyCode? e.keyCode : e.charCode;
 	/* if (e.altKey || e.ctrlKey || e.shiftKey)
  		 alert("you pressed one of the 'Alt', 'Ctrl', or 'Shift' keys"); */
 	processAction(unicode);
 }
 
+function loadInitialInfo() {
+	loadMonsterInfo();
+	loadHeroInfo(gameSettings, map);
+	loadTerrain();
+	loadFood();
+}
+
+function createMapsAndShowSmallMap() {
+	createBigMap();
+	createSmallMapTerrain(map.big.posRowCell, map.big.posColumnCell);
+	showSmallMap(map.big.posRowCell, map.big.posColumnCell);
+}
+
+function showInitialQuest() {
+	document.getElementById('map_loading').style.display = "none";
+	displayDestination(map.big.nextDestination);
+	document.getElementById('mapTableDiv').focus();
+}
+
 function start_game() {
-  loadMonsterInfo();
-  loadHeroInfo(gameSettings, map);
-  loadTerrain();
-  loadFood();
-  createBigMap();
-  createSmallMapTerrain(map.big.posRowCell, map.big.posColumnCell);
-  showSmallMap(map.big.posRowCell, map.big.posColumnCell);
-  drawHero();
-  updateHeroStats();
-  updateMovePoints(0);
-  document.getElementById('map_loading').style.display = "none";
-  displayDestination(map.big.nextDestination);
-  document.getElementById('mapTableDiv').focus();
+	loadInitialInfo();
+	createMapsAndShowSmallMap();
+	drawHero();
+	updateHeroStats();
+	updateMovePoints();
+	showInitialQuest();
 }
