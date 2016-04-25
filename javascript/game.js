@@ -165,6 +165,32 @@ var map = {
     displayed: false,      // indicates if the big map is being displayed
     nextDestination: 0		// holds the next destination level,
     								// corresponds to terrain type, i.e. starts at zero,which = light grass
+  },
+  getHeroPosition: function() {
+	  var heroPosition = {small:{row:null, column:null}, big:{row:null, column:null}};
+	  heroPosition.small.row = this.small.posRowCell;
+	  heroPosition.small.column = this.small.posColumnCell;
+	  heroPosition.big.row = this.big.posRowCell;
+	  heroPosition.big.column = this.big.posColumnCell;
+	  return heroPosition;
+  },
+  setHeroPosition: function(heroPosition) {
+	  this.small.posRowCell = heroPosition.small.row;
+	  this.small.posColumnCell = heroPosition.small.column;
+	  this.big.posRowCell = heroPosition.big.row;
+	  this.big.posColumnCell = heroPosition.big.column;
+  },
+  setPriorHeroPosition: function(heroPosition) {
+	this.small.oldPosRowCell = heroPosition.small.row;
+	this.small.oldPosColumnCell = heroPosition.small.column;
+	this.big.oldPosRowCell = heroPosition.big.row;
+	this.big.oldPosColumnCell = heroPosition.big.column;
+  },
+  resetHeroPositionToPrior: function() {
+	  this.small.posRowCell = this.small.oldPosRowCell;
+	  this.small.posColumnCell = this.small.oldPosColumnCell;
+	  this.big.posRowCell = this.big.oldPosRowCell;
+	  this.big.posColumnCell = this.big.oldPosColumnCell;
   }
 };
 
@@ -447,16 +473,19 @@ function loadHeroImage() {
 
 function startHeroPosition(stateOfGame) {
 	if (!stateOfGame.inProgress) {
-		map.big.posRowCell = Math.floor(Math.random() * map.big.rows); // random starting row on LHS
-		map.big.posColumnCell = 0;
-		map.small.posRowCell = Math.floor(Math.random() * map.small.rows); // random starting row of small map;
-		map.small.posColumnCell = 0;  // on LHS
+		map.setHeroPosition({
+			small: {
+				row: Math.floor(Math.random() * map.small.rows), // random starting row
+				column: 0
+			},
+			big: {
+				row: Math.floor(Math.random() * map.big.rows), // random starting row on LHS on big map
+				column: 0
+			}
+		});
 	}
 
-	map.small.oldPosRowCell = map.small.posRowCell;
-	map.small.oldPosColumnCell = map.small.posColumnCell;
-	hero.bigOldposRowCell = map.big.posRowCell;
-	hero.bigOldPosColumnCell = map.big.posColumnCell;
+	map.setPriorHeroPosition(map.getHeroPosition());
 }
 
 function loadHeroInfo(gameSettings, map) {
@@ -699,8 +728,8 @@ function createBigMap() {
 	setQuestLocations();
 }
 
-function createSmallMapTerrain(bigRow, bigCol) {
-	var terrainType = bigMapTerrainArray[bigRow][bigCol];
+function createSmallMapTerrain(heroPosition) {
+	var terrainType = bigMapTerrainArray[heroPosition.big.row][heroPosition.big.column];
 
 	for (row=0; row <map.small.rows; row++) {
 		for (col=0; col <map.small.cols; col++) {
@@ -713,37 +742,52 @@ function createSmallMapTerrain(bigRow, bigCol) {
 	}
 }
 
-function getMapCell(mapTableDiv, row, col) {
+function getBigMapCell(mapTableDiv, position) {
 	var mapRow;
 	var mapCell;
 
-	mapRow = mapTableDiv.getElementsByTagName("tr")[row];
-	mapCell = mapRow.getElementsByTagName("td")[col];
+	mapRow = mapTableDiv.getElementsByTagName("tr")[position.big.row];
+	mapCell = mapRow.getElementsByTagName("td")[position.big.column];
 	return mapCell;
 }
 
-function getCellImageTag(mapTableDiv, row, col) {
-	smallMapCell = getMapCell(mapTableDiv, row, col);
+function getMapCell(mapTableDiv, position) {
+	var mapRow;
+	var mapCell;
+
+	mapRow = mapTableDiv.getElementsByTagName("tr")[position.small.row];
+	mapCell = mapRow.getElementsByTagName("td")[position.small.column];
+	return mapCell;
+}
+
+function getCellImageTag(mapTableDiv, position) {
+	smallMapCell = getMapCell(mapTableDiv, position);
 	smallMapCell.innerHTML = '<img  />';
 	return smallMapCell.firstChild;
 }
 
-function setMapCellColour(mapTableDiv, row, col, colour) {
-	smallMapCell = getMapCell(mapTableDiv, row, col);
+function setMapCellColour(mapTableDiv, position, colour) {
+	var smallMapCell = getMapCell(mapTableDiv, position);
 	smallMapCell.style.backgroundColor = colour;
 }
 
-function setTerrainCellSmallMap(mapTableDiv, row, col) {
+function setBigMapCellColour(mapTableDiv, position, colour) {
+	var bigMapCell = getBigMapCell(mapTableDiv, position);
+	bigMapCell.style.backgroundColor = colour;
+}
+
+function setTerrainCellSmallMap(mapTableDiv, row, column) {
 	var terrType;
 	var cellImageTag;
+	var position = {small:{row:row, column:column}, big:{row:null, column:null}};
 
-	terrType = mapDetailArray[row][col];
-	cellImageTag = getCellImageTag(mapTableDiv, row, col);
+	terrType = mapDetailArray[row][column];
+	cellImageTag = getCellImageTag(mapTableDiv, position);
 
 	cellImageTag.src = terrainArray[terrType].image.src;
 	cellImageTag.title = terrainArray[terrType].name;
 	cellImageTag.alt = terrainArray[terrType].name;
-	setMapCellColour(mapTableDiv, row, col, '#E6EFC2')
+	setMapCellColour(mapTableDiv, position, '#E6EFC2')
 }
 
 function showMovementArea() {
@@ -772,36 +816,40 @@ function showMovementArea() {
 
 function showQuestDestinationOnSmallMap(mapTableDiv, row, col) {
 	var cellImageTag;
+	var position = {small:{row:row, column:col}, big:{row:null, column:null}};
 
-	cellImageTag = getCellImageTag(mapTableDiv, row, col);
+	cellImageTag = getCellImageTag(mapTableDiv, position);
 	cellImageTag.src = makeImageSource(questArray[map.big.nextDestination][6]);
 	cellImageTag.title = "the quest destination";
 	cellImageTag.alt = "the quest destination";
 }
 
-function showSmallMap(bigRow, bigCol) {
+function isQuestDestinationBigMapSquare(heroPosition) {
+	return questArray[map.big.nextDestination][0] === heroPosition.big.row &&
+	   	questArray[map.big.nextDestination][1] === heroPosition.big.column;
+}
+
+function showSmallMap() {
 	var mapTableDiv = document.getElementById('mapTableDiv');
 	makeMapIfNotThere(mapTableDiv);
 	showMovementArea();
 
-	for (i=0; i <map.small.rows; i++) {
-		for (k=0; k <map.small.cols; k++) {
-			setTerrainCellSmallMap(mapTableDiv, i, k);
+	for (row=0; row <map.small.rows; row++) {
+		for (col=0; col <map.small.cols; col++) {
+			setTerrainCellSmallMap(mapTableDiv, row, col);
 		}
+	}
 
-		// check if this is a destination big map square . . .
-		if (questArray[map.big.nextDestination][0] === bigRow &&
-			 questArray[map.big.nextDestination][1] === bigCol) {
-			showQuestDestinationOnSmallMap(mapTableDiv,
-								  questArray[map.big.nextDestination][2],
-								  questArray[map.big.nextDestination][3]);
-		}
+	if (isQuestDestinationBigMapSquare(map.getHeroPosition())) {
+		showQuestDestinationOnSmallMap(mapTableDiv,
+							  questArray[map.big.nextDestination][2],
+							  questArray[map.big.nextDestination][3]);
 	}
 }
 
 function drawHero() {
 	var mapTableDiv = document.getElementById('mapTableDiv');
-	var mapCellImageTag = getCellImageTag(mapTableDiv, map.small.posRowCell, map.small.posColumnCell);
+	var mapCellImageTag = getCellImageTag(mapTableDiv, map.getHeroPosition());
 
 	mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
 	mapCellImageTag.title = 'the hero';
@@ -809,22 +857,22 @@ function drawHero() {
 	mapCellImageTag.id = 'theHeroImg'
 
 	// should move this somewhere else at some point . . .
-	map.small.oldPosRowCell = map.small.posRowCell;
-	map.small.oldPosColumnCell = map.small.posColumnCell;
+	map.setPriorHeroPosition(map.getHeroPosition());
 }
 
-function isOffSmallMap(tableRow, tableCol) {
-	return tableRow < 0 || tableRow > map.small.rows -1 ||
-			 tableCol < 0 || tableCol > map.small.cols -1;
+function isOffSmallMap(heroPosition) {
+	return heroPosition.small.row < 0 || heroPosition.small.row > map.small.rows -1 ||
+			 heroPosition.small.column < 0 || heroPosition.small.column > map.small.cols -1;
 }
 
-function isOffBigMap(tableRow, tableCol, bigTableRow, bigTableCol) {
+function isOffBigMap(heroPosition) {
 	 var off_map_indicator = false;
 
-	off_map_indicator =  (tableRow < 0 && bigTableRow === 0) || // off at the top
-						(tableRow >  map.small.rows - 1 &&  bigTableRow === map.big.rows - 1) || // off the bottom
-						(tableCol < 0 && bigTableCol === 0) || // off the left
-						(tableCol >  map.small.cols - 1 &&  bigTableCol === map.big.cols - 1); // off the right
+	off_map_indicator =
+		(heroPosition.small.row < 0 && heroPosition.big.row === 0) || // off the top
+		(heroPosition.small.row >  map.small.rows - 1 &&  heroPosition.big.row === map.big.rows - 1) || // off the bottom
+		(heroPosition.small.column < 0 && heroPosition.big.column === 0) || // off the left
+		(heroPosition.small.column >  map.small.cols - 1 &&  heroPosition.big.column === map.big.cols - 1); // off the right
 
 	return off_map_indicator;
 }
@@ -851,47 +899,34 @@ function checkQuestDestinationReached(map) {
 	}
 };
 
-function calculateNewHeroCoords(tableRow, tableCol) {
-	var newHeroCoords = {
-		smallRow: null,
-		smallCol: null,
-		bigRow: null,
-		bigCol: null
-	};
+function calculateNewHeroPosition() {
+	var newHeroPosition = map.getHeroPosition();
 
-	if (tableRow < 0) {
+	if (heroPosition.small.row < 0) {
 		// have moved up to next square
-		// map.big.posRowCell = map.big.posRowCell - 1;
-		// map.small.posRowCell = map.small.rows - 1; // bottom of next map square
-		newHeroCoords.bigRow = map.big.posRowCell - 1;
-		newHeroCoords.smallRow = map.small.rows - 1; // bottom of next map square
+		newHeroPosition.big.row = newHeroPosition.big.row - 1;
+		newHeroPosition.small.row = map.small.rows - 1; // bottom of next map square
 	}
 
-	if (tableRow > map.small.rows - 1) {
+	if (heroPosition.small.row > map.small.rows - 1) {
 		// have moved down to next square
-		// map.big.posRowCell = map.big.posRowCell + 1;
-		// map.small.posRowCell = 0; // bottom of next map square
-		newHeroCoords.bigRow = map.big.posRowCell + 1;
-		newHeroCoords.smallRow = 0; // bottom of next map square
+		newHeroPosition.big.row = map.big.posRowCell + 1;
+		newHeroPosition.small.row = 0; // top of next map square
 	}
 
-	if (tableCol < 0) {
+	if (heroPosition.small.column < 0) {
 		// have moved left to next square
-		// map.big.posColumnCell = map.big.posColumnCell - 1;
-		// map.small.posColumnCell = map.small.cols - 1;		// right hand side of next map square
-		newHeroCoords.bigCol = map.big.posColumnCell - 1;
-		newHeroCoords.smallCol = map.small.cols - 1;
+		newHeroPosition.big.column = newHeroPosition.big.column - 1; // right hand side of next map square
+		newHeroPosition.small.column = map.small.cols - 1;
 	}
 
-	if (tableCol > map.small.cols - 1) {
+	if (heroPosition.small.column > map.small.cols - 1) {
 		// have moved right to next square
-		// map.big.posColumnCell = map.big.posColumnCell + 1;
-		// map.small.posColumnCell = 0; // left hand side of next map square
-		newHeroCoords.bigCol = map.big.posColumnCell + 1;
-		newHeroCoords.smallCol = 0; // left hand side of next map square
+		newHeroPosition.big.column = newHeroPosition.big.column + 1;
+		newHeroPosition.small.column = 0; // left hand side of next map square
 	}
 
-	return newHeroCoords;
+	return newHeroPosition;
 }
 
 // a function to return an alernative value if the first value is null
@@ -907,32 +942,19 @@ function max(value1, value2) {
 	return Math.max(value1, value2);
 }
 
-function showNextSmallMapSquare(tableRow, tableCol) {
-	var newHeroCoords = {
-		smallRow: null,
-		smallCol: null,
-		bigRow: null,
-		bigCol: null
-	};
+function showNextSmallMapSquare(heroPosition) {
+	var newHeroPosition = calculateNewHeroPosition();
+	map.setHeroPosition(newHeroPosition);
+	createSmallMapTerrain(newHeroPosition);
 
-	newHeroCoords = calculateNewHeroCoords(tableRow, tableCol);
-	map.big.posRowCell = nvl(newHeroCoords.bigRow, map.big.posRowCell);
-	map.big.posColumnCell = nvl(newHeroCoords.bigCol, map.big.posColumnCell);
-	map.small.posRowCell = nvl(newHeroCoords.smallRow, map.small.posRowCell);
-	map.small.posColumnCell = nvl(newHeroCoords.smallCol, map.small.posColumnCell);
-
-	createSmallMapTerrain(map.big.posRowCell, map.big.posColumnCell);
-	showSmallMap(map.big.posRowCell, map.big.posColumnCell);
+	showSmallMap();
 	drawHero();
-
-	map.small.oldPosRowCell = map.small.posRowCell;
-	map.small.oldPosColumnCell = map.small.posColumnCell;
+	map.setPriorHeroPosition(heroPosition);
 };
 
 function dontAllowMovement() {
 	// don't allow movement off playing area
-	map.small.posRowCell = map.small.oldPosRowCell;
-	map.small.posColumnCell = map.small.oldPosColumnCell;
+	map.resetHeroPositionToPrior();
 }
 
 function highlightHeroSquare() {
@@ -941,13 +963,11 @@ function highlightHeroSquare() {
 	$("#sleepButt").effect("highlight",{"color": "#A52A2A", "background-color": "white"}).focus();
 }
 
-function moveOnSmallMap(tableRow, tableCol) {
-	var terrType = mapDetailArray[tableRow][tableCol];
+function moveOnSmallMap(heroPosition) {
+	var terrType = mapDetailArray[heroPosition.small.row][heroPosition.small.column];
 	var terrainMovementCost = 1 + terrainArray[terrType].extraMovementPts;
 
-	if (hero.foraging) {
-		terrainMovementCost = terrainMovementCost * 2;
-	}
+	terrainMovementCost = hero.foraging ? terrainMovementCost * 2 : terrainMovementCost;
 
 	if (updateMovePoints(terrainMovementCost)) {
 		var mapTableDiv = document.getElementById('mapTableDiv');
@@ -960,20 +980,20 @@ function moveOnSmallMap(tableRow, tableCol) {
 	}
 }
 
-function processMovement(tableRow, tableCol, bigTableRow, bigTableCol) {
+function processMovement(heroPosition) {
 	// see if the hero has moved off the current map into another map square, and
 	// also block movement off the playing area
 	hero.moved = false;
 	gameState.storyEvent = false;
 
-	if (isOffSmallMap(tableRow, tableCol)) {
-		if (isOffBigMap(tableRow, tableCol, bigTableRow, bigTableCol))	{
+	if (isOffSmallMap(heroPosition)) {
+		if (isOffBigMap(heroPosition)) {
 			dontAllowMovement();
 		} else {
-			showNextSmallMapSquare(tableRow, tableCol);
+			showNextSmallMapSquare(heroPosition);
 		}
 	} else {
-		moveOnSmallMap(tableRow, tableCol);
+		moveOnSmallMap(heroPosition);
    }
 }
 
@@ -1029,11 +1049,14 @@ function makeMapIfNotThere(mapTableDiv) {
 function showTerrainOnBigMap(mapTableDiv) {
 	var cellImageTag;
 	var terrType;
+	var position = {small:{row:null, column:null}, big:{row:null, column:null}};
 
 	for (row=0; row <map.small.rows; row++) {
 		for (col=0; col <map.small.cols; col++) {
 			terrType = bigMapTerrainArray[row][col];
-			cellImageTag = getCellImageTag(mapTableDiv, row, col);
+			position.small.row = row;
+			position.small.column = col;
+			cellImageTag = getCellImageTag(mapTableDiv, position);
 			cellImageTag.src = makeImageSource(terrainArray[terrType].imageName);
 			cellImageTag.title = terrainArray[terrType].name;
 		}
@@ -1048,7 +1071,7 @@ function showBigMap() {
 	showTerrainOnBigMap(mapTableDiv);
 
 	// highlight on the big map the square where the hero is . . .
-	setMapCellColour(mapTableDiv, map.big.posRowCell, map.big.posColumnCell, 'yellow')
+	setBigMapCellColour(mapTableDiv, map.getHeroPosition(), 'yellow')
 }
 
 function showBigMapKey(moveArea) {
@@ -1068,7 +1091,7 @@ function showMap(bigMapShown) {
 	var questButt = document.getElementById('showQuestButt');
 
 	if (bigMapShown) {
-		showSmallMap(map.big.posRowCell, map.big.posColumnCell);
+		showSmallMap();
 		drawHero();
 		map.big.displayed = false;
 		document.getElementById('showMapButt').innerHTML = 'Show Big <u>M</u>ap';
@@ -1096,7 +1119,7 @@ function createTableMap(mapTable) {
 	'<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>' +
 	'<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>' +
 	'</tbody></table>';
-	for (i=0; i <map.small.rows-1; i++) {
+	for (i=0; i <map.small.rows - 1; i++) {
 		addRowClone('tableMap',i);
 	}
 }
@@ -1624,21 +1647,25 @@ function toggleForageStatus(butt) {
 }
 
 function determineDirection(uniCode) {
+	var heroPosition = map.getHeroPosition();
+
 	switch (uniCode) {
 		case key.left:
-			map.small.posColumnCell = map.small.posColumnCell - 1;
+			heroPosition.small.column --;
 			break;
 		case key.up:
-			map.small.posRowCell = map.small.posRowCell - 1;
+			heroPosition.small.row --;
 			break;
 		case key.right:
-			map.small.posColumnCell = map.small.posColumnCell + 1;
+			heroPosition.small.column ++;
 			break;
 		case key.down:
-			map.small.posRowCell = map.small.posRowCell + 1;
+			heroPosition.small.row ++;
 			break;
 		default : null;
 	}
+
+	map.setHeroPosition(heroPosition);
 }
 
 function arrowImageMouseOver(arrowImage) {
@@ -1671,20 +1698,18 @@ function heroMovementAttempted(actionCode) {
 }
 
 function checkForMovement(actionCode) {
-  if (heroMovementAttempted(actionCode)) {
-	  determineDirection(actionCode)
-	  processMovement(map.small.posRowCell,
-							map.small.posColumnCell,
-							map.big.posRowCell,
-							map.big.posColumnCell);
-	  drawHero();
-	  if (hero.moved && !gameState.storyEvent) {
-		  checkForAttack();
-		  if (hero.fightOn === 'No' ) {
-			  checkIfFoodFound(hero.foraging, map.small.posRowCell, map.small.posColumnCell);
-		  }
-	  }
-  }
+	if (heroMovementAttempted(actionCode)) {
+		determineDirection(actionCode)
+		processMovement(map.getHeroPosition());
+		drawHero();
+
+		if (hero.moved && !gameState.storyEvent) {
+			checkForAttack();
+			if (hero.fightOn === 'No' ) {
+				checkIfFoodFound(hero.foraging, map.small.posRowCell, map.small.posColumnCell);
+			}
+		}
+	}
 }
 
 function checkNonMovementActions(actionCode) {
@@ -1746,8 +1771,8 @@ function loadInitialInfo() {
 
 function createMapsAndShowSmallMap() {
 	createBigMap();
-	createSmallMapTerrain(map.big.posRowCell, map.big.posColumnCell);
-	showSmallMap(map.big.posRowCell, map.big.posColumnCell);
+	createSmallMapTerrain(map.getHeroPosition());
+	showSmallMap();
 }
 
 function showInitialQuest() {
@@ -1756,7 +1781,7 @@ function showInitialQuest() {
 	document.getElementById('mapTableDiv').focus();
 }
 
-function start_game() {
+function startGame() {
 	loadInitialInfo();
 	createMapsAndShowSmallMap();
 	drawHero();
