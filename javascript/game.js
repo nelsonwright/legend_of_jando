@@ -6,18 +6,22 @@
 // cookie and trim stuff thanks to Patrick Hunlock: http://www.hunlock.com/blogs/Ten_Javascript_Tools_Everyone_Should_Have
 String.prototype.trim = function() {
 	return this.replace(/^\s+|\s+$/g,"");
-}
+};
+
 String.prototype.ltrim = function() {
 	return this.replace(/^\s+/g,"");
-}
+};
+
 String.prototype.rtrim = function() {
 	return this.replace(/\s+$/g,"");
-}
+};
 
 function setCookie(name,value,expires, options) {
-	if (options === undefined) options = {};
+	if (options === undefined) {
+		options = {};
+	}
 
-	if ( expires ) {
+	if (expires) {
 		var expires_date = new Date();
 		expires_date.setDate(expires_date.getDate() + expires)
 	}
@@ -33,11 +37,17 @@ function getCookie(name) {
 	var start = document.cookie.indexOf( name + "=" );
 	var len = start + name.length + 1;
 
-	if ( ( !start ) && ( name != document.cookie.substring( 0, name.length ) ) ) return null;
-	if ( start == -1 ) return null;
+	if ( ( !start ) && ( name !== document.cookie.substring( 0, name.length ) ) ) {
+		return null;
+	}
+	if ( start === -1 ) {
+		return null;
+	}
 	var end = document.cookie.indexOf( ';', len );
 
-	if ( end == -1 ) end = document.cookie.length;
+	if ( end === -1 ) {
+		end = document.cookie.length;
+	}
 	return unescape( document.cookie.substring( len, end ) );
 }
 
@@ -161,10 +171,10 @@ var map = {
 // Courtesy of Douglas Crockford . . .
 if (typeof Object.create !== 'function') {
 	Object.create = function (o) {
-		var F = function (o) {}
+		var F = function (o) {};
 		F.prototype = o;
 		return new F();
-	}
+	};
 }
 
 function Monster(monsterObj) {
@@ -221,18 +231,21 @@ function makeImageSource(imageName, isFood) {
 
 // Used to hold terrain types on larger map . . .
 var bigMapTerrainArray=new Array(map.big.rows);
-for (i=0; i <map.big.rows; i++)
-bigMapTerrainArray[i]=new Array(map.big.cols);
+for (i=0; i <map.big.rows; i++) {
+	bigMapTerrainArray[i]=new Array(map.big.cols);
+}
 
 // Used to hold details of map features, for small map . . .
 var mapDetailArray=new Array(map.small.rows);
-for (i=0; i <map.small.rows; i++)
-mapDetailArray[i]=new Array(map.small.cols);
+for (i=0; i <map.small.rows; i++) {
+	mapDetailArray[i]=new Array(map.small.cols);
+}
 
 // Used to hold details of terrain . . .
 var terrainArray=new Array(map.big.numTerrainTypes);
-for (i=0; i <map.big.numTerrainTypes; i++)
-terrainArray[i]=new Array(map.big.terrainAttributes);
+for (i=0; i <map.big.numTerrainTypes; i++) {
+	terrainArray[i]=new Array(map.big.terrainAttributes);
+}
 
 /* Used to hold terrain row/col pairs (locations) on the big map, indexed by terrain type, eg:
 	0: 0,1;1,0;2,0;3,1;4,0;4,1;6,0;6,2;7,0 // light grass in row 1, col 2, row 1, col 3, etc
@@ -242,15 +255,17 @@ terrainArray[i]=new Array(map.big.terrainAttributes);
 	We need to save these locations, so we can pick randomly pick one as the destination for each quest
 */
 var terrainLocationsArray=new Array(map.big.numTerrainTypes);
-for (i=0; i <map.big.numTerrainTypes; i++)
-terrainLocationsArray[i]=''; 	// set up terrainLocationsArray with blank as default
+for (i=0; i <map.big.numTerrainTypes; i++) {
+	terrainLocationsArray[i]=''; 	// set up terrainLocationsArray with blank as default
+}
 
 // Used to hold row/col destination pairs on big map and small map,
 // indexed by terrain type.  Also used to hold character and map images
 // that are displayed upon reaching a destination
 var questArray=new Array(map.big.numTerrainTypes + 1);	 // last destination is random location for treasure
-for (i=0; i <map.big.numTerrainTypes + 1; i++)
-questArray[i] = new Array(map.big.numTerrainTypes + 1);
+for (i=0; i <map.big.numTerrainTypes + 1; i++) {
+	questArray[i] = new Array(map.big.numTerrainTypes + 1);
+}
 
 var monsterArray = new Array(gameSettings.numMonsterTypes + 1); // add 1 to have room for final boss battle monster
 
@@ -455,25 +470,25 @@ function loadHeroInfo(gameSettings, map) {
 
 function saveHeroInfo() {
    var inProgress = (gameState.inProgress === true) ? "Y" : "N";
-	var cookieValue  = "name=" + hero.name + ';'
-									+ "health=" + hero.health + ';'
-									+ "attack=" + hero.attack + ';'
-									+ "defence=" + hero.defence + ';'
-									+ "char=" + hero.type + ';'
-									+ "posRowCell=" + map.small.posRowCell + ';'
-									+ "posColumnCell=" + map.small.posColumnCell + ';'
-									+ "bigPosRowCell=" + map.big.posRowCell + ';'
-									+ "bigPosColumnCell=" + map.big.posColumnCell + ';'
-									+ "gameInProgress=" + inProgress + ';'
-									+ "movePoints=" + hero.movePoints + ';'
-									+ "maxHeroHealth=" + hero.maxHealth + ';'
-									+ "maxHeroAttack=" + hero.maxAttack + ';'
-									+ "maxHeroDefence=" + hero.maxDefence + ';'
-									+ "maxMovePoints=" + hero.maxMovePoints + ';'
-									+ "nextDestination=" + map.big.nextDestination + ';'
-									+ "heroExperience=" + hero.experience + ';'
-									+ "heroLevel=" + hero.level
-									;
+	var cookieValue  = "name="
+		+ hero.name + ';'
+		+ "health=" + hero.health + ';'
+		+ "attack=" + hero.attack + ';'
+		+ "defence=" + hero.defence + ';'
+		+ "char=" + hero.type + ';'
+		+ "posRowCell=" + map.small.posRowCell + ';'
+		+ "posColumnCell=" + map.small.posColumnCell + ';'
+		+ "bigPosRowCell=" + map.big.posRowCell + ';'
+		+ "bigPosColumnCell=" + map.big.posColumnCell + ';'
+		+ "gameInProgress=" + inProgress + ';'
+		+ "movePoints=" + hero.movePoints + ';'
+		+ "maxHeroHealth=" + hero.maxHealth + ';'
+		+ "maxHeroAttack=" + hero.maxAttack + ';'
+		+ "maxHeroDefence=" + hero.maxDefence + ';'
+		+ "maxMovePoints=" + hero.maxMovePoints + ';'
+		+ "nextDestination=" + map.big.nextDestination + ';'
+		+ "heroExperience=" + hero.experience + ';'
+		+ "heroLevel=" + hero.level;
 	setCookie('jando', cookieValue, 365);  // cookie will expire in a year?  Seems to be 6 weeks now
 }
 
