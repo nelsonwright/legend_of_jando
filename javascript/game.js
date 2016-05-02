@@ -81,7 +81,6 @@ var gameSettings = Object.freeze({
 	attackRisk: 0.91,	   	// if the random number is higher than this (plus or minus modifiers), then you'll be attacked!
 	numHeroDiceRolls: 3, 	// this equates to how many dice are rolled
 	numMonsterDiceRolls: 3,
-	numFoods: 44,			// types of different foods that can be found
 	foragingSuccessLevel: 0.89, // the random number generated (between 0 - 1) must be higher than this for food to be found when foraging
 	foodFindLevel: 0.99 // the random number generated (between 0 - 1) must be higher than this for food to be found when NOT foraging
 });
@@ -293,35 +292,35 @@ for (i=0; i <map.big.numTerrainTypes + 1; i++) {
 	questArray[i] = new Array(map.big.numTerrainTypes + 1);
 }
 
-var monsterArray = new Array(gameSettings.numMonsterTypes + 1); // add 1 to have room for final boss battle monster
+var monsterArray = []; // new Array(gameSettings.numMonsterTypes + 1); // add 1 to have room for final boss battle monster
 
 // set up monsterArray with monster objects
 function loadMonsterInfo() {
 	// name, imageName, healthPoints, attackPoints, defencePoints
-	monsterArray[0]= new Monster({name: 'Turtle Rider', healthPoints: 12, attackPoints: 6, defencePoints: 4});
-	monsterArray[1]= new Monster({name: 'Horned Devil', healthPoints: 13, attackPoints: 7, defencePoints: 5});
-	monsterArray[2]= new Monster({name: 'Squirm', healthPoints: 9, attackPoints: 4, defencePoints: 4});
-	monsterArray[3]= new Monster({name: 'Bleh', healthPoints: 16, attackPoints: 8, defencePoints: 5});
-	monsterArray[4]= new Monster({name: 'Scream', healthPoints: 7, attackPoints: 6, defencePoints: 6});
-	monsterArray[5]= new Monster({name: 'Warrior Ant', healthPoints: 10, attackPoints: 4, defencePoints: 7});
-	monsterArray[6]= new Monster({name: 'Drop', healthPoints: 9, attackPoints: 4, defencePoints: 3});
-	monsterArray[7]= new Monster({name: 'Ground Fish', healthPoints: 11, attackPoints: 6, defencePoints: 3});
-	monsterArray[8]= new Monster({name: 'Snail', healthPoints: 8, attackPoints: 6, defencePoints: 6});
-	monsterArray[9]= new Monster({name: 'Strawberry', healthPoints: 7, attackPoints: 5, defencePoints: 3});
+	monsterArray.push(new Monster({name: 'Turtle Rider', healthPoints: 12, attackPoints: 6, defencePoints: 4}));
+	monsterArray.push(new Monster({name: 'Horned Devil', healthPoints: 13, attackPoints: 7, defencePoints: 5}));
+	monsterArray.push(new Monster({name: 'Squirm', healthPoints: 9, attackPoints: 4, defencePoints: 4}));
+	monsterArray.push(new Monster({name: 'Bleh', healthPoints: 16, attackPoints: 8, defencePoints: 5}));
+	monsterArray.push(new Monster({name: 'Scream', healthPoints: 7, attackPoints: 6, defencePoints: 6}));
+	monsterArray.push(new Monster({name: 'Warrior Ant', healthPoints: 10, attackPoints: 4, defencePoints: 7}));
+	monsterArray.push(new Monster({name: 'Drop', healthPoints: 9, attackPoints: 4, defencePoints: 3}));
+	monsterArray.push(new Monster({name: 'Ground Fish', healthPoints: 11, attackPoints: 6, defencePoints: 3}));
+	monsterArray.push(new Monster({name: 'Snail', healthPoints: 8, attackPoints: 6, defencePoints: 6}));
+	monsterArray.push(new Monster({name: 'Strawberry', healthPoints: 7, attackPoints: 5, defencePoints: 3}));
 
    // level 2 monsters (allegedly, but is this used anywhere . . . ?) . . .
-	monsterArray[10]= new Monster({name: 'Flame Spirit', healthPoints: 16, attackPoints: 9, defencePoints: 9});
-	monsterArray[11]= new Monster({name: 'Bloat', healthPoints: 12, attackPoints: 7, defencePoints: 14});
-	monsterArray[12]= new Monster({name: 'Star Man', healthPoints: 6, attackPoints: 10, defencePoints: 5});
-	monsterArray[13]= new Monster({name: 'Ninja', healthPoints: 8, attackPoints: 10, defencePoints: 7});
-	monsterArray[14]= new Monster({name: 'Assassin', healthPoints: 14, attackPoints: 11, defencePoints: 6});
-	monsterArray[15]= new Monster({name: 'Lightning Fish', healthPoints: 15, attackPoints: 12, defencePoints: 7});
-	monsterArray[16]= new Monster({name: 'Leosaur', healthPoints: 19, attackPoints: 15, defencePoints: 11});
-	monsterArray[17]= new Monster({name: 'Leecho', healthPoints: 21, attackPoints: 4, defencePoints: 16});
-	monsterArray[18]= new Monster({name: 'Crazed King', healthPoints: 18, attackPoints: 11, defencePoints: 16});
+	monsterArray.push(new Monster({name: 'Flame Spirit', healthPoints: 16, attackPoints: 9, defencePoints: 9}));
+	monsterArray.push(new Monster({name: 'Bloat', healthPoints: 12, attackPoints: 7, defencePoints: 14}));
+	monsterArray.push(new Monster({name: 'Star Man', healthPoints: 6, attackPoints: 10, defencePoints: 5}));
+	monsterArray.push(new Monster({name: 'Ninja', healthPoints: 8, attackPoints: 10, defencePoints: 7}));
+	monsterArray.push(new Monster({name: 'Assassin', healthPoints: 14, attackPoints: 11, defencePoints: 6}));
+	monsterArray.push(new Monster({name: 'Lightning Fish', healthPoints: 15, attackPoints: 12, defencePoints: 7}));
+	monsterArray.push(new Monster({name: 'Leosaur', healthPoints: 19, attackPoints: 15, defencePoints: 11}));
+	monsterArray.push(new Monster({name: 'Leecho', healthPoints: 21, attackPoints: 4, defencePoints: 16}));
+	monsterArray.push(new Monster({name: 'Crazed King', healthPoints: 18, attackPoints: 11, defencePoints: 16}));
 
 	// The final big boss-battle monster! . . .
-	monsterArray[gameState.finalMonsterIndex]= new Monster({name: 'Hideously evil GREEN SKULL', imageName: 'green_skull', healthPoints: 32, attackPoints: 16, defencePoints: 12});
+	monsterArray.push(new Monster({name: 'Hideously evil GREEN SKULL', imageName: 'green_skull', healthPoints: 32, attackPoints: 16, defencePoints: 12}));
 }
 
 /*  Food attributes
@@ -330,7 +329,7 @@ function loadMonsterInfo() {
 3.  Health points boost
 */
 
-var foodArray = new Array(gameSettings.numFoods);
+var foodArray = [];
 
 /*
 	Terrain Attributes:
@@ -353,55 +352,55 @@ function loadTerrain() {
 /*
 	Food Attributes:
 	1	Name of food (word or phrase always starts with a consonant)
-	2	Image name
+	2	Image name (if that cannot be derived from the name above)
 	3	Health points gained from eating this food
 */
 
 function loadFood() {
-	foodArray[0] = new Food({name: 'squashy fig', imageName: 'fig', extraHealthPoints: 3});
-	foodArray[1] = new Food({name: 'loaf of bread', imageName: 'bread_1', extraHealthPoints: 1});
-	foodArray[2] = new Food({name: 'croissant', extraHealthPoints:  2});
-	foodArray[3] = new Food({name: 'brown egg', extraHealthPoints: 3});
-	foodArray[4] = new Food({name: 'cucumber',  extraHealthPoints: 1});
-	foodArray[5] = new Food({name: 'glass of beer',  extraHealthPoints: 2});
-	foodArray[6] = new Food({name: 'strawberry', extraHealthPoints: 2});
-	foodArray[7] = new Food({name: 'husk of sweetcorn', imageName: 'sweetcorn', extraHealthPoints: 3});
-	foodArray[8] = new Food({name: 'watermelon', extraHealthPoints: 3});
-	foodArray[9] = new Food({name: 'ripe acorn', imageName: 'acorn', extraHealthPoints: 1});
-	foodArray[10] = new Food({name: 'shiny aubergine', imageName: 'aubergine', extraHealthPoints: 3});
-	foodArray[11] = new Food({name: 'half avacado', imageName: 'avacado', extraHealthPoints: 3});
-	foodArray[12] = new Food({name: 'black olive', extraHealthPoints: 1});
-	foodArray[13] = new Food({name: 'bunch of blueberries', imageName: 'blueberries', extraHealthPoints: 2});
-	foodArray[14] = new Food({name: 'loaf of tasty bread', imageName: 'bread_2', extraHealthPoints: 5});
-	foodArray[15] = new Food({name: 'yam',  extraHealthPoints: 4});
-	foodArray[16] = new Food({name: 'couple of buns', imageName: 'buns', extraHealthPoints: 4});
-	foodArray[17] = new Food({name: 'cabbage', extraHealthPoints: 3});
-	foodArray[18] = new Food({name: 'fancy cake', imageName: 'cake', extraHealthPoints: 4});
-	foodArray[19] = new Food({name: 'carrot',  extraHealthPoints: 3});
-	foodArray[20] = new Food({name: 'stick of celery', imageName: 'celery', extraHealthPoints: 1});
-	foodArray[21] = new Food({name: 'smelly wheel of cheese', imageName: 'cheese_1', extraHealthPoints: 5});
-	foodArray[22] = new Food({name: 'wheel of cheese', imageName: 'cheese_2', extraHealthPoints: 5});
-	foodArray[23] = new Food({name: 'small bunch of cherries', imageName: 'cherries', extraHealthPoints: 2});
-	foodArray[24] = new Food({name: 'courgette', extraHealthPoints: 3});
-	foodArray[25] = new Food({name: 'couple of pale eggs', imageName: 'eggs', extraHealthPoints: 5});
-	foodArray[26] = new Food({name: 'clove of garlic', imageName: 'garlic', extraHealthPoints: 3});
-	foodArray[27] = new Food({name: 'bunch of grapes', imageName: 'grapes', extraHealthPoints: 4});
-	foodArray[28] = new Food({name: 'green chilli', extraHealthPoints: 2});
-	foodArray[29] = new Food({name: 'green olive', extraHealthPoints: 2});
-	foodArray[30] = new Food({name: 'green pepper', extraHealthPoints: 3});
-	foodArray[32] = new Food({name: 'fresh orange pepper', imageName: 'orange_pepper', extraHealthPoints: 3});
-	foodArray[31] = new Food({name: 'nice orange', imageName: 'orange', extraHealthPoints: 4});
-	foodArray[33] = new Food({name: 'pak choi leaf', imageName: 'pak_choi', extraHealthPoints: 1});
-	foodArray[34] = new Food({name: 'pear', extraHealthPoints: 3});
-	foodArray[35] = new Food({name: 'load of peas in their pod', imageName: 'peas_in_pod', extraHealthPoints: 3});
-	foodArray[36] = new Food({name: 'few peas in the pod', imageName: 'peas_in_pod2', extraHealthPoints: 2});
-	foodArray[37] = new Food({name: 'plum', extraHealthPoints: 3});
-	foodArray[38] = new Food({name: 'potato',  extraHealthPoints: 2});
-	foodArray[39] = new Food({name: 'red chilli', extraHealthPoints: 2});
-	foodArray[41] = new Food({name: 'yellow pepper', extraHealthPoints: 2});
-	foodArray[40] = new Food({name: 'red pepper', extraHealthPoints: 3});
-	foodArray[42] = new Food({name: 'tomato', extraHealthPoints: 2});
-	foodArray[43] = new Food({name: 'veggie sausage', extraHealthPoints: 5});
+	foodArray.push(new Food({name: 'squashy fig', imageName: 'fig', extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'loaf of bread', imageName: 'bread_1', extraHealthPoints: 1}));
+	foodArray.push(new Food({name: 'croissant', extraHealthPoints:  2}));
+	foodArray.push(new Food({name: 'brown egg', extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'cucumber',  extraHealthPoints: 1}));
+	foodArray.push(new Food({name: 'glass of beer',  extraHealthPoints: 2}));
+	foodArray.push(new Food({name: 'strawberry', extraHealthPoints: 2}));
+	foodArray.push(new Food({name: 'husk of sweetcorn', imageName: 'sweetcorn', extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'watermelon', extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'ripe acorn', imageName: 'acorn', extraHealthPoints: 1}));
+	foodArray.push(new Food({name: 'shiny aubergine', imageName: 'aubergine', extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'half avacado', imageName: 'avacado', extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'black olive', extraHealthPoints: 1}));
+	foodArray.push(new Food({name: 'bunch of blueberries', imageName: 'blueberries', extraHealthPoints: 2}));
+	foodArray.push(new Food({name: 'loaf of tasty bread', imageName: 'bread_2', extraHealthPoints: 5}));
+	foodArray.push(new Food({name: 'yam',  extraHealthPoints: 4}));
+	foodArray.push(new Food({name: 'couple of buns', imageName: 'buns', extraHealthPoints: 4}));
+	foodArray.push(new Food({name: 'cabbage', extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'fancy cake', imageName: 'cake', extraHealthPoints: 4}));
+	foodArray.push(new Food({name: 'carrot',  extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'stick of celery', imageName: 'celery', extraHealthPoints: 1}));
+	foodArray.push(new Food({name: 'smelly wheel of cheese', imageName: 'cheese_1', extraHealthPoints: 5}));
+	foodArray.push(new Food({name: 'wheel of cheese', imageName: 'cheese_2', extraHealthPoints: 5}));
+	foodArray.push(new Food({name: 'small bunch of cherries', imageName: 'cherries', extraHealthPoints: 2}));
+	foodArray.push(new Food({name: 'courgette', extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'couple of pale eggs', imageName: 'eggs', extraHealthPoints: 5}));
+	foodArray.push(new Food({name: 'clove of garlic', imageName: 'garlic', extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'bunch of grapes', imageName: 'grapes', extraHealthPoints: 4}));
+	foodArray.push(new Food({name: 'green chilli', extraHealthPoints: 2}));
+	foodArray.push(new Food({name: 'green olive', extraHealthPoints: 2}));
+	foodArray.push(new Food({name: 'green pepper', extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'fresh orange pepper', imageName: 'orange_pepper', extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'nice orange', imageName: 'orange', extraHealthPoints: 4}));
+	foodArray.push(new Food({name: 'pak choi leaf', imageName: 'pak_choi', extraHealthPoints: 1}));
+	foodArray.push(new Food({name: 'pear', extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'load of peas in their pod', imageName: 'peas_in_pod', extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'few peas in the pod', imageName: 'peas_in_pod2', extraHealthPoints: 2}));
+	foodArray.push(new Food({name: 'plum', extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'potato',  extraHealthPoints: 2}));
+	foodArray.push(new Food({name: 'red chilli', extraHealthPoints: 2}));
+	foodArray.push(new Food({name: 'yellow pepper', extraHealthPoints: 2}));
+	foodArray.push(new Food({name: 'red pepper', extraHealthPoints: 3}));
+	foodArray.push(new Food({name: 'tomato', extraHealthPoints: 2}));
+	foodArray.push(new Food({name: 'veggie sausage', extraHealthPoints: 5}));
 }
 
 function deriveImageName(objectWithImage) {
@@ -902,25 +901,25 @@ function checkQuestDestinationReached(map) {
 function calculateNewHeroPosition() {
 	var newHeroPosition = map.getHeroPosition();
 
-	if (heroPosition.small.row < 0) {
+	if (newHeroPosition.small.row < 0) {
 		// have moved up to next square
 		newHeroPosition.big.row = newHeroPosition.big.row - 1;
 		newHeroPosition.small.row = map.small.rows - 1; // bottom of next map square
 	}
 
-	if (heroPosition.small.row > map.small.rows - 1) {
+	if (newHeroPosition.small.row > map.small.rows - 1) {
 		// have moved down to next square
 		newHeroPosition.big.row = map.big.posRowCell + 1;
 		newHeroPosition.small.row = 0; // top of next map square
 	}
 
-	if (heroPosition.small.column < 0) {
+	if (newHeroPosition.small.column < 0) {
 		// have moved left to next square
 		newHeroPosition.big.column = newHeroPosition.big.column - 1; // right hand side of next map square
 		newHeroPosition.small.column = map.small.cols - 1;
 	}
 
-	if (heroPosition.small.column > map.small.cols - 1) {
+	if (newHeroPosition.small.column > map.small.cols - 1) {
 		// have moved right to next square
 		newHeroPosition.big.column = newHeroPosition.big.column + 1;
 		newHeroPosition.small.column = 0; // left hand side of next map square
@@ -1124,7 +1123,7 @@ function createTableMap(mapTable) {
 	}
 }
 
-function showQuest(questShown, bigMapDisplayed){
+function showQuest(questShown, bigMapDisplayed) {
 	var mapTableDiv = document.getElementById('mapTableDiv');
 	var questButt = document.getElementById('showQuestButt');
 	var terrImage = new Image();
@@ -1144,7 +1143,7 @@ function showQuest(questShown, bigMapDisplayed){
 		questString =	'<div style = "position:absolute;width:360px">'
 			        +   '<h3>Your Quest</h3>';
 		if (map.big.nextDestination == 5) {
-			questString = questString +	'Go where the eagle told you, to meet your destiny . . .'
+			questString = questString + 'Go where the eagle told you, to meet your destiny . . .'
 			+ '<p>'
 			+ 'Go to row '
 		   + parseInt(questArray[map.big.nextDestination][0] + 1)
@@ -1153,7 +1152,7 @@ function showQuest(questShown, bigMapDisplayed){
 			+ ' on your map.'
 			+ '</p>'
 		} else {
-			questString = questString 	+ '<p>You need to find a '
+			questString = questString + '<p>You need to find a '
 			+ charImageWords
 			+ ', who lives in a '
 			+ destImageWords
@@ -1170,7 +1169,7 @@ function showQuest(questShown, bigMapDisplayed){
 			+'One of these larger squares will have the '
 			+ destImageWords
 			+ ' contained within it.';
-		}
+	}
     questString = questString + '</div>';
     mapTableDiv.innerHTML = questString;
     questButt.innerHTML = 'Hide <u>Q</u>uest';
@@ -1577,7 +1576,7 @@ function calculateFoundPhrase(forageState) {
 
 function processFoundFood(forageState) {
 	// display the food found, and add health points . . .
-	var foodIdx = Math.floor(Math.random() * gameSettings.numFoods);
+	var foodIdx = Math.floor(Math.random() * foodArray.length);
 	var actionSpace = document.getElementById('action');
 
 	actionSpace.innerHTML = '<p>'
