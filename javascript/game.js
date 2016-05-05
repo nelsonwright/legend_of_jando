@@ -77,7 +77,6 @@ function cookiesAllowed() {
 
 // We're using Object.freeze as these values shouldn't change, i.e. it's an immutable object . . .
 var gameSettings = Object.freeze({
-	numMonsterTypes: 19, 	// how many types of monsters there are in the game
 	attackRisk: 0.91,	   	// if the random number is higher than this (plus or minus modifiers), then you'll be attacked!
 	numHeroDiceRolls: 3, 	// this equates to how many dice are rolled
 	numMonsterDiceRolls: 3,
@@ -110,8 +109,7 @@ var gameState = {
 	storyEvent: false,	     	// is a story event happening?
 	questDisplayed: false,    	// are we currently showing the current quest objective?
 	finalFight: false,        	// is the final battle happening?
-	monsterIdx:	0,					// used to indicate the currently battled monster
-	finalMonsterIndex: gameSettings.numMonsterTypes 	// the index number of the final monster.
+	monsterIdx:	0					// used to indicate the currently battled monster
 };
 
 var hero = {
@@ -140,6 +138,15 @@ var hero = {
 
 // this is the monster that is currently being fought
 var monster = {};
+
+// the array of possible mosters that can be fought
+var monsterArray = [];
+
+// the array of possible foods that can be found
+var foodArray = [];
+
+// Used to hold details of terrain . . .
+var terrainArray= [];
 
 var map = {
   // small map, i.e. the one your hero character moves around on
@@ -266,12 +273,6 @@ for (i=0; i <map.small.rows; i++) {
 	mapDetailArray[i]=new Array(map.small.cols);
 }
 
-// Used to hold details of terrain . . .
-var terrainArray=new Array(map.big.numTerrainTypes);
-for (i=0; i <map.big.numTerrainTypes; i++) {
-	terrainArray[i]=new Array(map.big.terrainAttributes);
-}
-
 /* Used to hold terrain row/col pairs (locations) on the big map, indexed by terrain type, eg:
 	0: 0,1;1,0;2,0;3,1;4,0;4,1;6,0;6,2;7,0 // light grass in row 1, col 2, row 1, col 3, etc
 	1: 0,0;0,2;1,1;1,2;2,1;2,2;3,0;3,2;4,2;5,0;5,1;5,2;5,4;6,1;7,2
@@ -292,44 +293,50 @@ for (i=0; i <map.big.numTerrainTypes + 1; i++) {
 	questArray[i] = new Array(map.big.numTerrainTypes + 1);
 }
 
-var monsterArray = []; // new Array(gameSettings.numMonsterTypes + 1); // add 1 to have room for final boss battle monster
-
-// set up monsterArray with monster objects
-function loadMonsterInfo() {
+function getMonsterData() {
 	// name, imageName, healthPoints, attackPoints, defencePoints
-	monsterArray.push(new Monster({name: 'Turtle Rider', healthPoints: 12, attackPoints: 6, defencePoints: 4}));
-	monsterArray.push(new Monster({name: 'Horned Devil', healthPoints: 13, attackPoints: 7, defencePoints: 5}));
-	monsterArray.push(new Monster({name: 'Squirm', healthPoints: 9, attackPoints: 4, defencePoints: 4}));
-	monsterArray.push(new Monster({name: 'Bleh', healthPoints: 16, attackPoints: 8, defencePoints: 5}));
-	monsterArray.push(new Monster({name: 'Scream', healthPoints: 7, attackPoints: 6, defencePoints: 6}));
-	monsterArray.push(new Monster({name: 'Warrior Ant', healthPoints: 10, attackPoints: 4, defencePoints: 7}));
-	monsterArray.push(new Monster({name: 'Drop', healthPoints: 9, attackPoints: 4, defencePoints: 3}));
-	monsterArray.push(new Monster({name: 'Ground Fish', healthPoints: 11, attackPoints: 6, defencePoints: 3}));
-	monsterArray.push(new Monster({name: 'Snail', healthPoints: 8, attackPoints: 6, defencePoints: 6}));
-	monsterArray.push(new Monster({name: 'Strawberry', healthPoints: 7, attackPoints: 5, defencePoints: 3}));
+	// we can infer image name from name, making lowercase and convertinf spaces to underscores
+	var monsterData = {
+		monster:
+		[
+			{name: 'Turtle Rider', healthPoints: 12, attackPoints: 6, defencePoints: 4},
+			{name: 'Turtle Rider', healthPoints: 12, attackPoints: 6, defencePoints: 4},
+			{name: 'Horned Devil', healthPoints: 13, attackPoints: 7, defencePoints: 5},
+			{name: 'Squirm', healthPoints: 9, attackPoints: 4, defencePoints: 4},
+			{name: 'Bleh', healthPoints: 16, attackPoints: 8, defencePoints: 5},
+			{name: 'Scream', healthPoints: 7, attackPoints: 6, defencePoints: 6},
+			{name: 'Warrior Ant', healthPoints: 10, attackPoints: 4, defencePoints: 7},
+			{name: 'Drop', healthPoints: 9, attackPoints: 4, defencePoints: 3},
+			{name: 'Ground Fish', healthPoints: 11, attackPoints: 6, defencePoints: 3},
+			{name: 'Snail', healthPoints: 8, attackPoints: 6, defencePoints: 6},
+			{name: 'Strawberry', healthPoints: 7, attackPoints: 5, defencePoints: 3},
 
-   // level 2 monsters (allegedly, but is this used anywhere . . . ?) . . .
-	monsterArray.push(new Monster({name: 'Flame Spirit', healthPoints: 16, attackPoints: 9, defencePoints: 9}));
-	monsterArray.push(new Monster({name: 'Bloat', healthPoints: 12, attackPoints: 7, defencePoints: 14}));
-	monsterArray.push(new Monster({name: 'Star Man', healthPoints: 6, attackPoints: 10, defencePoints: 5}));
-	monsterArray.push(new Monster({name: 'Ninja', healthPoints: 8, attackPoints: 10, defencePoints: 7}));
-	monsterArray.push(new Monster({name: 'Assassin', healthPoints: 14, attackPoints: 11, defencePoints: 6}));
-	monsterArray.push(new Monster({name: 'Lightning Fish', healthPoints: 15, attackPoints: 12, defencePoints: 7}));
-	monsterArray.push(new Monster({name: 'Leosaur', healthPoints: 19, attackPoints: 15, defencePoints: 11}));
-	monsterArray.push(new Monster({name: 'Leecho', healthPoints: 21, attackPoints: 4, defencePoints: 16}));
-	monsterArray.push(new Monster({name: 'Crazed King', healthPoints: 18, attackPoints: 11, defencePoints: 16}));
+			   // level 2 monsters (allegedly, but is this used anywhere . . . ?) . . .
+			{name: 'Flame Spirit', healthPoints: 16, attackPoints: 9, defencePoints: 9},
+			{name: 'Bloat', healthPoints: 12, attackPoints: 7, defencePoints: 14},
+			{name: 'Star Man', healthPoints: 6, attackPoints: 10, defencePoints: 5},
+			{name: 'Ninja', healthPoints: 8, attackPoints: 10, defencePoints: 7},
+			{name: 'Assassin', healthPoints: 14, attackPoints: 11, defencePoints: 6},
+			{name: 'Lightning Fish', healthPoints: 15, attackPoints: 12, defencePoints: 7},
+			{name: 'Leosaur', healthPoints: 19, attackPoints: 15, defencePoints: 11},
+			{name: 'Leecho', healthPoints: 21, attackPoints: 4, defencePoints: 16},
+			{name: 'Crazed King', healthPoints: 18, attackPoints: 11, defencePoints: 16},
 
-	// The final big boss-battle monster! . . .
-	monsterArray.push(new Monster({name: 'Hideously evil GREEN SKULL', imageName: 'green_skull', healthPoints: 32, attackPoints: 16, defencePoints: 12}));
+				// The final big boss-battle monster! . . . needs to be the last entry in this array
+			{name: 'Hideously evil GREEN SKULL', imageName: 'green_skull', healthPoints: 32, attackPoints: 16, defencePoints: 12}
+		]
+	}
+	return monsterData;
 }
 
-/*  Food attributes
-1.  Name
-2.  Image name
-3.  Health points boost
-*/
+function loadMonsterInfo() {
+	var monsterData = getMonsterData();
 
-var foodArray = [];
+	for (i=0; i<monsterData.monster.length; i++) {
+		monsterArray.push(monsterData.monster[i]);
+		loadImageForType(monsterData.monster[i], monsterData.monster[i])
+	}
+}
 
 /*
 	Terrain Attributes:
@@ -341,12 +348,12 @@ var foodArray = [];
 */
 
 function loadTerrain() {
-	terrainArray[0] = new Terrain({code: 0, name: 'light grass', densityFactor: 0, extraMovementPts: 0});
-	terrainArray[1] = new Terrain({code: 1, name: 'low scrub', densityFactor: 0.1, extraMovementPts: 1});
-	terrainArray[2] = new Terrain({code: 2, name: 'woods', densityFactor: 0.15, extraMovementPts: 2});
-	terrainArray[3] = new Terrain({code: 3, name: 'forest', densityFactor: 0.3, extraMovementPts: 2});
-	terrainArray[4] = new Terrain({code: 4, name: 'hills', densityFactor: 0.35, extraMovementPts: 3});
-	terrainArray[5] = new Terrain({code: 5, name: 'mountains', densityFactor: 0.4, extraMovementPts: 4});
+	terrainArray.push(new Terrain({code: 0, name: 'light grass', densityFactor: 0, extraMovementPts: 0}));
+	terrainArray.push(new Terrain({code: 1, name: 'low scrub', densityFactor: 0.1, extraMovementPts: 1}));
+	terrainArray.push(new Terrain({code: 2, name: 'woods', densityFactor: 0.15, extraMovementPts: 2}));
+	terrainArray.push(new Terrain({code: 3, name: 'forest', densityFactor: 0.3, extraMovementPts: 2}));
+	terrainArray.push(new Terrain({code: 4, name: 'hills', densityFactor: 0.35, extraMovementPts: 3}));
+	terrainArray.push(new Terrain({code: 5, name: 'mountains', densityFactor: 0.4, extraMovementPts: 4}));
 }
 
 /*
@@ -1538,10 +1545,10 @@ function prepareFightDiv() {
 
 function startAttack() {
 	prepareFightDiv();
-	gameState.monsterIdx = Math.floor(Math.random() * gameSettings.numMonsterTypes);
+	gameState.monsterIdx = Math.floor(Math.random() * (monsterArray.length - 1));
 
 	if (gameState.finalFight) {
-		gameState.monsterIdx = gameState.finalMonsterIndex;
+		gameState.monsterIdx = monsterArray.length - 1;
 	}
 
 	monster.health = monsterArray[gameState.monsterIdx].healthPoints;
