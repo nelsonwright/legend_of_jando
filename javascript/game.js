@@ -209,29 +209,13 @@ if (typeof Object.create !== 'function') {
 	};
 }
 
-function Monster(monsterObj) {
-	this.name = monsterObj.name;
-	this.healthPoints = monsterObj.healthPoints;
-	this.attackPoints = monsterObj.attackPoints;
-	this.defencePoints = monsterObj.defencePoints;
-
-	loadImageForType(this, monsterObj);
-}
-
 function Terrain(terrainObj) {
 	this.code = terrainObj.code;
 	this.name = terrainObj.name;
 	this.densityFactor = terrainObj.densityFactor;
 	this.extraMovementPts = terrainObj.extraMovementPts;
 
-	loadImageForType(this, terrainObj);
-}
-
-function Food(foodObj) {
-	this.name = foodObj.name;
-	this.extraHealthPoints = foodObj.extraHealthPoints;
-
-	loadImageForType(this, foodObj);
+	this.image = loadImageForType(terrainObj, false);
 }
 
 function Quest(questObj) {
@@ -240,17 +224,12 @@ function Quest(questObj) {
 	this.destination.big.col = questObj.big.col;
 }
 
-function loadImageForType(currType, paramObject) {
-	var isFood = false;
+function loadImageForType(paramObject, isFood) {
+	var theImage = new Image();
 
-	// not entirely sure this is the best way, but what the hey . . .
-	if (currType.constructor.name === 'Food') {
-		isFood = true;
-	}
-
-	currType.imageName = deriveImageName(paramObject);
-	currType.image = new Image();
-	currType.image.src = makeImageSource(currType.imageName, isFood);
+	theImage.imageName = deriveImageName(paramObject);
+	theImage.src = makeImageSource(theImage.imageName, isFood);
+	return theImage;
 }
 
 function makeImageSource(imageName, isFood) {
@@ -296,8 +275,8 @@ for (i=0; i <map.big.numTerrainTypes + 1; i++) {
 function getMonsterData() {
 	// name, imageName, healthPoints, attackPoints, defencePoints
 	// we can infer image name from name, making lowercase and convertinf spaces to underscores
-	var monsterData = {
-		monster:
+	var data = {
+		items:
 		[
 			{name: 'Turtle Rider', healthPoints: 12, attackPoints: 6, defencePoints: 4},
 			{name: 'Turtle Rider', healthPoints: 12, attackPoints: 6, defencePoints: 4},
@@ -326,16 +305,11 @@ function getMonsterData() {
 			{name: 'Hideously evil GREEN SKULL', imageName: 'green_skull', healthPoints: 32, attackPoints: 16, defencePoints: 12}
 		]
 	}
-	return monsterData;
+	return data;
 }
 
-function loadMonsterInfo() {
-	var monsterData = getMonsterData();
-
-	for (i=0; i<monsterData.monster.length; i++) {
-		monsterArray.push(monsterData.monster[i]);
-		loadImageForType(monsterData.monster[i], monsterData.monster[i])
-	}
+function loadMonsters() {
+	loadJsonIntoArray(getMonsterData(), monsterArray, false);
 }
 
 /*
@@ -363,51 +337,71 @@ function loadTerrain() {
 	3	Health points gained from eating this food
 */
 
+function getFoodData() {
+	var data = {
+		items:
+		[
+			{name: 'squashy fig', imageName: 'fig', extraHealthPoints: 3},
+			{name: 'loaf of bread', imageName: 'bread_1', extraHealthPoints: 1},
+			{name: 'croissant', extraHealthPoints:  2},
+			{name: 'brown egg', extraHealthPoints: 3},
+			{name: 'cucumber',  extraHealthPoints: 1},
+			{name: 'glass of beer',  extraHealthPoints: 2},
+			{name: 'strawberry', extraHealthPoints: 2},
+			{name: 'husk of sweetcorn', imageName: 'sweetcorn', extraHealthPoints: 3},
+			{name: 'watermelon', extraHealthPoints: 3},
+			{name: 'ripe acorn', imageName: 'acorn', extraHealthPoints: 1},
+			{name: 'shiny aubergine', imageName: 'aubergine', extraHealthPoints: 3},
+			{name: 'half avacado', imageName: 'avacado', extraHealthPoints: 3},
+			{name: 'black olive', extraHealthPoints: 1},
+			{name: 'bunch of blueberries', imageName: 'blueberries', extraHealthPoints: 2},
+			{name: 'loaf of tasty bread', imageName: 'bread_2', extraHealthPoints: 5},
+			{name: 'yam',  extraHealthPoints: 4},
+			{name: 'couple of buns', imageName: 'buns', extraHealthPoints: 4},
+			{name: 'cabbage', extraHealthPoints: 3},
+			{name: 'carrot',  extraHealthPoints: 3},
+			{name: 'stick of celery', imageName: 'celery', extraHealthPoints: 1},
+			{name: 'smelly wheel of cheese', imageName: 'cheese_1', extraHealthPoints: 5},
+			{name: 'wheel of cheese', imageName: 'cheese_2', extraHealthPoints: 5},
+			{name: 'small bunch of cherries', imageName: 'cherries', extraHealthPoints: 2},
+			{name: 'courgette', extraHealthPoints: 3},
+			{name: 'couple of pale eggs', imageName: 'eggs', extraHealthPoints: 5},
+			{name: 'clove of garlic', imageName: 'garlic', extraHealthPoints: 3},
+			{name: 'bunch of grapes', imageName: 'grapes', extraHealthPoints: 4},
+			{name: 'green chilli', extraHealthPoints: 2},
+			{name: 'green olive', extraHealthPoints: 2},
+			{name: 'green pepper', extraHealthPoints: 3},
+			{name: 'fresh orange pepper', imageName: 'orange_pepper', extraHealthPoints: 3},
+			{name: 'nice orange', imageName: 'orange', extraHealthPoints: 4},
+			{name: 'pak choi leaf', imageName: 'pak_choi', extraHealthPoints: 1},
+			{name: 'pear', extraHealthPoints: 3},
+			{name: 'load of peas in their pod', imageName: 'peas_in_pod', extraHealthPoints: 3},
+			{name: 'few peas in the pod', imageName: 'peas_in_pod2', extraHealthPoints: 2},
+			{name: 'plum', extraHealthPoints: 3},
+			{name: 'potato',  extraHealthPoints: 2},
+			{name: 'red chilli', extraHealthPoints: 2},
+			{name: 'yellow pepper', extraHealthPoints: 2},
+			{name: 'red pepper', extraHealthPoints: 3},
+			{name: 'tomato', extraHealthPoints: 2},
+			{name: 'veggie sausage', extraHealthPoints: 5}
+		]
+	}
+	return data;
+}
+
+function loadJsonIntoArray(jsonData, targetArray, isFood) {
+	var data = getFoodData();
+	var currentItem;
+
+	for (i=0; i<jsonData.items.length; i++) {
+		currentItem = jsonData.items[i];
+		targetArray.push(currentItem);
+		targetArray[i].image = loadImageForType(currentItem, isFood);
+	}
+}
+
 function loadFood() {
-	foodArray.push(new Food({name: 'squashy fig', imageName: 'fig', extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'loaf of bread', imageName: 'bread_1', extraHealthPoints: 1}));
-	foodArray.push(new Food({name: 'croissant', extraHealthPoints:  2}));
-	foodArray.push(new Food({name: 'brown egg', extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'cucumber',  extraHealthPoints: 1}));
-	foodArray.push(new Food({name: 'glass of beer',  extraHealthPoints: 2}));
-	foodArray.push(new Food({name: 'strawberry', extraHealthPoints: 2}));
-	foodArray.push(new Food({name: 'husk of sweetcorn', imageName: 'sweetcorn', extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'watermelon', extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'ripe acorn', imageName: 'acorn', extraHealthPoints: 1}));
-	foodArray.push(new Food({name: 'shiny aubergine', imageName: 'aubergine', extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'half avacado', imageName: 'avacado', extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'black olive', extraHealthPoints: 1}));
-	foodArray.push(new Food({name: 'bunch of blueberries', imageName: 'blueberries', extraHealthPoints: 2}));
-	foodArray.push(new Food({name: 'loaf of tasty bread', imageName: 'bread_2', extraHealthPoints: 5}));
-	foodArray.push(new Food({name: 'yam',  extraHealthPoints: 4}));
-	foodArray.push(new Food({name: 'couple of buns', imageName: 'buns', extraHealthPoints: 4}));
-	foodArray.push(new Food({name: 'cabbage', extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'fancy cake', imageName: 'cake', extraHealthPoints: 4}));
-	foodArray.push(new Food({name: 'carrot',  extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'stick of celery', imageName: 'celery', extraHealthPoints: 1}));
-	foodArray.push(new Food({name: 'smelly wheel of cheese', imageName: 'cheese_1', extraHealthPoints: 5}));
-	foodArray.push(new Food({name: 'wheel of cheese', imageName: 'cheese_2', extraHealthPoints: 5}));
-	foodArray.push(new Food({name: 'small bunch of cherries', imageName: 'cherries', extraHealthPoints: 2}));
-	foodArray.push(new Food({name: 'courgette', extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'couple of pale eggs', imageName: 'eggs', extraHealthPoints: 5}));
-	foodArray.push(new Food({name: 'clove of garlic', imageName: 'garlic', extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'bunch of grapes', imageName: 'grapes', extraHealthPoints: 4}));
-	foodArray.push(new Food({name: 'green chilli', extraHealthPoints: 2}));
-	foodArray.push(new Food({name: 'green olive', extraHealthPoints: 2}));
-	foodArray.push(new Food({name: 'green pepper', extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'fresh orange pepper', imageName: 'orange_pepper', extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'nice orange', imageName: 'orange', extraHealthPoints: 4}));
-	foodArray.push(new Food({name: 'pak choi leaf', imageName: 'pak_choi', extraHealthPoints: 1}));
-	foodArray.push(new Food({name: 'pear', extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'load of peas in their pod', imageName: 'peas_in_pod', extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'few peas in the pod', imageName: 'peas_in_pod2', extraHealthPoints: 2}));
-	foodArray.push(new Food({name: 'plum', extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'potato',  extraHealthPoints: 2}));
-	foodArray.push(new Food({name: 'red chilli', extraHealthPoints: 2}));
-	foodArray.push(new Food({name: 'yellow pepper', extraHealthPoints: 2}));
-	foodArray.push(new Food({name: 'red pepper', extraHealthPoints: 3}));
-	foodArray.push(new Food({name: 'tomato', extraHealthPoints: 2}));
-	foodArray.push(new Food({name: 'veggie sausage', extraHealthPoints: 5}));
+	loadJsonIntoArray(getFoodData(), foodArray, true);
 }
 
 function deriveImageName(objectWithImage) {
@@ -1769,7 +1763,7 @@ function pressedAKey(e) {
 }
 
 function loadInitialInfo() {
-	loadMonsterInfo();
+	loadMonsters();
 	loadHeroInfo(gameSettings, map);
 	loadTerrain();
 	loadFood();
