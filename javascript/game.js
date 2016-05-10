@@ -1057,7 +1057,7 @@ function showTerrainOnBigMap(mapTableDiv) {
 			position.small.row = row;
 			position.small.column = col;
 			cellImageTag = getCellImageTag(mapTableDiv, position);
-			cellImageTag.src = makeImageSource(terrainArray[terrType].imageName);
+			cellImageTag.src = terrainArray[terrType].image.src;
 			cellImageTag.title = terrainArray[terrType].name;
 		}
 	}
@@ -1077,10 +1077,10 @@ function showBigMap() {
 function showBigMapKey(moveArea) {
 	moveArea.innerHTML='<h3>Map Key</h3>'
 		+ '<div>';
-	for (i=0; i <map.big.numTerrainTypes; i++) {
+	for (i=0; i <terrainArray.length; i++) {
 		moveArea.innerHTML = moveArea.innerHTML +
 			terrainArray[i].name + '&nbsp;&nbsp;<img src = '
-			+ makeImageSource(terrainArray[i].imageName)
+			+ terrainArray[i].image.src
 			+'/><br /><br />';
 	}
 	moveArea.innerHTML = moveArea.innerHTML + '</div>';
@@ -1165,7 +1165,7 @@ function showQuest(questShown, bigMapDisplayed) {
 			+' by looking at the big map, and searching all of the squares of type "'
 			+ terrainArray[map.big.nextDestination].name
 			+ '", which look like this: <img src = '
-			+ makeImageSource(terrainArray[map.big.nextDestination].imageName) + '/>'
+			+ terrainArray[map.big.nextDestination].image.src + '/>'
 			+'</p>'
 			+'One of these larger squares will have the '
 			+ destImageWords
