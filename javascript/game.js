@@ -113,6 +113,7 @@ var gameState = {
 };
 
 var hero = {
+	// the values here are the defaults, but may be overwritten by the cookie values . . .
 	name: "You",
 	image: new Image(),
 	type: "man",
@@ -148,6 +149,15 @@ var foodArray = [];
 // Used to hold details of terrain . . .
 var terrainArray= [];
 
+/* Used to hold terrain row/col pairs (locations) on the big map, indexed by terrain type, eg:
+	0: 0,1;1,0;2,0;3,1;4,0;4,1;6,0;6,2;7,0 // light grass in row 1, col 2, row 1, col 3, etc
+	1: 0,0;0,2;1,1;1,2;2,1;2,2;3,0;3,2;4,2;5,0;5,1;5,2;5,4;6,1;7,2
+	 . . . etc . . . up to  . . .
+	5: 0,9;1,9;2,7;2,8;2,9;3,9;4,9;7,9  //  mountains would be present on row 1, column 10, row 2, col 10, etc
+	We need to save these locations, so we can pick randomly pick one as the destination for each quest
+*/
+var terrainLocationsArray = [];
+
 var map = {
   // small map, i.e. the one your hero character moves around on
   small: {
@@ -167,7 +177,7 @@ var map = {
 	 bigOldposRowCell: 0,
 	 bigOldPosColumnCell: 0, // the previous co-ordinates
     terrainAttributes: 6,	// number of attributes of the particular terrain
-    numTerrainTypes: 6,    // how many different terrain types there are
+    numTerrainTypes: 6,    // how many different terrain types there are - set by the length of the terrainTypes array
     displayed: false,      // indicates if the big map is being displayed
     nextDestination: 0		// holds the next destination level,
     								// corresponds to terrain type, i.e. starts at zero,which = light grass
@@ -209,22 +219,13 @@ if (typeof Object.create !== 'function') {
 	};
 }
 
-function Terrain(terrainObj) {
-	this.code = terrainObj.code;
-	this.name = terrainObj.name;
-	this.densityFactor = terrainObj.densityFactor;
-	this.extraMovementPts = terrainObj.extraMovementPts;
-
-	this.image = loadImageForType(terrainObj, false);
-}
-
 function Quest(questObj) {
 	this.destination = {big: {}, small: {} };
 	this.destination.big.row = questObj.big.row;
 	this.destination.big.col = questObj.big.col;
 }
 
-function loadImageForType(paramObject, isFood) {
+function getImageForItem(paramObject, isFood) {
 	var theImage = new Image();
 
 	theImage.imageName = deriveImageName(paramObject);
@@ -250,18 +251,6 @@ for (i=0; i <map.big.rows; i++) {
 var mapDetailArray=new Array(map.small.rows);
 for (i=0; i <map.small.rows; i++) {
 	mapDetailArray[i]=new Array(map.small.cols);
-}
-
-/* Used to hold terrain row/col pairs (locations) on the big map, indexed by terrain type, eg:
-	0: 0,1;1,0;2,0;3,1;4,0;4,1;6,0;6,2;7,0 // light grass in row 1, col 2, row 1, col 3, etc
-	1: 0,0;0,2;1,1;1,2;2,1;2,2;3,0;3,2;4,2;5,0;5,1;5,2;5,4;6,1;7,2
-	 . . . etc . . . up to  . . .
-	5: 0,9;1,9;2,7;2,8;2,9;3,9;4,9;7,9  //  mountains would be present on row 1, column 10, row 2, col 10, etc
-	We need to save these locations, so we can pick randomly pick one as the destination for each quest
-*/
-var terrainLocationsArray=new Array(map.big.numTerrainTypes);
-for (i=0; i <map.big.numTerrainTypes; i++) {
-	terrainLocationsArray[i]=''; 	// set up terrainLocationsArray with blank as default
 }
 
 // Used to hold row/col destination pairs on big map and small map,
@@ -312,32 +301,45 @@ function loadMonsters() {
 	loadJsonIntoArray(getMonsterData(), monsterArray, false);
 }
 
-/*
-	Terrain Attributes:
-	1	Number Code
-	2	Name
-	3	Density Factor (relates to how many will appear on the small map)
-	4	Additional movement points needed to traverse this terrain
-	5	Image name
-*/
-
-function loadTerrain() {
-	terrainArray.push(new Terrain({code: 0, name: 'light grass', densityFactor: 0, extraMovementPts: 0}));
-	terrainArray.push(new Terrain({code: 1, name: 'low scrub', densityFactor: 0.1, extraMovementPts: 1}));
-	terrainArray.push(new Terrain({code: 2, name: 'woods', densityFactor: 0.15, extraMovementPts: 2}));
-	terrainArray.push(new Terrain({code: 3, name: 'forest', densityFactor: 0.3, extraMovementPts: 2}));
-	terrainArray.push(new Terrain({code: 4, name: 'hills', densityFactor: 0.35, extraMovementPts: 3}));
-	terrainArray.push(new Terrain({code: 5, name: 'mountains', densityFactor: 0.4, extraMovementPts: 4}));
+function getTerrainData() {
+	/*
+		Terrain Attributes:
+		1	Number Code
+		2	Name
+		3	Density Factor (relates to how many will appear on the small map)
+		4	Additional movement points needed to traverse this terrain
+		5	Image name
+	*/
+	var data = {
+		items:
+		[
+			{code: 0, name: 'light grass', densityFactor: 0, extraMovementPts: 0},
+			{code: 1, name: 'low scrub', densityFactor: 0.1, extraMovementPts: 1},
+			{code: 2, name: 'woods', densityFactor: 0.15, extraMovementPts: 2},
+			{code: 3, name: 'forest', densityFactor: 0.3, extraMovementPts: 2},
+			{code: 4, name: 'hills', densityFactor: 0.35, extraMovementPts: 3},
+			{code: 5, name: 'mountains', densityFactor: 0.4, extraMovementPts: 4}
+		]
+	}
+	return data;
 }
 
-/*
-	Food Attributes:
-	1	Name of food (word or phrase always starts with a consonant)
-	2	Image name (if that cannot be derived from the name above)
-	3	Health points gained from eating this food
-*/
+function loadTerrain() {
+	loadJsonIntoArray(getTerrainData(), terrainArray, false);
+	map.big.numTerrainTypes = terrainArray.length;
+
+	for (i=0; i <map.big.numTerrainTypes; i++) {
+		terrainLocationsArray.push(''); 	// set up with blank as default
+	}
+}
 
 function getFoodData() {
+	/*
+		Food Attributes:
+		1	Name of food (word or phrase always starts with a consonant)
+		2	Image name (if that cannot be derived from the name above)
+		3	Health points gained from eating this food
+	*/
 	var data = {
 		items:
 		[
@@ -390,13 +392,12 @@ function getFoodData() {
 }
 
 function loadJsonIntoArray(jsonData, targetArray, isFood) {
-	var data = getFoodData();
 	var currentItem;
 
 	for (i=0; i<jsonData.items.length; i++) {
 		currentItem = jsonData.items[i];
 		targetArray.push(currentItem);
-		targetArray[i].image = loadImageForType(currentItem, isFood);
+		targetArray[i].image = getImageForItem(currentItem, isFood);
 	}
 }
 
@@ -528,21 +529,21 @@ function saveHeroInfo() {
 	setCookie('jando', cookieValue, 365);  // cookie will expire in a year?  Seems to be 6 weeks now
 }
 
-/*
-		Quest array
-		0. This quest destination (big map row)
-		1. This quest destination (big map column)
-		2. This quest destination (small map row)
-		3. This quest destination (small map column)
-		4. Image name of character to display at start of this quest
-		5. Text to display at start of this quest
-		6. Image that will appear on the small map as the destination for this quest
-
-*/
-
 function getQuestData() {
 	// this array assumes that the index is the same as the index used in the terrainArray,
-	// i.e. index 0 = first position in the arraay = light grass, 1 = low scrub, etc
+	// i.e. index 0 = first position in the array = light grass, 1 = low scrub, etc
+
+	/*
+			Quest array
+			0. This quest destination (big map row)
+			1. This quest destination (big map column)
+			2. This quest destination (small map row)
+			3. This quest destination (small map column)
+			4. Image name of character to display at start of this quest
+			5. Text to display at start of this quest
+			6. Image that will appear on the small map as the destination for this quest
+
+	*/
 	var questData = {
 		quest:
 		[
@@ -1150,6 +1151,7 @@ function showQuest(questShown, bigMapDisplayed) {
 		moveArea.innerHTML = '&nbsp;';
 		questString =	'<div style = "position:absolute;width:360px">'
 			        +   '<h3>Your Quest</h3>';
+
 		if (map.big.nextDestination == 5) {
 			questString = questString + 'Go where the eagle told you, to meet your destiny . . .'
 			+ '<p>'
@@ -1770,9 +1772,9 @@ function pressedAKey(e) {
 }
 
 function loadInitialInfo() {
+	loadTerrain();
 	loadMonsters();
 	loadHeroInfo(gameSettings, map);
-	loadTerrain();
 	loadFood();
 }
 
