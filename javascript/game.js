@@ -219,12 +219,6 @@ if (typeof Object.create !== 'function') {
 	};
 }
 
-function Quest(questObj) {
-	this.destination = {big: {}, small: {} };
-	this.destination.big.row = questObj.big.row;
-	this.destination.big.col = questObj.big.col;
-}
-
 function getImageForItem(paramObject, isFood) {
 	var theImage = new Image();
 
@@ -256,9 +250,9 @@ for (i=0; i <map.small.rows; i++) {
 // Used to hold row/col destination pairs on big map and small map,
 // indexed by terrain type.  Also used to hold character and map images
 // that are displayed upon reaching a destination
-var questArray=new Array(map.big.numTerrainTypes + 1);	 // last destination is random location for treasure
+var questArray = new Array(map.big.numTerrainTypes + 1);	 // last destination is random location for treasure
 for (i=0; i <map.big.numTerrainTypes + 1; i++) {
-	questArray[i] = new Array(map.big.numTerrainTypes + 1);
+	questArray[i] = {};
 }
 
 function getMonsterData() {
@@ -435,27 +429,31 @@ function getCookieValue(pairName, cookieString){
 	return returnValue;
 }
 
+function getIntValueFromCookie(key, cookieValue) {
+	return parseInt(getCookieValue(key, cookieValue));
+}
+
 function extractHeroValuesFromCookie(cookieValue) {
-	hero.name = getCookieValue('name', cookieValue || 'You');
-	hero.health = parseInt(getCookieValue('health', cookieValue));
-	hero.attack = parseInt(getCookieValue('attack', cookieValue));
-	hero.defence = parseInt(getCookieValue('defence', cookieValue));
+	hero.name = getCookieValue('name', cookieValue);
+	hero.health = getIntValueFromCookie('health', cookieValue);
+	hero.attack = getIntValueFromCookie('attack', cookieValue);
+	hero.defence = getIntValueFromCookie('defence', cookieValue);
 	hero.type = getCookieValue('char', cookieValue);
-	hero.maxHealth = parseInt(getCookieValue('maxHeroHealth', cookieValue));
-	hero.maxAttack = parseInt(getCookieValue('maxHeroAttack', cookieValue));
-	hero.maxDefence = parseInt(getCookieValue('maxHeroDefence', cookieValue));
-	hero.movePoints = parseInt(getCookieValue('movePoints', cookieValue));
-	hero.maxMovePoints = parseInt(getCookieValue('maxMovePoints', cookieValue));
-	hero.experience = parseInt(getCookieValue('heroExperience', cookieValue));
-	hero.level = parseInt(getCookieValue('heroLevel', cookieValue));
+	hero.maxHealth = getIntValueFromCookie('maxHeroHealth', cookieValue);
+	hero.maxAttack = getIntValueFromCookie('maxHeroAttack', cookieValue);
+	hero.maxDefence = getIntValueFromCookie('maxHeroDefence', cookieValue);
+	hero.movePoints = getIntValueFromCookie('movePoints', cookieValue);
+	hero.maxMovePoints = getIntValueFromCookie('maxMovePoints', cookieValue);
+	hero.experience = getIntValueFromCookie('heroExperience', cookieValue);
+	hero.level = getIntValueFromCookie('heroLevel', cookieValue);
 }
 
 function extractMapValuesFromCookie(cookieValue) {
-	map.small.posRowCell = parseInt(getCookieValue('posRowCell', cookieValue));
-	map.small.posColumnCell = parseInt(getCookieValue('posColumnCell', cookieValue));
-	map.big.posRowCell = parseInt(getCookieValue('bigPosRowCell', cookieValue));
-	map.big.posColumnCell = parseInt(getCookieValue('bigPosColumnCell', cookieValue));
-	map.big.nextDestination = parseInt(getCookieValue('nextDestination', cookieValue));
+	map.small.posRowCell = getIntValueFromCookie('posRowCell', cookieValue);
+	map.small.posColumnCell = getIntValueFromCookie('posColumnCell', cookieValue);
+	map.big.posRowCell = getIntValueFromCookie('bigPosRowCell', cookieValue);
+	map.big.posColumnCell = getIntValueFromCookie('bigPosColumnCell', cookieValue);
+	map.big.nextDestination = getIntValueFromCookie('nextDestination', cookieValue);
 }
 
 function extractValuesFromCookie() {
@@ -668,19 +666,20 @@ function populateQuestArray(terrainCode, terrainQuestData) {
 		var destLocation = Math.floor(Math.random() * arrayLength);
 		thisTerrainRowCol = thisTerrainCoords[destLocation].split(',');
 		//assign large map row & column . . .
-		questArray[terrainCode][0] = parseInt(thisTerrainRowCol[0]);
-		questArray[terrainCode][1] = parseInt(thisTerrainRowCol[1]);
+		questArray[terrainCode].bigRow = parseInt(thisTerrainRowCol[0]);
+		questArray[terrainCode].bigCol = parseInt(thisTerrainRowCol[1]);
 	}
-	while (questArray[terrainCode][0] === map.big.posRowCell &&
-			 questArray[terrainCode][1] === map.big.posColumnCell);
+	while (questArray[terrainCode].bigRow === map.big.posRowCell &&
+			 questArray[terrainCode].bigCol === map.big.posColumnCell);
 
-	// now set the small map row & col, don't allow it to be at the edge of the map
-	questArray[terrainCode][2] = Math.floor(Math.random() * (map.small.rows - 2) + 1);
-	questArray[terrainCode][3] = Math.floor(Math.random() * (map.small.cols -2) + 1);
+	// now set the small map row & col, don't allow it to be at the edge of the small map
+	// as this can cause problems or be surprising when moving between small map tiles
+	questArray[terrainCode].smallRow = Math.floor(Math.random() * (map.small.rows - 2) + 1);
+	questArray[terrainCode].smallCol = Math.floor(Math.random() * (map.small.cols -2) + 1);
 
-	questArray[terrainCode][4] = terrainQuestData.imageNameOfStartCharacter;
-	questArray[terrainCode][5] = terrainQuestData.storyTextHtml;
-	questArray[terrainCode][6] = terrainQuestData.destinationImageName;
+	questArray[terrainCode].imageNameOfStartCharacter = terrainQuestData.imageNameOfStartCharacter;
+	questArray[terrainCode].storyTextHtml = terrainQuestData.storyTextHtml;
+	questArray[terrainCode].destinationImageName = terrainQuestData.destinationImageName;
 }
 
 function setQuestLocations() {
@@ -695,10 +694,10 @@ function setQuestLocations() {
 		populateQuestArray(terrainCode, questData.quest[terrainCode]);
 	}
 	// now do the same for the last location . . .
-	questArray[map.big.numTerrainTypes][0] = Math.floor(Math.random() * map.big.rows);
-	questArray[map.big.numTerrainTypes][1] = Math.floor(Math.random() * map.big.cols);
-	questArray[map.big.numTerrainTypes][2] = Math.floor(Math.random() * map.small.rows);
-	questArray[map.big.numTerrainTypes][3] = Math.floor(Math.random() * map.small.cols);
+	questArray[map.big.numTerrainTypes].bigRow = Math.floor(Math.random() * map.big.rows);
+	questArray[map.big.numTerrainTypes].bigCol = Math.floor(Math.random() * map.big.cols);
+	questArray[map.big.numTerrainTypes].smallRow = Math.floor(Math.random() * map.small.rows);
+	questArray[map.big.numTerrainTypes].smallCol = Math.floor(Math.random() * map.small.cols);
 }
 
 function decideTerrainType(column, numberOfTerrainTypes) {
@@ -827,14 +826,14 @@ function showQuestDestinationOnSmallMap(mapTableDiv, row, col) {
 	var position = {small:{row:row, column:col}, big:{row:null, column:null}};
 
 	cellImageTag = getCellImageTag(mapTableDiv, position);
-	cellImageTag.src = makeImageSource(questArray[map.big.nextDestination][6]);
+	cellImageTag.src = makeImageSource(questArray[map.big.nextDestination].destinationImageName);
 	cellImageTag.title = "the quest destination";
 	cellImageTag.alt = "the quest destination";
 }
 
 function isQuestDestinationBigMapSquare(heroPosition) {
-	return questArray[map.big.nextDestination][0] === heroPosition.big.row &&
-	   	questArray[map.big.nextDestination][1] === heroPosition.big.column;
+	return questArray[map.big.nextDestination].bigRow === heroPosition.big.row &&
+	   	questArray[map.big.nextDestination].bigCol === heroPosition.big.column;
 }
 
 function showSmallMap() {
@@ -850,8 +849,8 @@ function showSmallMap() {
 
 	if (isQuestDestinationBigMapSquare(map.getHeroPosition())) {
 		showQuestDestinationOnSmallMap(mapTableDiv,
-							  questArray[map.big.nextDestination][2],
-							  questArray[map.big.nextDestination][3]);
+							  questArray[map.big.nextDestination].smallRow,
+							  questArray[map.big.nextDestination].smallCol);
 	}
 }
 
@@ -886,10 +885,10 @@ function isOffBigMap(heroPosition) {
 }
 
 function checkQuestDestinationReached(map) {
-	if (questArray[map.big.nextDestination][0] === map.big.posRowCell &&
-	    questArray[map.big.nextDestination][1] === map.big.posColumnCell &&
-		 questArray[map.big.nextDestination][2] === map.small.posRowCell &&
-	    questArray[map.big.nextDestination][3] === map.small.posColumnCell) {
+	if (questArray[map.big.nextDestination].bigRow === map.big.posRowCell &&
+	    questArray[map.big.nextDestination].bigCol === map.big.posColumnCell &&
+		 questArray[map.big.nextDestination].smallRow === map.small.posRowCell &&
+	    questArray[map.big.nextDestination].smallCol === map.small.posColumnCell) {
 
 		map.big.nextDestination = map.big.nextDestination + 1;
 		gameState.storyEvent = true;
@@ -1140,8 +1139,8 @@ function showQuest(questShown, bigMapDisplayed) {
 	var destImageWords;
 	var charImageWords;
 
-	destImageWords = questArray[map.big.nextDestination][6].replace(/_/g,' ');
-	charImageWords = questArray[map.big.nextDestination + 1][4].replace(/_/g,' ');
+	destImageWords = questArray[map.big.nextDestination].destinationImageName.replace(/_/g,' ');
+	charImageWords = questArray[map.big.nextDestination + 1].imageNameOfStartCharacter.replace(/_/g,' ');
 
 	if (!questShown) {
 		gameState.questDisplayed = true;
@@ -1156,9 +1155,9 @@ function showQuest(questShown, bigMapDisplayed) {
 			questString = questString + 'Go where the eagle told you, to meet your destiny . . .'
 			+ '<p>'
 			+ 'Go to row '
-		   + parseInt(questArray[map.big.nextDestination][0] + 1)
+		   + parseInt(questArray[map.big.nextDestination].bigRow + 1)
 			+ ', column '
-				+	 parseInt(questArray[map.big.nextDestination][1] + 1)
+				+	 parseInt(questArray[map.big.nextDestination].bigCol + 1)
 			+ ' on your map.'
 			+ '</p>'
 		} else {
@@ -1167,7 +1166,7 @@ function showQuest(questShown, bigMapDisplayed) {
 			+ ', who lives in a '
 			+ destImageWords
 			+ ' like this  '
-			+ '<img src="./web_images/' + questArray[map.big.nextDestination][6] + '.png" />'
+			+ '<img src="./web_images/' + questArray[map.big.nextDestination].destinationImageName + '.png" />'
 			+ ' '
 			+ '. You can find the '
 			+ destImageWords
@@ -1478,14 +1477,14 @@ function setDestinationHTML(nextDestination) {
 	returnHTML =
        	'<div id="theHero" style="float:left;">'
 		+	'<img id = "destinationImage" style="float:right; padding-left:15px"/>'
-		+ questArray[nextDestination][5]
+		+ questArray[nextDestination].storyTextHtml
 		+ '</div>';
 	return returnHTML;
 }
 
 function setDestinationImage(nextDestination) {
 	var destImage = document.getElementById('destinationImage');
-	destImage.src = './web_images/' + questArray[nextDestination][4] + '.png';
+	destImage.src = './web_images/' + questArray[nextDestination].imageNameOfStartCharacter + '.png';
 	destImage.title = 'a curious character';
 }
 
