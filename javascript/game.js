@@ -641,8 +641,8 @@ function getQuestData() {
 				destinationImageName: 'black_feather'
 			},
 			{	imageNameOfStartCharacter: 'green_skull',
-				storyTextHtml: '<p>'
-					+'</p>',
+				storyTextHtml: '<p>' +
+					'</p>',
 				destinationImageName: 'black_feather'
 			},
 		]
@@ -690,14 +690,18 @@ function setQuestLocations() {
 	// This provides a destination for the quest related to that terrain type
 	// Just pass in the data from questData that is needed for the quest for that terrain
 
-	for (terrainCode=0; terrainCode <map.big.numTerrainTypes; terrainCode++) {
+	for (terrainCode=0; terrainCode < map.big.numTerrainTypes; terrainCode++) {
 		populateQuestArray(terrainCode, questData.quest[terrainCode]);
 	}
 	// now do the same for the last location . . .
-	questArray[map.big.numTerrainTypes].bigRow = Math.floor(Math.random() * map.big.rows);
-	questArray[map.big.numTerrainTypes].bigCol = Math.floor(Math.random() * map.big.cols);
-	questArray[map.big.numTerrainTypes].smallRow = Math.floor(Math.random() * map.small.rows);
-	questArray[map.big.numTerrainTypes].smallCol = Math.floor(Math.random() * map.small.cols);
+	var final = map.big.numTerrainTypes;
+	questArray[final].bigRow = Math.floor(Math.random() * map.big.rows);
+	questArray[final].bigCol = Math.floor(Math.random() * map.big.cols);
+	questArray[final].smallRow = Math.floor(Math.random() * map.small.rows);
+	questArray[final].smallCol = Math.floor(Math.random() * map.small.cols);
+	questArray[final].imageNameOfStartCharacter = questData.quest[final].imageNameOfStartCharacter;
+	questArray[final].storyTextHtml = questData.quest[final].storyTextHtml;
+	questArray[final].destinationImageName = questData.quest[final].destinationImageName;
 }
 
 function decideTerrainType(column, numberOfTerrainTypes) {
@@ -1131,63 +1135,74 @@ function createTableMap(mapTable) {
 	}
 }
 
-function showQuest(questShown, bigMapDisplayed) {
+function lastQuestDestination() {
+	return map.big.nextDestination == terrainArray.length - 1;
+}
+
+function createQuestString() {
+	var destinationInWords = questArray[map.big.nextDestination].destinationImageName.replace(/_/g,' ');
+	var characterToFindInWords = questArray[map.big.nextDestination + 1].imageNameOfStartCharacter.replace(/_/g,' ');
+	var assembledQuestString = '<div style = "position:absolute;width:360px">' +
+				  		'<h3>Your Quest</h3>';
+
+	if (lastQuestDestination()) {
+		assembledQuestString = assembledQuestString +
+		'Go where the eagle told you, to meet your destiny . . .' +
+		'<p>' +
+		'Go to row ' +
+		parseInt(questArray[map.big.nextDestination].bigRow + 1) +
+		', column ' +
+		parseInt(questArray[map.big.nextDestination].bigCol + 1) +
+		' on your map.' +
+		'</p>'
+	} else {
+		assembledQuestString = assembledQuestString +
+		'<p>You need to find a ' +
+		characterToFindInWords +
+		', who lives in a ' +
+		destinationInWords +
+		' like this  ' +
+		'<img src="./web_images/' + questArray[map.big.nextDestination].destinationImageName + '.png" />' +
+		' ' +
+		'. You can find the ' +
+		destinationInWords +
+		' by looking at the big map, and searching all of the squares of type "' +
+		terrainArray[map.big.nextDestination].name +
+		'", which look like this: <img src = ' +
+		terrainArray[map.big.nextDestination].image.src + '/>' +
+		'</p>' +
+		'One of these larger squares will have the ' +
+		destinationInWords +
+		' contained within it.';
+	}
+
+	assembledQuestString = assembledQuestString + '</div>';
+	return assembledQuestString;
+}
+
+function showQuest() {
+	document.getElementById('showQuestButt').innerHTML = 'Hide <u>Q</u>uest';
+	document.getElementById('movementArea').innerHTML = '&nbsp;';
+	document.getElementById('mapTableDiv').innerHTML = createQuestString();
+
+	gameState.questDisplayed = true;
+}
+
+function hideQuest(bigMapDisplayed) {
 	var mapTableDiv = document.getElementById('mapTableDiv');
 	var questButt = document.getElementById('showQuestButt');
-	var terrImage = new Image();
-	var imageWords = new Array();
-	var destImageWords;
-	var charImageWords;
+	mapTableDiv.removeChild(mapTableDiv.childNodes[0]);
+	createTableMap(mapTableDiv);
+	questButt.innerHTML = 'Show <u>Q</u>uest';
+	bigMapDisplayed = !bigMapDisplayed;
+	showMap(bigMapDisplayed);
+}
 
-	destImageWords = questArray[map.big.nextDestination].destinationImageName.replace(/_/g,' ');
-	charImageWords = questArray[map.big.nextDestination + 1].imageNameOfStartCharacter.replace(/_/g,' ');
-
-	if (!questShown) {
-		gameState.questDisplayed = true;
-		var moveArea = document.getElementById('movementArea');
-		var questString;
-
-		moveArea.innerHTML = '&nbsp;';
-		questString =	'<div style = "position:absolute;width:360px">'
-			        +   '<h3>Your Quest</h3>';
-
-		if (map.big.nextDestination == 5) {
-			questString = questString + 'Go where the eagle told you, to meet your destiny . . .'
-			+ '<p>'
-			+ 'Go to row '
-		   + parseInt(questArray[map.big.nextDestination].bigRow + 1)
-			+ ', column '
-				+	 parseInt(questArray[map.big.nextDestination].bigCol + 1)
-			+ ' on your map.'
-			+ '</p>'
-		} else {
-			questString = questString + '<p>You need to find a '
-			+ charImageWords
-			+ ', who lives in a '
-			+ destImageWords
-			+ ' like this  '
-			+ '<img src="./web_images/' + questArray[map.big.nextDestination].destinationImageName + '.png" />'
-			+ ' '
-			+ '. You can find the '
-			+ destImageWords
-			+' by looking at the big map, and searching all of the squares of type "'
-			+ terrainArray[map.big.nextDestination].name
-			+ '", which look like this: <img src = '
-			+ terrainArray[map.big.nextDestination].image.src + '/>'
-			+'</p>'
-			+'One of these larger squares will have the '
-			+ destImageWords
-			+ ' contained within it.';
-	}
-    questString = questString + '</div>';
-    mapTableDiv.innerHTML = questString;
-    questButt.innerHTML = 'Hide <u>Q</u>uest';
+function toggleQuest(questShown, bigMapDisplayed) {
+	if (questShown) {
+		hideQuest(bigMapDisplayed);
 	} else {
-		mapTableDiv.removeChild(mapTableDiv.childNodes[0]);
-		createTableMap(mapTableDiv);
-		questButt.innerHTML = 'Show <u>Q</u>uest';
-		bigMapDisplayed = !bigMapDisplayed;
-		showMap(bigMapDisplayed);
+		showQuest();
 	}
 }
 
@@ -1726,7 +1741,7 @@ function checkNonMovementActions(actionCode) {
 	}
 
 	if (actionCode == key.questLog && !map.big.displayed) {
-		showQuest(gameState.questDisplayed, map.big.displayed);
+		toggleQuest(gameState.questDisplayed, map.big.displayed);
 	}
 
 	if (actionCode == key.sleep) {
