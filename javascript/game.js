@@ -651,8 +651,8 @@ function getQuestData() {
 }
 
 function populateQuestArray(terrainCode, terrainQuestData) {
-	var thisTerrainCoords = new Array();
-	var thisTerrainRowCol = new Array();
+	var thisTerrainCoords = [];
+	var thisTerrainRowCol = [];
 
 	// the locations are row,column pairs delimited by semicolons, eg 0,4;1,4;2,4; etc
 	thisTerrainCoords = terrainLocationsArray[terrainCode].split(';');
@@ -729,10 +729,11 @@ function createBigMap() {
 
 			// need to record location of each terrain type in the locations array,
 			// indexed by terrain type.  Then we use this to generate a quest destination for each terrain type
-			if (terrainLocationsArray[terrainType].length > 0)
+			if (terrainLocationsArray[terrainType].length > 0) {
 				terrainLocationsArray[terrainType] = terrainLocationsArray[terrainType] + ';' + bigRow + ',' + bigCol;
-			else
+			} else {
 				terrainLocationsArray[terrainType] = bigRow + ',' + bigCol;
+			}
 		}
 	}
 	setQuestLocations();
@@ -763,7 +764,7 @@ function getBigMapCell(mapTableDiv, position) {
 }
 
 function getSmallMapCell(mapTableDiv, position) {
-	return getMapCell(mapTableDiv, position.small.row, position.small.column);;
+	return getMapCell(mapTableDiv, position.small.row, position.small.column);
 }
 
 function getCellImageTag(mapTableDiv, position) {
@@ -793,29 +794,30 @@ function setTerrainCellSmallMap(mapTableDiv, row, column) {
 	cellImageTag.src = terrainArray[terrType].image.src;
 	cellImageTag.title = terrainArray[terrType].name;
 	cellImageTag.alt = terrainArray[terrType].name;
-	setMapCellColour(mapTableDiv, position, '#E6EFC2')
+	setMapCellColour(mapTableDiv, position, '#E6EFC2');
 }
 
 function showMovementArea() {
 	var moveArea = document.getElementById('movementArea');
-	moveArea.innerHTML = 'Use the arrow keys to move, or click on the direction arrows below'
-			+ '<br />'
-			+ '<br />'
-			+ '<div style="font-family:courier,monospace">'
-			+	'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-			+	'<img src="./web_images/arrow_up_big.png" title="up" onClick="clickedAnArrow(this)"'
-			+	'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />'
-			+	'<br />'
-			+	'<img src="./web_images/arrow_left_big.png" title="left" onClick="clickedAnArrow(this)"'
-			+	'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />'
-			+	'&nbsp;<span id="mouseMoveHero" style="vertical-align:90%">&nbsp;</span>&nbsp;'
-			+	'<img src="./web_images/arrow_right_big.png" title="right" onClick="clickedAnArrow(this)"'
-			+	'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />'
-			+	'<br />'
-			+	'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-			+	'<img src="./web_images/arrow_down_big.png" title="down" onClick="clickedAnArrow(this)"'
-			+	'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />'
-		   + '</div>';
+	moveArea.innerHTML =
+			'Use the arrow keys to move, or click on the direction arrows below' +
+			'<br />' +
+			'<br />' +
+			'<div style="font-family:courier,monospace">' +
+			'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+			'<img src="./web_images/arrow_up_big.png" title="up" onClick="clickedAnArrow(this)"' +
+			'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />' +
+			'<br />' +
+			'<img src="./web_images/arrow_left_big.png" title="left" onClick="clickedAnArrow(this)"' +
+			'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />' +
+			'&nbsp;<span id="mouseMoveHero" style="vertical-align:90%">&nbsp;</span>&nbsp;' +
+			'<img src="./web_images/arrow_right_big.png" title="right" onClick="clickedAnArrow(this)"' +
+			'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />' +
+			'<br />' +
+			'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+			'<img src="./web_images/arrow_down_big.png" title="down" onClick="clickedAnArrow(this)"' +
+			'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />' +
+		   '</div>';
 	var mouseMoveHero = document.getElementById('mouseMoveHero');
 	mouseMoveHero.innerHTML='<img src="./web_images/hero_' + hero.type + '_thumb.png" title="the hero" />';
 }
@@ -860,7 +862,7 @@ function drawHero() {
 	mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
 	mapCellImageTag.title = 'the hero';
 	mapCellImageTag.alt = 'the hero';
-	mapCellImageTag.id = 'theHeroImg'
+	mapCellImageTag.id = 'theHeroImg';
 
 	// should move this somewhere else at some point . . .
 	map.setPriorHeroPosition(map.getHeroPosition());
@@ -893,7 +895,7 @@ function checkQuestDestinationReached(map) {
 		gameState.storyEvent = true;
 
 		// final quest destination
-		if  (map.big.nextDestination == map.big.numTerrainTypes) {
+		if  (map.big.nextDestination === map.big.numTerrainTypes) {
 			alert('Who dares take the black feather???!!!!');
 			alert('Prepare yourself, for you will die!!!');
 			hero.fightOn = 'Yes';
@@ -903,7 +905,7 @@ function checkQuestDestinationReached(map) {
 			displayDestination(map.big.nextDestination);
 		}
 	}
-};
+}
 
 function heroMovedUpToNextMapSquare(newHeroPosition) {
 	return newHeroPosition.small.row < 0;
@@ -968,7 +970,7 @@ function showNextSmallMapSquare(heroPosition) {
 	showSmallMap();
 	drawHero();
 	map.setPriorHeroPosition(heroPosition);
-};
+}
 
 function dontAllowMovement() {
 	// don't allow movement off playing area
@@ -1059,7 +1061,7 @@ function saveGame() {
 
 function makeMapIfNotThere(mapTableDiv) {
    var tableExists = mapTableDiv.getElementsByTagName("table")[0];
-	if (typeof tableExists == 'undefined') {
+	if (typeof tableExists === 'undefined') {
 	    createTableMap(mapTableDiv);
 	}
 }
@@ -1089,17 +1091,17 @@ function showBigMap() {
 	showTerrainOnBigMap(mapTableDiv);
 
 	// highlight on the big map the square where the hero is . . .
-	setBigMapCellColour(mapTableDiv, map.getHeroPosition(), 'yellow')
+	setBigMapCellColour(mapTableDiv, map.getHeroPosition(), 'yellow');
 }
 
 function showBigMapKey(moveArea) {
-	moveArea.innerHTML='<h3>Map Key</h3>'
-		+ '<div>';
+	moveArea.innerHTML='<h3>Map Key</h3>' +
+		'<div>';
 	for (i=0; i <terrainArray.length; i++) {
-		moveArea.innerHTML = moveArea.innerHTML +
-			terrainArray[i].name + '&nbsp;&nbsp;<img src = '
-			+ terrainArray[i].image.src
-			+'/><br /><br />';
+		moveArea.innerHTML =
+			moveArea.innerHTML +
+			terrainArray[i].name + '&nbsp;&nbsp;<img src = ' + terrainArray[i].image.src +
+			'<br /><br />';
 	}
 	moveArea.innerHTML = moveArea.innerHTML + '</div>';
 }
@@ -1143,7 +1145,7 @@ function createTableMap(mapTable) {
 }
 
 function lastQuestDestination() {
-	return map.big.nextDestination == terrainArray.length - 1;
+	return map.big.nextDestination === terrainArray.length - 1;
 }
 
 function createQuestString() {
@@ -1161,7 +1163,7 @@ function createQuestString() {
 		', column ' +
 		parseInt(questArray[map.big.nextDestination].bigCol + 1) +
 		' on your map.' +
-		'</p>'
+		'</p>';
 	} else {
 		assembledQuestString = assembledQuestString +
 		'<p>You need to find a ' +
@@ -1321,8 +1323,9 @@ function getHeroHitDisplay(heroHit) {
 		heroHitDisplay = heroHitDisplay + ' and <strong>miss</strong>';
 	} else {
 	if (monster.health <= 0) {
-			heroHitDisplay = heroHitDisplay + ' and do <strong>' + heroHit + '</strong>' + ' damage,'
-											+ ' and slay the creature.';
+			heroHitDisplay = heroHitDisplay +
+			' and do <strong>' + heroHit + '</strong>' +
+			' damage, and slay the creature.';
 	} else {
 			heroHitDisplay = heroHitDisplay + ' and do <strong>' + heroHit + '</strong>' + ' damage';
 		}
@@ -1374,7 +1377,7 @@ function sayHeroDead() {
 function calculateMonsterHitDisplay(monsterHit) {
 	var monsterHitDisplay = 'The ' + monsterArray[gameState.monsterIdx].name + ' attacks ';
 
-	if (monsterHit == 0) {
+	if (monsterHit === 0) {
 		monsterHitDisplay = monsterHitDisplay + ' and <strong>misses</strong>';
 	}
 	else {
@@ -1395,11 +1398,11 @@ function doMonsterAttack(runningAway) {
 	if (runningAway) {
 		monsterHit = Math.floor(getMonsterDiceRoll(monsterArray[gameState.monsterIdx].attackPoints) / 1.5 );
 	} else {
-		monsterHit = max(0, getMonsterDiceRoll(monsterArray[gameState.monsterIdx].attackPoints) - getHeroDiceRoll(hero.defence))
+		monsterHit = max(0, getMonsterDiceRoll(monsterArray[gameState.monsterIdx].attackPoints) - getHeroDiceRoll(hero.defence));
 	}
 
 	hero.health = max(0, hero.health - monsterHit);
-	monsterFightPara.innerHTML = calculateMonsterHitDisplay(monsterHit);;
+	monsterFightPara.innerHTML = calculateMonsterHitDisplay(monsterHit);
 	animateFightMonster();
 
 	if (hero.health <= 0) {
@@ -1458,7 +1461,7 @@ function fightMonster() {
 		if (defeatedFinalMonster()) {
 			tellEndStory();
 		} else if (monster.health <= 0) {
-			showContJournButt() ;
+			showContJournButt();
 		}
 	} else if (monster.health > 0) {
 		doMonsterAttack(false); // we're not running away
@@ -1474,8 +1477,9 @@ function runAway() {
 	doMonsterAttack(runningAway);
 	updateHeroStats();
 	// if you're not dead after trying to run away, show the "continue journey" button
-	if (hero.health > 0)
-		showContJournButt() ;
+	if (hero.health > 0) {
+		showContJournButt();
+	}
 }
 
 function continueJourney() {
@@ -1497,10 +1501,10 @@ function setHeroImage() {
 function setDestinationHTML(nextDestination) {
 	var returnHTML;
 	returnHTML =
-       	'<div id="theHero" style="float:left;">'
-		+	'<img id = "destinationImage" style="float:right; padding-left:15px"/>'
-		+ questArray[nextDestination].storyTextHtml
-		+ '</div>';
+      '<div id="theHero" style="float:left;">' +
+		'<img id = "destinationImage" style="float:right; padding-left:15px"/>' +
+		questArray[nextDestination].storyTextHtml +
+		'</div>';
 	return returnHTML;
 }
 
