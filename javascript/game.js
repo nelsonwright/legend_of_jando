@@ -505,25 +505,25 @@ function loadHeroInfo(gameSettings, map) {
 
 function saveHeroInfo() {
    var inProgress = (gameState.inProgress === true) ? "Y" : "N";
-	var cookieValue  = "name="
-		+ hero.name + ';'
-		+ "health=" + hero.health + ';'
-		+ "attack=" + hero.attack + ';'
-		+ "defence=" + hero.defence + ';'
-		+ "char=" + hero.type + ';'
-		+ "posRowCell=" + map.small.posRowCell + ';'
-		+ "posColumnCell=" + map.small.posColumnCell + ';'
-		+ "bigPosRowCell=" + map.big.posRowCell + ';'
-		+ "bigPosColumnCell=" + map.big.posColumnCell + ';'
-		+ "gameInProgress=" + inProgress + ';'
-		+ "movePoints=" + hero.movePoints + ';'
-		+ "maxHeroHealth=" + hero.maxHealth + ';'
-		+ "maxHeroAttack=" + hero.maxAttack + ';'
-		+ "maxHeroDefence=" + hero.maxDefence + ';'
-		+ "maxMovePoints=" + hero.maxMovePoints + ';'
-		+ "nextDestination=" + map.big.nextDestination + ';'
-		+ "heroExperience=" + hero.experience + ';'
-		+ "heroLevel=" + hero.level;
+	var cookieValue  =
+	   "name=" + hero.name + ';' +
+		"health=" + hero.health + ';' +
+		"attack=" + hero.attack + ';' +
+		"defence=" + hero.defence + ';' +
+		"char=" + hero.type + ';' +
+		"posRowCell=" + map.small.posRowCell + ';' +
+		"posColumnCell=" + map.small.posColumnCell + ';' +
+		"bigPosRowCell=" + map.big.posRowCell + ';' +
+		"bigPosColumnCell=" + map.big.posColumnCell + ';' +
+		"gameInProgress=" + inProgress + ';' +
+		"movePoints=" + hero.movePoints + ';' +
+		"maxHeroHealth=" + hero.maxHealth + ';' +
+		"maxHeroAttack=" + hero.maxAttack + ';' +
+		"maxHeroDefence=" + hero.maxDefence + ';' +
+		"maxMovePoints=" + hero.maxMovePoints + ';' +
+		"nextDestination=" + map.big.nextDestination + ';' +
+		"heroExperience=" + hero.experience + ';' +
+		"heroLevel=" + hero.level;
 	setCookie('jando', cookieValue, 365);  // cookie will expire in a year?  Seems to be 6 weeks now
 }
 
@@ -546,98 +546,98 @@ function getQuestData() {
 		quest:
 		[
 			{	imageNameOfStartCharacter: 'blackbird',
-				storyTextHtml: '<p>'
-					+ 'You find yourself in a wide, open land with long grasses. '
-					+ ' You see a crow perched on a branch, swaying slightly in the wind.'
-					+ '  It starts to sing, it\'s liquid, burbling sound almost resembling speech in a foreign tongue . . .'
-					+ '</p>'
-					+ '<p>'
-					+ 'Quite strange, that look in it\'s eye, as if it was trying to communicate.  Really rather odd.'
-					+ ' You suddenly realise that it <strong>is</strong> saying something.  You listen harder.'
-					+ '  It\'s hard to tell, but it almost sounds like, "Go to grasshopper, blue tent, light grass . . ." '
-					+ '</p>',
+				storyTextHtml: '<p>' +
+					'You find yourself in a wide, open land with long grasses. ' +
+					' You see a crow perched on a branch, swaying slightly in the wind.' +
+					'  It starts to sing, it\'s liquid, burbling sound almost resembling speech in a foreign tongue . . .' +
+					'</p>' +
+					'<p>' +
+					'Quite strange, that look in it\'s eye, as if it was trying to communicate.  Really rather odd.' +
+					' You suddenly realise that it <strong>is</strong> saying something.  You listen harder.' +
+					'  It\'s hard to tell, but it almost sounds like, "Go to grasshopper, blue tent, light grass . . ." ' +
+					'</p>',
 				destinationImageName: 'blue_tent'
 			},
 			{	imageNameOfStartCharacter: 'grasshopper',
-				storyTextHtml: '<p>'
-					+ 'You see a huge grasshopper seated on a throne made of woven grasses.  Incredibly, it starts to speak:'
-					+ '</p>'
-					+ '<p>'
-					+ '"Ah, do come in, my dear fellow, I\'ve been expecting you.  My friend the blackbird said you may pay me a visit.'
-					+ ' Please don\'t be alarmed, I may be as big as a good-sized goat and live in a blue tent, but I will not harm you.'
-					+ ' Would you mind closing the tent flap . . . ?  Thank you, there\'s a bit of a chill breeze from the east today."'
-					+ '</p>'
-					+ '<p>'
-					+ '"So, you seek a path through the hills, do you?  All in good time, but first you must traverse the woods, and a man can lose his way there. '
-					+ ' I don\'t know the way myself, as it is dangerous even for a giant grasshopper. '
-					+ ' There is a meditating skelton that lives on a watchtower somewhere in the scrub that can help you.'
-					+ '  I don\'t know his exact wherabouts, I\'m afraid, but I\'ll tell my blackbird friends to let him know that you\'re coming."'
-					+ '</p>',
+				storyTextHtml: '<p>' +
+					'You see a huge grasshopper seated on a throne made of woven grasses.  Incredibly, it starts to speak:' +
+					'</p>' +
+					'<p>' +
+					'"Ah, do come in, my dear fellow, I\'ve been expecting you.  My friend the blackbird said you may pay me a visit.' +
+					'Please don\'t be alarmed, I may be as big as a good-sized goat and live in a blue tent, but I will not harm you.' +
+					'Would you mind closing the tent flap . . . ?  Thank you, there\'s a bit of a chill breeze from the east today."' +
+					'</p>' +
+					'<p>' +
+					'"So, you seek a path through the hills, do you?  All in good time, but first you must traverse the woods, and a man can lose his way there. ' +
+					'I don\'t know the way myself, as it is dangerous even for a giant grasshopper. ' +
+					'There is a meditating skelton that lives on a watchtower somewhere in the scrub that can help you.' +
+					' I don\'t know his exact wherabouts, I\'m afraid, but I\'ll tell my blackbird friends to let him know that you\'re coming."' +
+					'</p>',
 				destinationImageName: 'watchtower'
 			},
 			{	imageNameOfStartCharacter: 'meditating_skeleton',
-				storyTextHtml: '<p>'
-					+ 'As you reach the top of the watchtower, a skeleton looks up: "Greetings my friend! You look tired from your journey.  Stay here and rest, I\'ve just finished my meditation for the day.'
-					+'</p>'
-					+ '<p>'
-					+ 'The way through the hills is through the dark forests, but first you must find the black bear of the woods.'
-					+ ' He doesn\'t like visitors especially, so be sure to be polite if you do see him.  A present of honey wouldn\'t do any harm either.'
-					+ ' In fact, I\'ve got some here, take it along with my regards.'
-					+ '</p>'
-					+ '<p>'
-					+ 'Where in the woods?  I\'m not too sure about that, all I know is that he lives in a cave somewhere, I think he moves around according to the seasons.'
-					+ '</p>'
-					+ '<p>'
-					+ 'Stay here as long as you like, this watchtower gives you a bit of perspective on life.  Help yourself to herbal tea."'
-					+ '</p>',
+				storyTextHtml: '<p>' +
+					'As you reach the top of the watchtower, a skeleton looks up: "Greetings my friend! You look tired from your journey.  Stay here and rest, I\'ve just finished my meditation for the day.' +
+					'</p>' +
+					'<p>' +
+					'The way through the hills is through the dark forests, but first you must find the black bear of the woods.' +
+					' He doesn\'t like visitors especially, so be sure to be polite if you do see him.  A present of honey wouldn\'t do any harm either.' +
+					' In fact, I\'ve got some here, take it along with my regards.' +
+					'</p>' +
+					'<p>' +
+					'Where in the woods?  I\'m not too sure about that, all I know is that he lives in a cave somewhere, I think he moves around according to the seasons.' +
+					'</p>' +
+					'<p>' +
+					'Stay here as long as you like, this watchtower gives you a bit of perspective on life.  Help yourself to herbal tea."' +
+					'</p>',
 				destinationImageName: 'cave'
 			},
 			{	imageNameOfStartCharacter: 'bear',
-				storyTextHtml: '<p>'
-					+ 'You cautiously enter cave.  You think you here a rustling sound from somewhere in the darkness at the back.'
-					+ ' You decide to unwrap the honeycomb the skeleton gave you, and throw it forward.'
-					+ '</p>'
-					+ '<p>'
-					+ 'A deep voice rumbles, "Who are you, and why are you throwing this excellent honey around in my cave?  Speak, before I rip you to pieces!"'
-					+ '</p>'
-					+ '<p>'
-					+ 'Trembling, you politely explain why you are here, and that you seek a way through the hills.  The bear looks at you suspiciously, then sniffs the honey and sighs deeply.'
-					+ ' "As you have brought such fine honey from my friend the skeleton, I will tell you.  Seek out my friend the boar who dwells in a tower in the forest.'
-					+ '</p>'
-					+ '<p>'
-					+ 'Now, if that\'s all, I have some honey to eat."'
-					+ '</p>',
+				storyTextHtml: '<p>' +
+					'You cautiously enter cave.  You think you here a rustling sound from somewhere in the darkness at the back.' +
+					' You decide to unwrap the honeycomb the skeleton gave you, and throw it forward.' +
+					'</p>' +
+					'<p>' +
+					'A deep voice rumbles, "Who are you, and why are you throwing this excellent honey around in my cave?  Speak, before I rip you to pieces!"' +
+					'</p>' +
+					'<p>' +
+					'Trembling, you politely explain why you are here, and that you seek a way through the hills.  The bear looks at you suspiciously, then sniffs the honey and sighs deeply.' +
+					' "As you have brought such fine honey from my friend the skeleton, I will tell you.  Seek out my friend the boar who dwells in a tower in the forest.' +
+					'</p>' +
+					'<p>' +
+					'Now, if that\'s all, I have some honey to eat."' +
+					'</p>',
 				destinationImageName: 'tower'
 			},
 			{	imageNameOfStartCharacter: 'boar',
-				storyTextHtml: '<p>'
-					+ '"Hello!  I thought I heard someone knock on the tower door.  Sorry I took a while to answer, I was just upstairs finishing off an oil painting".'
-					+ ' By now, this sort of thing doesn\'t come as a surprise.  You explain that you seek a path through the mountains to find the lost black magic feather of your people.'
-					+ '</p>'
-					+ '<p>'
-					+ '"Hmm".  The boar ruminates, whilst washing his brushes under the tap. "You do know that\'s guarded, don\'t you?"  By a truly evil floating green skull?"'
-					+ ' However, I see you are set on this foolishness.  Well, so be it.  I only know the feather is somewhere in the mountains."'
-					+ '</p>'
-					+ '<p>'
-					+ 'The boar appears to decide something, and says, "But if you\'re going anyway, make sure you speak to the old eagle,'
-					+ 'he normally roosts in a tree near the round castle tower".  Now, a spot of lunch?  I have some wonderful yellow courgettes".'
-					+ '  After eating, you thank the boar for the repast, and set off for the hills . . .'
-					+ '</p>',
+				storyTextHtml: '<p>' +
+					'"Hello!  I thought I heard someone knock on the tower door.  Sorry I took a while to answer, I was just upstairs finishing off an oil painting".' +
+					' By now, this sort of thing doesn\'t come as a surprise.  You explain that you seek a path through the mountains to find the lost black magic feather of your people.' +
+					'</p>' +
+					'<p>' +
+					'"Hmm".  The boar ruminates, whilst washing his brushes under the tap. "You do know that\'s guarded, don\'t you?"  By a truly evil floating green skull?"' +
+					' However, I see you are set on this foolishness.  Well, so be it.  I only know the feather is somewhere in the mountains."' +
+					'</p>' +
+					'<p>' +
+					'The boar appears to decide something, and says, "But if you\'re going anyway, make sure you speak to the old eagle,' +
+					'he normally roosts in a tree near the round castle tower".  Now, a spot of lunch?  I have some wonderful yellow courgettes".' +
+					'  After eating, you thank the boar for the repast, and set off for the hills . . .' +
+					'</p>',
 				destinationImageName: 'round_castle_tower'
 			},
 			{	imageNameOfStartCharacter: 'eagle',
-				storyTextHtml: '<p>'
-					+ 'You find the tree near the tower, and look up to see the eagle staring right at you with it\'s beady eye.  It looks unimpressed.'
-					+ '"What do you want around here?  Keep away, unless you want the green skull to scare you so much you\'ll run off a cliff edge in fright".'
-					+ '</p>'
-					+ '<p>'
-					+ 'You explain that you\'re searching for the magic black feather, and will have it or die in the attempt.  Seeing that you\'re serious the old bird says, '
-					+ '"Very well.  I have asked my friend the beetle, (who has been riding in your backpack), to mark it in your quest log. '
-					+ 'Once there, you will find the green skull, and the  black feather.  Good luck, but I fear I will not see you again!"'
-					+ '</p>'
-					+ '<p>'
-					+ ' And with that, the eagle flaps off the branch, and soars into the sky . . .'
-					+ '</p>',
+				storyTextHtml: '<p>' +
+					'You find the tree near the tower, and look up to see the eagle staring right at you with it\'s beady eye.  It looks unimpressed.' +
+					'"What do you want around here?  Keep away, unless you want the green skull to scare you so much you\'ll run off a cliff edge in fright".' +
+					'</p>' +
+					'<p>' +
+					'You explain that you\'re searching for the magic black feather, and will have it or die in the attempt.  Seeing that you\'re serious the old bird says, ' +
+					'"Very well.  I have asked my friend the beetle, (who has been riding in your backpack), to mark it in your quest log. ' +
+					'Once there, you will find the green skull, and the  black feather.  Good luck, but I fear I will not see you again!"' +
+					'</p>' +
+					'<p>' +
+					' And with that, the eagle flaps off the branch, and soars into the sky . . .' +
+					'</p>',
 				destinationImageName: 'black_feather'
 			},
 			{	imageNameOfStartCharacter: 'green_skull',
