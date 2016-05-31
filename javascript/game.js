@@ -23,7 +23,7 @@ function setCookie(name,value,expires, options) {
 
 	if (expires) {
 		var expires_date = new Date();
-		expires_date.setDate(expires_date.getDate() + expires)
+		expires_date.setDate(expires_date.getDate() + expires);
 	}
 
 	document.cookie = name+'=' + escape(value) +
@@ -287,7 +287,7 @@ function getMonsterData() {
 				// The final big boss-battle monster! . . . needs to be the last entry in this array
 			{name: 'Hideously evil GREEN SKULL', imageName: 'green_skull', healthPoints: 32, attackPoints: 16, defencePoints: 12}
 		]
-	}
+	};
 	return data;
 }
 
@@ -314,7 +314,7 @@ function getTerrainData() {
 			{code: 4, name: 'hills', densityFactor: 0.35, extraMovementPts: 3},
 			{code: 5, name: 'mountains', densityFactor: 0.4, extraMovementPts: 4}
 		]
-	}
+	};
 	return data;
 }
 
@@ -381,7 +381,7 @@ function getFoodData() {
 			{name: 'tomato', extraHealthPoints: 2},
 			{name: 'veggie sausage', extraHealthPoints: 5}
 		]
-	}
+	};
 	return data;
 }
 
@@ -461,7 +461,7 @@ function extractValuesFromCookie() {
 
 	if (cookieValue !== null) {
 		extractHeroValuesFromCookie(cookieValue);
-		extractMapValuesFromCookie(cookieValue)
+		extractMapValuesFromCookie(cookieValue);
 		gameState.inProgress = (getCookieValue('gameInProgress', cookieValue) === "Y") ? true : false;
 	}
 }
@@ -553,20 +553,20 @@ function getQuestData() {
 					+ '</p>'
 					+ '<p>'
 					+ 'Quite strange, that look in it\'s eye, as if it was trying to communicate.  Really rather odd.'
-					+' You suddenly realise that it <strong>is</strong> saying something.  You listen harder.'
+					+ ' You suddenly realise that it <strong>is</strong> saying something.  You listen harder.'
 					+ '  It\'s hard to tell, but it almost sounds like, "Go to grasshopper, blue tent, light grass . . ." '
-					+'</p>',
+					+ '</p>',
 				destinationImageName: 'blue_tent'
 			},
 			{	imageNameOfStartCharacter: 'grasshopper',
 				storyTextHtml: '<p>'
 					+ 'You see a huge grasshopper seated on a throne made of woven grasses.  Incredibly, it starts to speak:'
-					+'</p>'
+					+ '</p>'
 					+ '<p>'
 					+ '"Ah, do come in, my dear fellow, I\'ve been expecting you.  My friend the blackbird said you may pay me a visit.'
 					+ ' Please don\'t be alarmed, I may be as big as a good-sized goat and live in a blue tent, but I will not harm you.'
 					+ ' Would you mind closing the tent flap . . . ?  Thank you, there\'s a bit of a chill breeze from the east today."'
-					+'</p>'
+					+ '</p>'
 					+ '<p>'
 					+ '"So, you seek a path through the hills, do you?  All in good time, but first you must traverse the woods, and a man can lose his way there. '
 					+ ' I don\'t know the way myself, as it is dangerous even for a giant grasshopper. '
@@ -583,66 +583,65 @@ function getQuestData() {
 					+ 'The way through the hills is through the dark forests, but first you must find the black bear of the woods.'
 					+ ' He doesn\'t like visitors especially, so be sure to be polite if you do see him.  A present of honey wouldn\'t do any harm either.'
 					+ ' In fact, I\'ve got some here, take it along with my regards.'
-					+'</p>'
+					+ '</p>'
 					+ '<p>'
 					+ 'Where in the woods?  I\'m not too sure about that, all I know is that he lives in a cave somewhere, I think he moves around according to the seasons.'
-					+'</p>'
+					+ '</p>'
 					+ '<p>'
 					+ 'Stay here as long as you like, this watchtower gives you a bit of perspective on life.  Help yourself to herbal tea."'
-					+'</p>',
+					+ '</p>',
 				destinationImageName: 'cave'
 			},
 			{	imageNameOfStartCharacter: 'bear',
 				storyTextHtml: '<p>'
 					+ 'You cautiously enter cave.  You think you here a rustling sound from somewhere in the darkness at the back.'
 					+ ' You decide to unwrap the honeycomb the skeleton gave you, and throw it forward.'
-					+'</p>'
+					+ '</p>'
 					+ '<p>'
 					+ 'A deep voice rumbles, "Who are you, and why are you throwing this excellent honey around in my cave?  Speak, before I rip you to pieces!"'
-					+'</p>'
+					+ '</p>'
 					+ '<p>'
 					+ 'Trembling, you politely explain why you are here, and that you seek a way through the hills.  The bear looks at you suspiciously, then sniffs the honey and sighs deeply.'
 					+ ' "As you have brought such fine honey from my friend the skeleton, I will tell you.  Seek out my friend the boar who dwells in a tower in the forest.'
-					+'</p>'
+					+ '</p>'
 					+ '<p>'
 					+ 'Now, if that\'s all, I have some honey to eat."'
-					+'</p>',
+					+ '</p>',
 				destinationImageName: 'tower'
 			},
 			{	imageNameOfStartCharacter: 'boar',
 				storyTextHtml: '<p>'
 					+ '"Hello!  I thought I heard someone knock on the tower door.  Sorry I took a while to answer, I was just upstairs finishing off an oil painting".'
 					+ ' By now, this sort of thing doesn\'t come as a surprise.  You explain that you seek a path through the mountains to find the lost black magic feather of your people.'
-					+'</p>'
-					+'<p>'
+					+ '</p>'
+					+ '<p>'
 					+ '"Hmm".  The boar ruminates, whilst washing his brushes under the tap. "You do know that\'s guarded, don\'t you?"  By a truly evil floating green skull?"'
-					+' However, I see you are set on this foolishness.  Well, so be it.  I only know the feather is somewhere in the mountains."'
-					+'</p>'
-					+'<p>'
-					+'The boar appears to decide something, and says, "But if you\'re going anyway, make sure you speak to the old eagle,'
-					+'he normally roosts in a tree near the round castle tower".  Now, a spot of lunch?  I have some wonderful yellow courgettes".'
-					+'  After eating, you thank the boar for the repast, and set off for the hills . . .'
-					+'</p>',
+					+ ' However, I see you are set on this foolishness.  Well, so be it.  I only know the feather is somewhere in the mountains."'
+					+ '</p>'
+					+ '<p>'
+					+ 'The boar appears to decide something, and says, "But if you\'re going anyway, make sure you speak to the old eagle,'
+					+ 'he normally roosts in a tree near the round castle tower".  Now, a spot of lunch?  I have some wonderful yellow courgettes".'
+					+ '  After eating, you thank the boar for the repast, and set off for the hills . . .'
+					+ '</p>',
 				destinationImageName: 'round_castle_tower'
 			},
 			{	imageNameOfStartCharacter: 'eagle',
 				storyTextHtml: '<p>'
 					+ 'You find the tree near the tower, and look up to see the eagle staring right at you with it\'s beady eye.  It looks unimpressed.'
 					+ '"What do you want around here?  Keep away, unless you want the green skull to scare you so much you\'ll run off a cliff edge in fright".'
-					+'</p>'
-					+'<p>'
+					+ '</p>'
+					+ '<p>'
 					+ 'You explain that you\'re searching for the magic black feather, and will have it or die in the attempt.  Seeing that you\'re serious the old bird says, '
 					+ '"Very well.  I have asked my friend the beetle, (who has been riding in your backpack), to mark it in your quest log. '
 					+ 'Once there, you will find the green skull, and the  black feather.  Good luck, but I fear I will not see you again!"'
-					+'</p>'
-					+'<p>'
-					+' And with that, the eagle flaps off the branch, and soars into the sky . . .'
-					+'</p>',
+					+ '</p>'
+					+ '<p>'
+					+ ' And with that, the eagle flaps off the branch, and soars into the sky . . .'
+					+ '</p>',
 				destinationImageName: 'black_feather'
 			},
 			{	imageNameOfStartCharacter: 'green_skull',
-				storyTextHtml: '<p>' +
-					'</p>',
+				storyTextHtml: '<p></p>',
 				destinationImageName: 'black_feather'
 			},
 		]
@@ -753,32 +752,28 @@ function createSmallMapTerrain(heroPosition) {
 	}
 }
 
-function getBigMapCell(mapTableDiv, position) {
-	var mapRow;
-	var mapCell;
-
-	mapRow = mapTableDiv.getElementsByTagName("tr")[position.big.row];
-	mapCell = mapRow.getElementsByTagName("td")[position.big.column];
+function getMapCell(mapTableDiv, row, column) {
+	var mapRow = mapTableDiv.getElementsByTagName("tr")[row];
+	var mapCell = mapRow.getElementsByTagName("td")[column];
 	return mapCell;
 }
 
-function getMapCell(mapTableDiv, position) {
-	var mapRow;
-	var mapCell;
+function getBigMapCell(mapTableDiv, position) {
+	return getMapCell(mapTableDiv, position.big.row, position.big.column);
+}
 
-	mapRow = mapTableDiv.getElementsByTagName("tr")[position.small.row];
-	mapCell = mapRow.getElementsByTagName("td")[position.small.column];
-	return mapCell;
+function getSmallMapCell(mapTableDiv, position) {
+	return getMapCell(mapTableDiv, position.small.row, position.small.column);;
 }
 
 function getCellImageTag(mapTableDiv, position) {
-	smallMapCell = getMapCell(mapTableDiv, position);
+	smallMapCell = getSmallMapCell(mapTableDiv, position);
 	smallMapCell.innerHTML = '<img  />';
 	return smallMapCell.firstChild;
 }
 
 function setMapCellColour(mapTableDiv, position, colour) {
-	var smallMapCell = getMapCell(mapTableDiv, position);
+	var smallMapCell = getSmallMapCell(mapTableDiv, position);
 	smallMapCell.style.backgroundColor = colour;
 }
 
@@ -820,7 +815,7 @@ function showMovementArea() {
 			+	'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
 			+	'<img src="./web_images/arrow_down_big.png" title="down" onClick="clickedAnArrow(this)"'
 			+	'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />'
-		+'</div>';
+		   + '</div>';
 	var mouseMoveHero = document.getElementById('mouseMoveHero');
 	mouseMoveHero.innerHTML='<img src="./web_images/hero_' + hero.type + '_thumb.png" title="the hero" />';
 }
@@ -910,29 +905,41 @@ function checkQuestDestinationReached(map) {
 	}
 };
 
+function heroMovedUpToNextMapSquare(newHeroPosition) {
+	return newHeroPosition.small.row < 0;
+}
+
+function heroMovedDownToNextMapSquare(newHeroPosition) {
+	return newHeroPosition.small.row > map.small.rows - 1;
+}
+
+function heroMovedLeftToNextMapSquare(newHeroPosition) {
+	return newHeroPosition.small.column < 0;
+}
+
+function heroMovedRightToNextMapSquare(newHeroPosition) {
+	return newHeroPosition.small.column > map.small.cols - 1;
+}
+
 function calculateNewHeroPosition() {
 	var newHeroPosition = map.getHeroPosition();
 
-	if (newHeroPosition.small.row < 0) {
-		// have moved up to next square
+	if (heroMovedUpToNextMapSquare(newHeroPosition)) {
 		newHeroPosition.big.row = newHeroPosition.big.row - 1;
 		newHeroPosition.small.row = map.small.rows - 1; // bottom of next map square
 	}
 
-	if (newHeroPosition.small.row > map.small.rows - 1) {
-		// have moved down to next square
+	if (heroMovedDownToNextMapSquare(newHeroPosition)) {
 		newHeroPosition.big.row = map.big.posRowCell + 1;
 		newHeroPosition.small.row = 0; // top of next map square
 	}
 
-	if (newHeroPosition.small.column < 0) {
-		// have moved left to next square
+	if (heroMovedLeftToNextMapSquare(newHeroPosition)) {
 		newHeroPosition.big.column = newHeroPosition.big.column - 1; // right hand side of next map square
 		newHeroPosition.small.column = map.small.cols - 1;
 	}
 
-	if (newHeroPosition.small.column > map.small.cols - 1) {
-		// have moved right to next square
+	if (heroMovedRightToNextMapSquare(newHeroPosition)) {
 		newHeroPosition.big.column = newHeroPosition.big.column + 1;
 		newHeroPosition.small.column = 0; // left hand side of next map square
 	}
@@ -1516,7 +1523,7 @@ function getFightDivHTML(){
 		+ 'You are attacked by a <span id="monsterName" style="font-weight:bold">&nbsp;</span><br />'
 		+ '<span id="fightDamage">&nbsp;</span><br />'
 		+ '<span id="monsterFightDamage">&nbsp;</span><br />'
-       +	'<div id="theHero" style="float:left">'
+      +	'<div id="theHero" style="float:left">'
 		+	'<img id = "fightHeroImage" />'
 		+ '</div>'
 		+ '<div  id="theMonsterAndStats" style="float:right;">'
