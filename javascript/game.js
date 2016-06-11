@@ -494,7 +494,7 @@ function startHeroPosition(stateOfGame) {
 	map.setPriorHeroPosition(map.getHeroPosition());
 }
 
-function loadHeroInfo(gameSettings, map) {
+function loadHeroInfo(gameSettings) {
 	extractValuesFromCookie();
 	setupStatsHeroImage();
 	loadHeroImage();
@@ -742,8 +742,8 @@ function createBigMap() {
 function createSmallMapTerrain(heroPosition) {
 	var terrainType = bigMapTerrainArray[heroPosition.big.row][heroPosition.big.column];
 
-	for (row=0; row <map.small.rows; row++) {
-		for (col=0; col <map.small.cols; col++) {
+	for (var row=0; row <map.small.rows; row++) {
+		for (var col=0; col <map.small.cols; col++) {
 			if (Math.random() < terrainArray[terrainType].densityFactor) {
 				mapDetailArray[row][col] = terrainType;
 			} else {
@@ -768,7 +768,7 @@ function getSmallMapCell(mapTableDiv, position) {
 }
 
 function getCellImageTag(mapTableDiv, position) {
-	smallMapCell = getSmallMapCell(mapTableDiv, position);
+	var smallMapCell = getSmallMapCell(mapTableDiv, position);
 	smallMapCell.innerHTML = '<img  />';
 	return smallMapCell.firstChild;
 }
@@ -842,8 +842,8 @@ function showSmallMap() {
 	makeMapIfNotThere(mapTableDiv);
 	showMovementArea();
 
-	for (row=0; row <map.small.rows; row++) {
-		for (col=0; col <map.small.cols; col++) {
+	for (var row=0; row <map.small.rows; row++) {
+		for (var col=0; col <map.small.cols; col++) {
 			setTerrainCellSmallMap(mapTableDiv, row, col);
 		}
 	}
@@ -896,8 +896,8 @@ function checkQuestDestinationReached(map) {
 
 		// final quest destination
 		if  (map.big.nextDestination === map.big.numTerrainTypes) {
-			alert('Who dares take the black feather???!!!!');
-			alert('Prepare yourself, for you will die!!!');
+			window.alert('Who dares take the black feather???!!!!');
+			window.alert('Prepare yourself, for you will die!!!');
 			hero.fightOn = 'Yes';
 			gameState.finalFight = true;
 			startAttack();
@@ -1046,7 +1046,7 @@ function startNewGame() {
 	var newGame = true;
 
 	if (hero.health > 0) {
-		newGame = confirm('Are you sure you would like to quit this game and start a new one?');
+		newGame = window.confirm('Are you sure you would like to quit this game and start a new one?');
 	}
 
 	if (newGame === true ) {
@@ -1057,7 +1057,7 @@ function startNewGame() {
 
 function saveGame() {
 	saveHeroInfo();
-	alert('Game Saved');
+	window.alert('Game Saved');
 }
 
 function makeMapIfNotThere(mapTableDiv) {
@@ -1072,8 +1072,8 @@ function showTerrainOnBigMap(mapTableDiv) {
 	var terrType;
 	var position = {small:{row:null, column:null}, big:{row:null, column:null}};
 
-	for (row=0; row <map.small.rows; row++) {
-		for (col=0; col <map.small.cols; col++) {
+	for (var row=0; row <map.small.rows; row++) {
+		for (var col=0; col <map.small.cols; col++) {
 			terrType = bigMapTerrainArray[row][col];
 			position.small.row = row;
 			position.small.column = col;
@@ -1096,13 +1096,13 @@ function showBigMap() {
 }
 
 function showBigMapKey(moveArea) {
-	moveArea.innerHTML='<h3>Map Key</h3>' +
+	moveArea.innerHTML='<h4>Map Key</h4>' +
 		'<div>';
-	for (i=0; i <terrainArray.length; i++) {
-		moveArea.innerHTML =
+	for (var i=0; i <terrainArray.length; i++) {
+		moveArea.innerHTML = '<p>' +
 			moveArea.innerHTML +
 			terrainArray[i].name + '&nbsp;&nbsp;<img src = ' + terrainArray[i].image.src +
-			'<br /><br />';
+			' /></p>';
 	}
 	moveArea.innerHTML = moveArea.innerHTML + '</div>';
 }
@@ -1449,8 +1449,8 @@ function showContJournButt() {
 }
 
 function tellEndStory() {
-	alert('And Jando returned home and lived to be a ripe old age . . . THE END');
-	alert(' . . . er, still need to work on the ending, sorry!!');
+	window.alert('And Jando returned home and lived to be a ripe old age . . . THE END');
+	window.alert(' . . . er, still need to work on the ending, sorry!!');
 	sayHeroDead(); // the hero isn't, but it hides the buttons
 }
 
@@ -1672,7 +1672,7 @@ function checkIfFoodFound(forageState, posRowCell, posColumnCell) {
 }
 
 function sleepHero() {
-	alert('You sleep, perchance to dream . . .');
+	window.alert('You sleep, perchance to dream . . .');
 	hero.movePoints = hero.maxMovePoints;
 	updateMovePoints();
 }
@@ -1808,7 +1808,7 @@ function pressedAKey(e) {
 function loadInitialInfo() {
 	loadTerrain();
 	loadMonsters();
-	loadHeroInfo(gameSettings, map);
+	loadHeroInfo(gameSettings);
 	loadFood();
 }
 
