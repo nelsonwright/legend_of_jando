@@ -989,7 +989,8 @@ function moveOnSmallMap(heroPosition) {
 
 	terrainMovementCost = hero.foraging ? terrainMovementCost * 2 : terrainMovementCost;
 
-	if (updateMovePoints(terrainMovementCost)) {
+	if (canMoveOnMap(terrainMovementCost)) {
+		updateMovePoints(terrainMovementCost);
 		var mapTableDiv = document.getElementById('mapTableDiv');
 		setTerrainCellSmallMap(mapTableDiv, map.small.oldPosRowCell, map.small.oldPosColumnCell);
 		checkQuestDestinationReached(map);
@@ -1215,18 +1216,23 @@ function toggleQuest(questShown, bigMapDisplayed) {
 	}
 }
 
-function updateMovePoints(movePointsToUse) {
-	var movePointsToUse = nvl(movePointsToUse, 0);
+function canMoveOnMap(terrainMovementCost) {
+	var movePointsToUse = nvl(terrainMovementCost, 0);
 	var canMove = false;
-	document.getElementById('maxHeroMovePoints').innerHTML = hero.maxMovePoints;
 
 	if (hero.movePoints - movePointsToUse >= 0) {
 		canMove = true;
-		hero.movePoints = hero.movePoints - movePointsToUse;
-		document.getElementById('heroMovePoints').innerHTML = hero.movePoints;
-		hero.moved = true;
 	}
 	return canMove;
+}
+
+function updateMovePoints(terrainMovementCost) {
+	var movePointsToUse = nvl(terrainMovementCost, 0);
+	document.getElementById('maxHeroMovePoints').innerHTML = hero.maxMovePoints;
+
+	hero.movePoints = hero.movePoints - movePointsToUse;
+	document.getElementById('heroMovePoints').innerHTML = hero.movePoints;
+	hero.moved = true;
 }
 
 function levelUpHero() {
@@ -1319,7 +1325,7 @@ function getMonsterDiceRoll(fightPoints) {
 function getHeroHitDisplay(heroHit) {
 	var heroHitDisplay =  'You attack the ' + monsterArray[gameState.monsterIdx].name;
 
-	if (heroHit == 0) {
+	if (heroHit === 0) {
 		heroHitDisplay = heroHitDisplay + ' and <strong>miss</strong>';
 	} else {
 	if (monster.health <= 0) {
@@ -1518,50 +1524,50 @@ function displayDestination(nextDestination){
 	var actionSpace = document.getElementById('action');
 	actionSpace.innerHTML = setDestinationHTML(nextDestination);
 	setDestinationImage(nextDestination);
-};
+}
 
 function getFightDivHTML(){
 	var returnHTML;
 	returnHTML =
-	      '<div id="fight" style="visibility:hidden">'
-		+ 'You are attacked by a <span id="monsterName" style="font-weight:bold">&nbsp;</span><br />'
-		+ '<span id="fightDamage">&nbsp;</span><br />'
-		+ '<span id="monsterFightDamage">&nbsp;</span><br />'
-      +	'<div id="theHero" style="float:left">'
-		+	'<img id = "fightHeroImage" />'
-		+ '</div>'
-		+ '<div  id="theMonsterAndStats" style="float:right;">'
-		+ '<div  id="theMonster" style="float:left;">'
-		+ '<img id="monsterImage" style="float:left;padding-left:20px;padding-right:20px;"/>'
-		+ '<table id="monsterStatsDisplay">'
-		+	'<tr>'
-		+ '<td>'
-		+	'Health'
-		+	'</td>'
-		+	'<td id="monsterHealthDisplay" style="text-align:right">'
-		+	'&nbsp'
-		+	'</td>'
-		+	'</tr>'
-		+	'<tr>'
-		+	'<td>'
-		+	'Attack'
-		+	'</td>'
-		+	'<td id="monsterAttackDisplay" style="text-align:right">'
-		+	'&nbsp;'
-		+	'</td>'
-		+	'</tr>'
-		+	'<tr>'
-		+	'<td>'
-		+	'Defence'
-		+	'</td>'
-		+	'<td id="monsterDefenceDisplay" style="text-align:right">'
-		+	'&nbsp;'
-		+	'</td>'
-		+	'</tr>'
-		+	'</table>'
-		+ '</div>'
-		+ '</div>'
-	   + '</div>';
+		'<div id="fight" style="visibility:hidden">' +
+			'You are attacked by a <span id="monsterName" style="font-weight:bold">&nbsp;</span><br />' +
+			'<span id="fightDamage">&nbsp;</span><br />' +
+			'<span id="monsterFightDamage">&nbsp;</span><br />' +
+	      '<div id="theHero" style="float:left">' +
+				'<img id = "fightHeroImage" />' +
+			'</div>' +
+			'<div  id="theMonsterAndStats" style="float:right;">' +
+			'<div  id="theMonster" style="float:left;">' +
+			'<img id="monsterImage" style="float:left;padding-left:20px;padding-right:20px;"/>' +
+			'<table id="monsterStatsDisplay">' +
+			'<tr>' +
+			'<td>' +
+			'Health' +
+			'</td>' +
+			'<td id="monsterHealthDisplay" style="text-align:right">' +
+			'&nbsp' +
+			'</td>' +
+			'</tr>' +
+			'<tr>' +
+			'<td>' +
+			'Attack' +
+			'</td>' +
+			'<td id="monsterAttackDisplay" style="text-align:right">' +
+			'&nbsp;' +
+			'</td>' +
+			'</tr>' +
+			'<tr>' +
+			'<td>' +
+			'Defence' +
+			'</td>' +
+			'<td id="monsterDefenceDisplay" style="text-align:right">' +
+			'&nbsp;' +
+			'</td>' +
+			'</tr>' +
+			'</table>' +
+			'</div>' +
+			'</div>' +
+	   '</div>';
 		return returnHTML;
 }
 
@@ -1614,13 +1620,14 @@ function processFoundFood(forageState) {
 	var foodIdx = Math.floor(Math.random() * foodArray.length);
 	var actionSpace = document.getElementById('action');
 
-	actionSpace.innerHTML = '<p>'
-		+ calculateFoundPhrase(forageState)
-		+ foodArray[foodIdx].name
-		+ '</p>'
-		+ '<img id="foodImage" title="'
-		+  foodArray[foodIdx].name
-		+ '" style="float:left;"/>';
+	actionSpace.innerHTML =
+		'<p>' +
+			calculateFoundPhrase(forageState) +
+			foodArray[foodIdx].name +
+		'</p>' +
+		'<img id="foodImage" title="' +
+		foodArray[foodIdx].name +
+		'" style="float:left;"/>';
 
 	var foodPic = document.getElementById('foodImage');
 	foodPic.src = foodArray[foodIdx].image.src;
@@ -1696,7 +1703,8 @@ function determineDirection(uniCode) {
 		case key.down:
 			heroPosition.small.row ++;
 			break;
-		default : null;
+		default :
+			null;
 	}
 
 	map.setHeroPosition(heroPosition);
@@ -1706,7 +1714,7 @@ function arrowImageMouseOver(arrowImage) {
 	var arrowDirection = arrowImage.title	;
 
 	// if not currently highlighted
-	if (arrowImage.src.search('over') == -1) {
+	if (arrowImage.src.search('over') === -1) {
 		// swap for highlighted arrow img . . .
 		arrowImage.src = './web_images/arrow_' + arrowDirection + '_big_over.png';
 	}	else {
