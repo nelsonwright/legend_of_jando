@@ -237,13 +237,13 @@ function makeImageSource(imageName, isFood) {
 
 // Used to hold terrain types on larger map . . .
 var bigMapTerrainArray=new Array(map.big.rows);
-for (i=0; i <map.big.rows; i++) {
+for (var i=0; i <map.big.rows; i++) {
 	bigMapTerrainArray[i]=new Array(map.big.cols);
 }
 
 // Used to hold details of map features, for small map . . .
 var mapDetailArray=new Array(map.small.rows);
-for (i=0; i <map.small.rows; i++) {
+for (var i=0; i <map.small.rows; i++) {
 	mapDetailArray[i]=new Array(map.small.cols);
 }
 
@@ -251,7 +251,7 @@ for (i=0; i <map.small.rows; i++) {
 // indexed by terrain type.  Also used to hold character and map images
 // that are displayed upon reaching a destination
 var questArray = new Array(map.big.numTerrainTypes + 1);	 // last destination is random location for treasure
-for (i=0; i <map.big.numTerrainTypes + 1; i++) {
+for (var i=0; i <map.big.numTerrainTypes + 1; i++) {
 	questArray[i] = {};
 }
 
@@ -322,7 +322,7 @@ function loadTerrain() {
 	loadJsonIntoArray(getTerrainData(), terrainArray, false);
 	map.big.numTerrainTypes = terrainArray.length;
 
-	for (i=0; i <map.big.numTerrainTypes; i++) {
+	for (var i=0; i <map.big.numTerrainTypes; i++) {
 		terrainLocationsArray.push(''); 	// set up with blank as default
 	}
 }
@@ -388,7 +388,7 @@ function getFoodData() {
 function loadJsonIntoArray(jsonData, targetArray, isFood) {
 	var currentItem;
 
-	for (i=0; i<jsonData.items.length; i++) {
+	for (var i=0; i<jsonData.items.length; i++) {
 		currentItem = jsonData.items[i];
 		targetArray.push(currentItem);
 		targetArray[i].image = getImageForItem(currentItem, isFood);
@@ -418,7 +418,7 @@ function getCookieValue(pairName, cookieString){
 	var returnValue = null;
 	var cookieValuesArray = cookieString.split(';');
 
-	for (i=0; i<cookieValuesArray.length; i++) {
+	for (var i=0; i<cookieValuesArray.length; i++) {
 		var nameValuePair = cookieValuesArray[i];
 		var nameValuePairArray = nameValuePair.split('=');
 		if (nameValuePairArray[0] === pairName) {
@@ -689,7 +689,7 @@ function setQuestLocations() {
 	// This provides a destination for the quest related to that terrain type
 	// Just pass in the data from questData that is needed for the quest for that terrain
 
-	for (terrainCode=0; terrainCode < map.big.numTerrainTypes; terrainCode++) {
+	for (var terrainCode=0; terrainCode < map.big.numTerrainTypes; terrainCode++) {
 		populateQuestArray(terrainCode, questData.quest[terrainCode]);
 	}
 	// now do the same for the last location . . .
@@ -722,8 +722,8 @@ function decideTerrainType(column, numberOfTerrainTypes) {
 function createBigMap() {
 	var terrainType;
 
-	for (bigRow=0; bigRow < map.big.rows; bigRow++) {
-		for (bigCol=0; bigCol < map.big.cols; bigCol++) {
+	for (var bigRow=0; bigRow < map.big.rows; bigRow++) {
+		for (var bigCol=0; bigCol < map.big.cols; bigCol++) {
 			terrainType = decideTerrainType(bigCol, map.big.numTerrainTypes);
 			bigMapTerrainArray[bigRow][bigCol] = terrainType;
 
@@ -1703,8 +1703,9 @@ function determineDirection(uniCode) {
 		case key.down:
 			heroPosition.small.row ++;
 			break;
-		default :
-			null;
+		default:
+			// shouldn't get here, so do nothing
+			break;
 	}
 
 	map.setHeroPosition(heroPosition);
@@ -1736,12 +1737,12 @@ function clickedAnArrow(arrowImage) {
 }
 
 function heroMovementAttempted(actionCode) {
-	return key.isArrowKey(actionCode) && !map.big.displayed && !gameState.questDisplayed
+	return key.isArrowKey(actionCode) && !map.big.displayed && !gameState.questDisplayed;
 }
 
 function checkForMovement(actionCode) {
 	if (heroMovementAttempted(actionCode)) {
-		determineDirection(actionCode)
+		determineDirection(actionCode);
 		processMovement(map.getHeroPosition());
 		drawHero();
 
@@ -1755,19 +1756,19 @@ function checkForMovement(actionCode) {
 }
 
 function checkNonMovementActions(actionCode) {
-	if (actionCode == key.map && !gameState.questDisplayed) {
+	if (actionCode === key.map && !gameState.questDisplayed) {
 		showMap(map.big.displayed);
 	}
 
-	if (actionCode == key.questLog && !map.big.displayed) {
+	if (actionCode === key.questLog && !map.big.displayed) {
 		toggleQuest(gameState.questDisplayed, map.big.displayed);
 	}
 
-	if (actionCode == key.sleep) {
+	if (actionCode === key.sleep) {
 		sleepHero();
 	}
 
-	if (actionCode == key.forage) {
+	if (actionCode === key.forage) {
 		toggleForageStatus(document.getElementById('forageButt'));
 	}
 }
