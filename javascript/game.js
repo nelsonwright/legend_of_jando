@@ -210,15 +210,6 @@ var map = {
   }
 };
 
-// Courtesy of Douglas Crockford . . .
-if (typeof Object.create !== 'function') {
-	Object.create = function (o) {
-		var F = function (o) {};
-		F.prototype = o;
-		return new F();
-	};
-}
-
 function getImageForItem(paramObject, isFood) {
 	var theImage = new Image();
 
@@ -855,6 +846,13 @@ function showSmallMap() {
 	}
 }
 
+function setHeroNameInTtitle() {
+	var template = $('#titleTemplate').html();
+	Mustache.parse(template);   // optional, speeds up future uses
+	var titleText = Mustache.render(template, {heroName: hero.name});
+	$('#titleTemplate_target').html(titleText);
+}
+
 function drawHero() {
 	var mapTableDiv = document.getElementById('mapTableDiv');
 	var mapCellImageTag = getCellImageTag(mapTableDiv, map.getHeroPosition());
@@ -1128,18 +1126,23 @@ function showMap(bigMapShown) {
 	questButt.innerHTML = 'Show <u>Q</u>uest';
 }
 
-function addRowClone(tblId,rowNum) {
+function addRowClone(tblId, rowNum) {
   var tblBody = document.getElementById(tblId).tBodies[0];
   var newNode = tblBody.rows[rowNum].cloneNode(true);
   tblBody.appendChild(newNode);
 }
 
 function createTableMap(mapTable) {
-	mapTable.innerHTML = '<table id="tableMap"><tbody>' +
-	'<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>' +
-	'<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>' +
-	'<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>' +
-	'</tbody></table>';
+	mapTable.innerHTML =
+	'<table id="tableMap">' +
+		'<tbody>' +
+			'<tr>' +
+				'<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>' +
+				'<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>' +
+				'<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>' +
+			'</tr>' +
+		'</tbody>' +
+	'</table>';
 	for (i=0; i <map.small.rows - 1; i++) {
 		addRowClone('tableMap',i);
 	}
@@ -1264,18 +1267,18 @@ function updateHeroStats() {
 
 function showMonsterStatsDisplay() {
 	var monsterDispEle = document.getElementById('monsterHealthDisplay');
-	monsterDispEle.innerHTML = monster.health;
+	monsterDispEle.innerHTML = monster.healthPoints;
 	monsterDispEle = document.getElementById('monsterAttackDisplay');
-	monsterDispEle.innerHTML = monster.attack;
+	monsterDispEle.innerHTML = monster.attackPoints;
 	monsterDispEle = document.getElementById('monsterDefenceDisplay');
-	monsterDispEle.innerHTML = monster.monsterDefence;
+	monsterDispEle.innerHTML = monster.defencePoints;
 }
 
 function resetFightMonster() {
 	// re-set the monster to original position . . .
 	var monsterPicDiv = document.getElementById("theMonster");
 	monsterPicDiv.style.paddingRight = 0 + "px";
-}	// resetFightMonster()
+}
 
 function resetFightHero() {
 	// retreat the hero . . .
@@ -1286,17 +1289,17 @@ function resetFightHero() {
 function advanceFightHero() {
 	var heroPicSpan = document.getElementById("theHero");
 	heroPicSpan.style.paddingLeft = 100 + "px";
-}	// end of advanceFightHero
+}
 
 function advanceFightMonster() {
 	var monsterPicDiv = document.getElementById("theMonster");
 	monsterPicDiv.style.paddingRight = 100 + "px";
-}	// end of advanceFightMonster
+}
 
 function animateFightHero() {
 	resetFightMonster();
 	advanceFightHero();
-}	// end of animateFightHero
+}
 
 function animateFightMonster() {
 	resetFightHero();
@@ -1328,7 +1331,7 @@ function getHeroHitDisplay(heroHit) {
 	if (heroHit === 0) {
 		heroHitDisplay = heroHitDisplay + ' and <strong>miss</strong>';
 	} else {
-	if (monster.health <= 0) {
+	if (monster.healthPoints <= 0) {
 			heroHitDisplay = heroHitDisplay +
 			' and do <strong>' + heroHit + '</strong>' +
 			' damage, and slay the creature.';
@@ -1340,7 +1343,7 @@ function getHeroHitDisplay(heroHit) {
 }
 
 function adjustHeroExperience() {
-	if (monster.health <= 0) {
+	if (monster.healthPoints <= 0) {
 		hero.experience = hero.experience + 1;
 	}
 }
@@ -1353,7 +1356,7 @@ function doHeroAttack() {
 
 	// see if the hero managed to make a hit on the monster . . .
 	heroHit = max(0, getHeroDiceRoll(hero.attack) - getMonsterDiceRoll(monsterArray[gameState.monsterIdx].defencePoints));
-	monster.health = max(0, monster.health - heroHit);
+	monster.healthPoints = max(0, monster.healthPoints - heroHit);
 
 	monsterFightPara.innerHTML = '&nbsp;';
 	heroHitDisplay = getHeroHitDisplay(heroHit);
@@ -1455,21 +1458,19 @@ function tellEndStory() {
 }
 
 function defeatedFinalMonster() {
-	return monster.health <= 0  && gameState.finalFight;
+	return monster.healthPoints <= 0  && gameState.finalFight;
 }
 
 function fightMonster() {
-	var experienceAdded = monsterArray[gameState.monsterIdx].healthPoints;
-	var newHeroExperience = hero.experience;
 
 	if (hero.turnToFight === true) {
 		doHeroAttack();
 		if (defeatedFinalMonster()) {
 			tellEndStory();
-		} else if (monster.health <= 0) {
+		} else if (monster.healthPoints <= 0) {
 			showContJournButt();
 		}
-	} else if (monster.health > 0) {
+	} else if (monster.healthPoints > 0) {
 		doMonsterAttack(false); // we're not running away
 	}
 
@@ -1526,75 +1527,36 @@ function displayDestination(nextDestination){
 	setDestinationImage(nextDestination);
 }
 
-function getFightDivHTML(){
-	var returnHTML;
-	returnHTML =
-		'<div id="fight" style="visibility:hidden">' +
-			'You are attacked by a <span id="monsterName" style="font-weight:bold">&nbsp;</span><br />' +
-			'<span id="fightDamage">&nbsp;</span><br />' +
-			'<span id="monsterFightDamage">&nbsp;</span><br />' +
-	      '<div id="theHero" style="float:left">' +
-				'<img id = "fightHeroImage" />' +
-			'</div>' +
-			'<div  id="theMonsterAndStats" style="float:right;">' +
-			'<div  id="theMonster" style="float:left;">' +
-			'<img id="monsterImage" style="float:left;padding-left:20px;padding-right:20px;"/>' +
-			'<table id="monsterStatsDisplay">' +
-			'<tr>' +
-			'<td>' +
-			'Health' +
-			'</td>' +
-			'<td id="monsterHealthDisplay" style="text-align:right">' +
-			'&nbsp' +
-			'</td>' +
-			'</tr>' +
-			'<tr>' +
-			'<td>' +
-			'Attack' +
-			'</td>' +
-			'<td id="monsterAttackDisplay" style="text-align:right">' +
-			'&nbsp;' +
-			'</td>' +
-			'</tr>' +
-			'<tr>' +
-			'<td>' +
-			'Defence' +
-			'</td>' +
-			'<td id="monsterDefenceDisplay" style="text-align:right">' +
-			'&nbsp;' +
-			'</td>' +
-			'</tr>' +
-			'</table>' +
-			'</div>' +
-			'</div>' +
-	   '</div>';
-		return returnHTML;
-}
-
 function prepareFightDiv() {
 	var actionSpace = document.getElementById('action');
-	actionSpace.innerHTML = getFightDivHTML();
-	setHeroImage();
+
+	var template = $('#fightTemplate').html();
+	Mustache.parse(template);   // optional, speeds up future uses
+
+	var fightDivHtml = Mustache.render(template, {
+			heroImageSrc: hero.image.src,
+			heroImgTitle: hero.type + ' ' + hero.name,
+			monsterName: monsterArray[gameState.monsterIdx].name,
+			monsterImageSrc: monsterArray[gameState.monsterIdx].image.src,
+			monsterImageTitle: monsterArray[gameState.monsterIdx].name,
+			monsterHealth: monsterArray[gameState.monsterIdx].healthPoints,
+			monsterAttack: monsterArray[gameState.monsterIdx].attackPoints,
+			monsterDefence: monsterArray[gameState.monsterIdx].defencePoints
+		});
+	$('#action').html(fightDivHtml);
 }
 
 function startAttack() {
-	prepareFightDiv();
-	gameState.monsterIdx = Math.floor(Math.random() * (monsterArray.length - 1));
+	// gameState.monsterIdx = Math.floor(Math.random() * (monsterArray.length - 1));
+	gameState.monsterIdx = 3;
 
 	if (gameState.finalFight) {
 		gameState.monsterIdx = monsterArray.length - 1;
 	}
 
-	monster.health = monsterArray[gameState.monsterIdx].healthPoints;
-	monster.attack = monsterArray[gameState.monsterIdx].attackPoints;
-	monster.monsterDefence = monsterArray[gameState.monsterIdx].defencePoints;
-	var monsterEle = document.getElementById('monsterName');
-	monsterEle.innerHTML = monsterArray[gameState.monsterIdx].name;
-	var monsterPic = document.getElementById('monsterImage');
-	monsterPic.src = monsterArray[gameState.monsterIdx].image.src;
-	monsterPic.title = monsterArray[gameState.monsterIdx].name;
+	monster = Object.create(monsterArray[gameState.monsterIdx]);
 
-	showMonsterStatsDisplay();
+	prepareFightDiv();
 	showFightButts();
 	hideOptButts();
 }
@@ -1810,6 +1772,7 @@ function loadInitialInfo() {
 	loadMonsters();
 	loadHeroInfo(gameSettings);
 	loadFood();
+	setHeroNameInTtitle();
 }
 
 function createMapsAndShowSmallMap() {

@@ -27,6 +27,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.2.1/mustache.js"/></script>
 <script src="./javascript/game.js"/></script>
 
 <script>
@@ -43,7 +44,11 @@
 </div>
 <div id="page-container">
 	<div id="main-nav">
-		<span style="text-align:center; color:white">The Legend of Jando</span>
+		<span style="text-align:center; color:white" id="titleTemplate_target">
+			<script id="titleTemplate" type="x-tmpl-mustache">
+				The legend of {{ heroName }}
+			</script>
+		</span>
 	</div>
 
 	<div id="stats">
@@ -248,6 +253,48 @@
 	<div id="action">
 		<!-- stuff will be dynamically generated in here -->
 	</div>
+
+	<script id="fightTemplate" type="x-tmpl-mustache">
+		<div id="fight" style="visibility:hidden">
+			You are attacked by a <span id="monsterName" style="font-weight:bold">{{monsterName}}</span><br />
+			<span id="fightDamage">{{fightDamage}}</span><br />
+			<span id="monsterFightDamage">{{monsterFightDamage}}</span><br />
+			<div id="theHero" style="float:left">
+				<img id = "fightHeroImage" src="{{heroImageSrc}}" title="{{heroImgTitle}}"/>
+			</div>
+			<div id="theMonsterAndStats" style="float:right;">
+				<div id="theMonster" style="float:left;">
+					<img id="monsterImage" style="float:left;padding-left:20px;padding-right:20px;" src = "{{monsterImageSrc}}" title="{{monsterImageTitle}}" />
+					<table id="monsterStatsDisplay">
+						<tr>
+							<td>
+								Health
+							</td>
+							<td id="monsterHealthDisplay" style="text-align:right">
+								{{monsterHealth}}
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Attack
+							</td>
+							<td id="monsterAttackDisplay" style="text-align:right">
+								{{monsterAttack}}
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Defence
+							</td>
+							<td id="monsterDefenceDisplay" style="text-align:right">
+								{{monsterDefence}}
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</script>
 
 	<div id="footer">
 		Page hosted by <a href="http://www.nelsonwright.co.uk/">Nelson</a>
