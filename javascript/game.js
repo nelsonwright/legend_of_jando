@@ -487,6 +487,7 @@ function startHeroPosition(stateOfGame) {
 
 function loadHeroInfo(gameSettings) {
 	extractValuesFromCookie();
+	renderHeroStatsBox();
 	setupStatsHeroImage();
 	loadHeroImage();
 	startHeroPosition(gameSettings);
@@ -1249,20 +1250,31 @@ function levelUpHero() {
 	hero.level = hero.level + 1;
 }
 
+function renderHeroStatsBox() {
+	var template = $('#statsTemplate').html();
+	Mustache.parse(template);   // optional, speeds up future uses
+	var statsHtml = Mustache.render(template, {
+		heroName: hero.name,
+		heroLevel: hero.level,
+		heroHealth: hero.health,
+		heroAttack: hero.attack,
+		heroDefence: hero.defence,
+		maxHeroHealth: hero.maxHealth,
+		maxHeroAttack: hero.maxAttack,
+		maxHeroDefence: hero.maxDefence,
+		heroLevel: hero.level,
+		heroLevelTarget: hero.level * hero.experiencePerLevel,
+		heroExp: hero.experience
+	});
+	$('#statsTemplate_target').html(statsHtml);
+}
+
 function updateHeroStats() {
 	if (hero.experience >= hero.level * hero.experiencePerLevel) {
 		levelUpHero();
 	}
-	document.getElementById('heroName').innerHTML = hero.name;
-	document.getElementById('heroHealth').innerHTML = hero.health;
-	document.getElementById('heroAttack').innerHTML = hero.attack;
-	document.getElementById('heroDefence').innerHTML = hero.defence;
-	document.getElementById('maxHeroHealth').innerHTML = hero.maxHealth;
-	document.getElementById('maxHeroAttack').innerHTML = hero.maxAttack;
-	document.getElementById('maxHeroDefence').innerHTML = hero.maxDefence;
-	document.getElementById('heroExp').innerHTML = hero.experience;
-	document.getElementById('heroLevel').innerHTML = hero.level;
-	document.getElementById('heroLevelTarget').innerHTML = hero.level * hero.experiencePerLevel;
+
+	renderHeroStatsBox();
 }
 
 function showMonsterStatsDisplay() {
@@ -1547,8 +1559,7 @@ function prepareFightDiv() {
 }
 
 function startAttack() {
-	// gameState.monsterIdx = Math.floor(Math.random() * (monsterArray.length - 1));
-	gameState.monsterIdx = 3;
+	gameState.monsterIdx = Math.floor(Math.random() * (monsterArray.length - 1));
 
 	if (gameState.finalFight) {
 		gameState.monsterIdx = monsterArray.length - 1;
