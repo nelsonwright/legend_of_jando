@@ -166,7 +166,19 @@ var map = {
     posRowCell: 0,
     posColumnCell: 0,	// map-cordinates of the hero
 	 oldPosRowCell: 0,
-	 oldPosColumnCell: 0 // the previous co-ordinates
+	 oldPosColumnCell: 0, // the previous co-ordinates
+	 drawHero: function() {
+		var mapTableDiv = document.getElementById('mapTableDiv');
+	   var mapCellImageTag = getCellImageTag(mapTableDiv, map.getHeroPosition());
+
+	   mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
+	   mapCellImageTag.title = 'the hero ' + hero.name;
+	   mapCellImageTag.alt = 'the hero ' + hero.name;
+	   mapCellImageTag.id = 'theHeroImg';
+
+	   // should move this somewhere else at some point . . .
+	   map.setPriorHeroPosition(map.getHeroPosition());
+	 }
   },
   // big map, i.e the overview of the whole area
   big: {
@@ -854,19 +866,6 @@ function setHeroNameInTtitle() {
 	$('#titleTemplate_target').html(titleText);
 }
 
-function drawHero() {
-	var mapTableDiv = document.getElementById('mapTableDiv');
-	var mapCellImageTag = getCellImageTag(mapTableDiv, map.getHeroPosition());
-
-	mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
-	mapCellImageTag.title = 'the hero';
-	mapCellImageTag.alt = 'the hero';
-	mapCellImageTag.id = 'theHeroImg';
-
-	// should move this somewhere else at some point . . .
-	map.setPriorHeroPosition(map.getHeroPosition());
-}
-
 function isOffSmallMap(heroPosition) {
 	return heroPosition.small.row < 0 || heroPosition.small.row > map.small.rows -1 ||
 			 heroPosition.small.column < 0 || heroPosition.small.column > map.small.cols -1;
@@ -967,7 +966,7 @@ function showNextSmallMapSquare(heroPosition) {
 	createSmallMapTerrain(newHeroPosition);
 
 	showSmallMap();
-	drawHero();
+	map.small.drawHero();
 	map.setPriorHeroPosition(heroPosition);
 }
 
@@ -1112,7 +1111,7 @@ function showMap(bigMapShown) {
 
 	if (bigMapShown) {
 		showSmallMap();
-		drawHero();
+		map.small.drawHero();
 		map.big.displayed = false;
 		document.getElementById('showMapButt').innerHTML = 'Show Big <u>M</u>ap';
 	} else {
@@ -1262,6 +1261,8 @@ function renderHeroStatsBox() {
 		maxHeroHealth: hero.maxHealth,
 		maxHeroAttack: hero.maxAttack,
 		maxHeroDefence: hero.maxDefence,
+		heroMovePoints: hero.movePoints,
+		maxHeroMovePoints: hero.maxMovePoints,
 		heroLevel: hero.level,
 		heroLevelTarget: hero.level * hero.experiencePerLevel,
 		heroExp: hero.experience
@@ -1273,8 +1274,8 @@ function updateHeroStats() {
 	if (hero.experience >= hero.level * hero.experiencePerLevel) {
 		levelUpHero();
 	}
-
 	renderHeroStatsBox();
+	setupStatsHeroImage();
 }
 
 function showMonsterStatsDisplay() {
@@ -1717,7 +1718,7 @@ function checkForMovement(actionCode) {
 	if (heroMovementAttempted(actionCode)) {
 		determineDirection(actionCode);
 		processMovement(map.getHeroPosition());
-		drawHero();
+		map.small.drawHero();
 
 		if (hero.moved && !gameState.storyEvent) {
 			checkForAttack();
@@ -1801,7 +1802,7 @@ function showInitialQuest() {
 function startGame() {
 	loadInitialInfo();
 	createMapsAndShowSmallMap();
-	drawHero();
+	map.small.drawHero();
 	updateHeroStats();
 	updateMovePoints();
 	showInitialQuest();
