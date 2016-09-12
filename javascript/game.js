@@ -114,7 +114,7 @@ var gameState = {
 
 var hero = {
 	// the values here are the defaults, but may be overwritten by the cookie values . . .
-	name: "You",
+	name: '',
 	image: new Image(),
 	type: "man",
 	movePoints: 20,
@@ -859,7 +859,7 @@ function showSmallMap() {
 	}
 }
 
-function setHeroNameInTtitle() {
+function setHeroNameInTitleBar() {
 	var template = $('#titleTemplate').html();
 	Mustache.parse(template);   // optional, speeds up future uses
 	var titleText = Mustache.render(template, {heroName: hero.name});
@@ -1698,6 +1698,42 @@ function arrowImageMouseOver(arrowImage) {
 	}
 }
 
+function hideAndShowAreas() {
+	document.getElementById('chooseHero').className = 'gone';
+	document.getElementById('textHeroNamePara').className = 'gone';
+	document.getElementById('mapAndMove').style.display = 'block';
+	document.getElementById('levelDesc').style.display = 'block';
+	document.getElementById('statsHeroLabel').className = 'block';
+
+	document.getElementById('statsTable').style.visibility = 'visible';
+	document.getElementById('buttons').className = 'buttons';
+	document.getElementById('playGameButtonDiv').className = 'gone';
+	document.getElementById('action').style.visibility = 'visible';
+
+	var statsDiv = document.getElementById('stats');
+	var table = statsDiv.getElementsByTagName("table")[0];
+	table.style.display = 'block';
+
+}
+
+function playGame() {
+	var theEnteredHeroName = document.getElementById('textHeroName').value
+	theEnteredHeroName = theEnteredHeroName.trim();
+	hero.name = nvl(theEnteredHeroName, 'The Hero');
+	hideAndShowAreas();
+	setHeroNameInTitleBar();
+}
+
+function setChosenHero(theImage){
+	var selectedHeroPic = document.getElementById('statsHeroImage');
+	selectedHeroPic.src = theImage.src;
+	selectedHeroPic.title = theImage.title;
+	heroType = theImage.title;
+	var heroName = document.getElementById('textHeroName');
+	heroName.focus();
+	heroName.select();
+}
+
 function clickedAnArrow(arrowImage) {
 	var unicode = 0;
 	var arrowDirection = arrowImage.title;
@@ -1782,9 +1818,8 @@ function pressedAKey(e) {
 function loadInitialInfo() {
 	loadTerrain();
 	loadMonsters();
-	loadHeroInfo(gameSettings);
+	// loadHeroInfo(gameSettings);
 	loadFood();
-	setHeroNameInTtitle();
 }
 
 function createMapsAndShowSmallMap() {
