@@ -30,7 +30,7 @@
 
 <script>
 	$(document).ready(function() {
-		startGame();
+		document.getElementById('map_loading').style.display = "none";
 	});
 </script>
 
@@ -49,21 +49,28 @@
 		</span>
 	</div>
 
+<!-- Used when selcting your character at the start -->
+	<div id="characterInfo" class="stats">
+		<div id="statsHeroInfo" class="floatleft">
+			<img id="statsHeroImageInfo"  title="your character" src="./web_images/hero_human.png"/>
+			<p id="textHeroNamePara">
+				<strong>Name</strong>&nbsp;&nbsp;&nbsp;
+				<input type="text" id="textHeroName" width="20" maxwidth="20" maxlength="20" value="human">
+			</p>
+		</div>
+	</div>
+
 	<div id="statsTemplate_target"></div>
 
 	<script id="statsTemplate" type="x-tmpl-mustache">
 	<div id="stats" class="stats">
-		<div id="statsHero" style="float:left">
-			<img id="statsHeroImage"  title="the hero" />
+		<div id="statsHero" class="floatleft">
+			<img id="statsHeroImage"  title="your character" />
 			<p id="statsHeroLabel" class="gone">
 				{{heroName}}
 			</p>
 			<p id="levelDesc" class="gone">
 				Level <span style="font-weight:bold;font-size:x-large">{{heroLevel}}</span>
-			</p>
-			<p id="textHeroNamePara">
-				<strong>Name</strong>&nbsp;&nbsp;&nbsp;
-				<input type="text" id="textHeroName" width=30 maxwidth=30 maxlength="30" value="The Hero">
 			</p>
 		</div>
 			<table id= "statsTable" class="collapse">
@@ -132,9 +139,9 @@
 	</div>
 
 	<div id="chooseHero" class="chooseHero">
-		<h3>Choose your hero . . .</h3>
+		<h3>Choose your character . . .</h3>
 		<div id="heroes" class="heroes">
-			<img id="man" src="./web_images/hero_man.png" title="man" onClick="setChosenHero(this);" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<img id="human" src="./web_images/hero_human.png" title="human" onClick="setChosenHero(this);" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			<img id="goose" src="./web_images/hero_goose.png" title="goose" onClick="setChosenHero(this);" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			<img id="chicken" src="./web_images/hero_chicken.png" title="chicken" onClick="setChosenHero(this);" />
 		</div>
