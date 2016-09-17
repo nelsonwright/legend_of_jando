@@ -51,7 +51,7 @@
 
 <!-- Used when selcting your character at the start -->
 	<div id="characterInfo" class="stats">
-		<div id="statsHeroInfo" class="floatleft">
+		<div id="statsHeroInfo" class="floatLeft">
 			<img id="statsHeroImageInfo"  title="your character" src="./web_images/hero_human.png"/>
 			<p id="textHeroNamePara">
 				<strong>Name</strong>&nbsp;&nbsp;&nbsp;
@@ -64,16 +64,16 @@
 
 	<script id="statsTemplate" type="x-tmpl-mustache">
 	<div id="stats" class="stats">
-		<div id="statsHero" class="floatleft">
+		<div id="statsHero" class="floatLeft">
 			<img id="statsHeroImage"  title="your character" />
-			<p id="statsHeroLabel" class="gone">
+			<p id="statsHeroLabel">
 				{{heroName}}
 			</p>
-			<p id="levelDesc" class="gone">
+			<p id="levelDesc">
 				Level <span style="font-weight:bold;font-size:x-large">{{heroLevel}}</span>
 			</p>
 		</div>
-			<table id= "statsTable" class="collapse">
+			<table id="statsTable">
 				<tr>
 					<td>
 						Health

@@ -1701,7 +1701,6 @@ function arrowImageMouseOver(arrowImage) {
 
 function hideAndShowAreas() {
 	document.getElementById('chooseHero').className = 'gone';
-	document.getElementById('textHeroNamePara').className = 'gone';
 	document.getElementById('characterInfo').className = 'gone';
 	document.getElementById('mapAndMove').className = 'mapAndMove';
 	document.getElementById('buttons').className = 'buttons';
