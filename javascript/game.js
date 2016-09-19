@@ -1647,7 +1647,8 @@ function checkIfFoodFound(forageState, posRowCell, posColumnCell) {
 }
 
 function sleepHero() {
-	window.alert('You sleep, perchance to dream . . .');
+	var actionSpace = document.getElementById('action');
+	actionSpace.innerHTML='<p>You sleep, perchance to dream . . .</p>';
 	hero.movePoints = hero.maxMovePoints;
 	updateMovePoints();
 }
