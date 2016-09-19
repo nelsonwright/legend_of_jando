@@ -10,17 +10,17 @@
 	<meta name="description" action="a game in progress" />
 	<meta name="keywords" action="game" />
 	<meta name="author" action="Nelson and Lewis" />
-	
+
 	<style type="text/css" media="all">@import "css/index.css";</style>
 
-<!-- 	This game was created by Nelson Wright and Lewis Jepson 
+<!-- 	This game was created by Nelson Wright and Lewis Jepson
   		The graphics are by Nelson Wright, Lewis Jepson and Lindsay Sugden
 		You are welcome to use this code, and expand it as you wish.
 		It would be damn nice of you to keep this notice in though.  Thanks :)
 !-->
-	
+
 	<script type="text/javascript">
-	/* 
+	/*
 	   *** global variables ***
 	*/
 	// default values . . .
@@ -32,23 +32,23 @@
 	var bigPosColumnCell=0;
 	var gameInProgress='Y'
 	var nextDestination = 0;
-	
+
 	var maxHeroHealth = 30;
 	var maxHeroAttack = 10;
 	var maxHeroDefence = 8;
 	var maxMovePoints=20;
-	
+
 	var heroHealth = maxHeroHealth;
 	var heroAttack = maxHeroAttack;
 	var heroDefence = maxHeroDefence;
 	var movePoints = maxMovePoints;
-	var heroExperience = 0;	
+	var heroExperience = 0;
 	var heroLevel = 1;
-	
-	var cookieValue;	
-	
+
+	var cookieValue;
+
 	// Trim, Search Array and Cookie functions thanks to Patrick Hunlock: http://www.hunlock.com/blogs/Ten_Javascript_Tools_Everyone_Should_Have
-	
+
 	String.prototype.trim = function() {
 		return this.replace(/^\s+|\s+$/g,"");
 	}
@@ -58,7 +58,7 @@
 	String.prototype.rtrim = function() {
 		return this.replace(/\s+$/g,"");
 	}
-	
+
 	Array.prototype.find = function(searchStr) {
 	  var returnArray = false;
 	  for (i=0; i<this.length; i++) {
@@ -76,7 +76,7 @@
 	  }
 	  return returnArray;
 	}
-	
+
 	function cookiesAllowed() {
 		setCookie('checkCookie', 'test', 1);
 		if (getCookie('checkCookie')) {
@@ -85,7 +85,7 @@
 		}
 		return false;
 	}
-	
+
 	function setCookie(name,value,expires, options) {
 		if (options===undefined) { options = {}; }
 		if ( expires ) {
@@ -93,12 +93,12 @@
 			expires_date.setDate(expires_date.getDate() + expires)
 		}
 		document.cookie = name+'='+escape( value ) +
-			( ( expires ) ? ';expires='+expires_date.toGMTString() : '' ) + 
+			( ( expires ) ? ';expires='+expires_date.toGMTString() : '' ) +
 			( ( options.path ) ? ';path=' + options.path : '' ) +
 			( ( options.domain ) ? ';domain=' + options.domain : '' ) +
 			( ( options.secure ) ? ';secure' : '' );
 	}
-	
+
 	function getCookie( name ) {
 		var start = document.cookie.indexOf( name + "=" );
 		var len = start + name.length + 1;
@@ -110,7 +110,7 @@
 		if ( end == -1 ) end = document.cookie.length;
 		return unescape( document.cookie.substring( len, end ) );
 	}
-	
+
 	function deleteCookie( name, path, domain ) {
 		if ( getCookie( name ) ) document.cookie = name + '=' +
 			( ( path ) ? ';path=' + path : '') +
@@ -118,16 +118,16 @@
 			';expires=Thu, 01-Jan-1970 00:00:01 GMT';
 	}
 	// end of cookie functions
-	
+
 	function setHeroCookieValues(){
 		cookieValue    =     "name=" + heroName + ';'
 										+ "health=" + heroHealth + ';'
 										+ "attack=" + heroAttack + ';'
-										+ "defence=" + heroDefence + ';' 
-										+ "char=" + heroType + ';' 
+										+ "defence=" + heroDefence + ';'
+										+ "char=" + heroType + ';'
 										+ "posRowCell=" + posRowCell + ';'
-										+ "posColumnCell=" + posColumnCell + ';'										
-										+ "bigPosRowCell=" + bigPosRowCell + ';' 
+										+ "posColumnCell=" + posColumnCell + ';'
+										+ "bigPosRowCell=" + bigPosRowCell + ';'
 										+ "bigPosColumnCell=" + bigPosColumnCell + ';'
 										+ "gameInProgress=" + gameInProgress + ';'
 										+ "movePoints=" + movePoints + ';'
@@ -135,15 +135,15 @@
 										+ "maxHeroAttack=" + maxHeroAttack + ';'
 										+ "maxHeroDefence=" + maxHeroDefence + ';'
 										+ "maxMovePoints=" + maxMovePoints + ';'
-										+ "nextDestination=" + nextDestination + ';'										
+										+ "nextDestination=" + nextDestination + ';'
 										+ "heroExperience=" + heroExperience + ';'
-										+ "heroLevel=" + heroLevel										
-										;			
-										
+										+ "heroLevel=" + heroLevel
+										;
+
 		setCookie('jando', cookieValue, 42);  // cookie will expire in 6 weeks
 	}
-	
-	function playGame() {	
+
+	function playGame() {
 		var theHeroName = document.getElementById('textHeroName').value;
 		heroName = theHeroName.trim();
 		if (heroName == '')
@@ -151,19 +151,19 @@
 		setHeroCookieValues();
 		window.location="./game.html"
 	}	// end of playGame
-	
+
 	function highlightHero(theImage){
 		theImage.style.borderStyle='solid';
 		theImage.style.borderWidth='5px';
 		theImage.style.padding='0px';
 		theImage.style.borderColor='yellow';
 	} // end of HighlightHero
-	
+
 	function unHighlightHero(theImage){
 		theImage.style.borderStyle='none';
-		theImage.style.padding='5px';		
+		theImage.style.padding='5px';
 	}	// end of unHighlightHero
-	
+
 	function setHero(theImage){
 		var selectedHeroPic = document.getElementById('selectedHero');
 		selectedHeroPic.src = theImage.src;
@@ -173,7 +173,7 @@
 		heroName.focus();
 		heroName.select();
 	}
-	
+
 	function getCookieValue(pairName, cookieString){
 	// returns the value for the name/value pair, for the given name
 	// if not found, returns null
@@ -187,9 +187,9 @@
 		}
 		return returnValue;
 	}	// end of getCookieValue
-	
+
 	function retrieveCookieValues(){
-		var cookieValue = getCookie('jando');				
+		var cookieValue = getCookie('jando');
 		heroName = getCookieValue('name', cookieValue);
 		document.getElementById('textHeroName').value = heroName;
 		heroHealth = getCookieValue('health', cookieValue);
@@ -199,44 +199,44 @@
 		heroDefence = getCookieValue('defence', cookieValue);
 		document.getElementById('heroDefence').innerHTML = heroDefence;
 		movePoints = getCookieValue('movePoints', cookieValue);
-		document.getElementById('heroMovePoints').innerHTML = movePoints;		
+		document.getElementById('heroMovePoints').innerHTML = movePoints;
 		heroType = getCookieValue('char', cookieValue);
 		posRowCell = getCookieValue('posRowCell', cookieValue);
-		posColumnCell = getCookieValue('posColumnCell', cookieValue);	
+		posColumnCell = getCookieValue('posColumnCell', cookieValue);
 		bigPosRowCell = getCookieValue('bigPosRowCell', cookieValue);
 		bigPosColumnCell = getCookieValue('bigPosColumnCell', cookieValue);
 		gameInProgress = getCookieValue('gameInProgress', cookieValue);
 		maxHeroHealth = getCookieValue('maxHeroHealth', cookieValue);
 		maxHeroAttack = getCookieValue('maxHeroAttack', cookieValue);
 		maxHeroDefence = getCookieValue('maxHeroDefence', cookieValue);
-		maxMovePoints = getCookieValue('maxMovePoints', cookieValue);		
+		maxMovePoints = getCookieValue('maxMovePoints', cookieValue);
 		nextDestination =	getCookieValue('nextDestination', cookieValue);
 		heroExperience =	getCookieValue('heroExperience', cookieValue);
-		heroLevel =	getCookieValue('heroLevel', cookieValue);		
+		heroLevel =	getCookieValue('heroLevel', cookieValue);
 		heroImage = document.getElementById(heroType);
 		setHero(heroImage);
 	}	// end of retrieveCookieValues
-	
+
 	function processAction(actionCode){
 		//alert(actionCode);
 			if (actionCode == 13) // user has pressed the enter key, so start the game . . .
 				playGame();
-	} 
-	
+	}
+
 	function pressed_a_key(e) {
 		var unicode=e.keyCode? e.keyCode : e.charCode;
-		processAction(unicode);	 
-	} 	
-	
+		processAction(unicode);
+	}
+
 	function start_game() {
 		if ( !cookiesAllowed() ) // if cookies are not enabled, display warning message
 			alert('You need to have cookies turned on in order to play this game.\nTurn them on, then refresh this page');
 		else {
 			cookieValue = getCookie('jando');
-			if (cookieValue==null) 
+			if (cookieValue==null)
 			{
-				gameInProgress = 'N';		
-				setHeroCookieValues();				
+				gameInProgress = 'N';
+				setHeroCookieValues();
 				setCookie('jando', cookieValue,365);
 				retrieveCookieValues();
 			}
@@ -253,7 +253,7 @@
 	<div id="main-nav">
 		<span style="text-align:center">The Legend of Jando . . .</span>
 	</div>
-	
+
 	<div id="stats">
 		<img id="selectedHero" src="./web_images/hero_man.png" title="the hero" style="float:left" />
 		<table>
@@ -288,7 +288,7 @@
 				<td id="heroMovePoints" style="text-align:right">
 					&nbsp;
 				</td>
-			</tr>			
+			</tr>
 		</table>
 		<p style="clear:both; display:fixed;padding-top:2em;padding-left:25px">
 			<strong	>Name</strong>&nbsp;&nbsp;&nbsp;
@@ -304,23 +304,23 @@
 			<img id="chicken" src="./web_images/hero_chicken.png" title="chicken" onmouseover="highlightHero(this);"  onmouseout="unHighlightHero(this);" onClick="setHero(this);" />
 		</div>
 	</div>
-	
+
 	<div id="buttons">
 	<p><strong>Actions</strong></p>
 		<div id="fightButts" >
-			
-		</div>	
+
+		</div>
 		<div id="gameButts">
 			<p>
 			<button id ="playGame" onClick="playGame();">Play the game</button>
-			</p>			
-		</div>			
-	</div>		
+			</p>
+		</div>
+	</div>
 
 	<div id="action">
 
 	</div>
-	
+
 	<div id="footer">
 		Page hosted by <a href="http://www.nelsonwright.co.uk/">Nelson</a>
 	</div>
@@ -328,4 +328,3 @@
 
 </body>
 </html>
-

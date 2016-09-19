@@ -106,17 +106,18 @@ var key = Object.freeze({
 // these values apply to the game as a whole, and may change during the course of a game . . .
 var gameState = {
 	inProgress: false,			// has the game started?
-	storyEvent: false,	     	// is a story event happening?
-	questDisplayed: false,    	// are we currently showing the current quest objective?
-	finalFight: false,        	// is the final battle happening?
-	monsterIdx:	0					// used to indicate the currently battled monster
+	storyEvent: false,	   	// is a story event happening?
+	questDisplayed: false, 	// are we currently showing the current quest objective?
+	finalFight: false,     	// is the final battle happening?
+	monsterIdx:	0,					// used to indicate the currently battled monster
+	inStartMode: true	      // to indicate when player is selcting their starting charcter
 };
 
 var hero = {
 	// the values here are the defaults, but may be overwritten by the cookie values . . .
-	name: "You",
+	name: '',
 	image: new Image(),
-	type: "man",
+	type: "human",
 	movePoints: 20,
 	maxMovePoints: 20,
 	foraging: false,     // are you foraging at the moment?
@@ -498,7 +499,7 @@ function startHeroPosition(stateOfGame) {
 }
 
 function loadHeroInfo(gameSettings) {
-	extractValuesFromCookie();
+	// extractValuesFromCookie();
 	renderHeroStatsBox();
 	setupStatsHeroImage();
 	loadHeroImage();
@@ -572,7 +573,7 @@ function getQuestData() {
 					'Would you mind closing the tent flap . . . ?  Thank you, there\'s a bit of a chill breeze from the east today."' +
 					'</p>' +
 					'<p>' +
-					'"So, you seek a path through the hills, do you?  All in good time, but first you must traverse the woods, and a man can lose his way there. ' +
+					'"So, you seek a path through the hills, do you?  All in good time, but first you must traverse the woods, and a human can lose his way there. ' +
 					'I don\'t know the way myself, as it is dangerous even for a giant grasshopper. ' +
 					'There is a meditating skelton that lives on a watchtower somewhere in the scrub that can help you.' +
 					' I don\'t know his exact wherabouts, I\'m afraid, but I\'ll tell my blackbird friends to let him know that you\'re coming."' +
@@ -859,7 +860,7 @@ function showSmallMap() {
 	}
 }
 
-function setHeroNameInTtitle() {
+function setHeroNameInTitleBar() {
 	var template = $('#titleTemplate').html();
 	Mustache.parse(template);   // optional, speeds up future uses
 	var titleText = Mustache.render(template, {heroName: hero.name});
@@ -949,7 +950,7 @@ function calculateNewHeroPosition() {
 
 // a function to return an alernative value if the first value is null
 function nvl(value1, value2) {
-	if (typeof value1 === 'undefined' || value1 === null) {
+	if (typeof value1 === 'undefined' || value1 === null || value1 == "") {
 		return value2;
 	}
 	return value1;
@@ -1049,7 +1050,7 @@ function startNewGame() {
 
 	if (newGame === true ) {
 		deleteCookie('jando');
-		window.location="./index.html";
+		location.reload();
 	}
 }
 
@@ -1646,7 +1647,8 @@ function checkIfFoodFound(forageState, posRowCell, posColumnCell) {
 }
 
 function sleepHero() {
-	window.alert('You sleep, perchance to dream . . .');
+	var actionSpace = document.getElementById('action');
+	actionSpace.innerHTML='<p>You sleep, perchance to dream . . .</p>';
 	hero.movePoints = hero.maxMovePoints;
 	updateMovePoints();
 }
@@ -1696,6 +1698,42 @@ function arrowImageMouseOver(arrowImage) {
 		// replace with ordinary image
 		arrowImage.src = './web_images/arrow_' + arrowDirection + '_big.png';
 	}
+}
+
+function hideAndShowAreas() {
+	document.getElementById('chooseHero').className = 'gone';
+	document.getElementById('characterInfo').className = 'gone';
+	document.getElementById('mapAndMove').className = 'mapAndMove';
+	document.getElementById('buttons').className = 'buttons';
+	document.getElementById('playGameButtonDiv').className = 'gone';
+	document.getElementById('action').style.visibility = 'visible';
+}
+
+function playGame() {
+	var theEnteredHeroName = document.getElementById('textHeroName').value;
+	var selectedHeroPic = document.getElementById('statsHeroImageInfo');
+
+	theEnteredHeroName = theEnteredHeroName.trim();
+	hero.name = nvl(theEnteredHeroName, 'human');
+	hero.image = selectedHeroPic;
+	hero.type = selectedHeroPic.title;
+
+	hideAndShowAreas();
+	setHeroNameInTitleBar();
+
+	gameState.inStartMode = false;
+	startGame();
+}
+
+function setChosenHero(theImage) {
+	var selectedHeroPic = document.getElementById('statsHeroImageInfo');
+	selectedHeroPic.src = theImage.src;
+	selectedHeroPic.title = theImage.title;
+	var heroNameInputBox = document.getElementById('textHeroName');
+	heroNameInputBox.value = theImage.title;
+
+	heroNameInputBox.focus();
+	heroNameInputBox.select();
 }
 
 function clickedAnArrow(arrowImage) {
@@ -1776,7 +1814,9 @@ function pressedAKey(e) {
 	var unicode = e.keyCode? e.keyCode : e.charCode;
 	/* if (e.altKey || e.ctrlKey || e.shiftKey)
  		 alert("you pressed one of the 'Alt', 'Ctrl', or 'Shift' keys"); */
-	processAction(unicode);
+   if (!gameState.inStartMode) {
+		processAction(unicode);
+	}
 }
 
 function loadInitialInfo() {
@@ -1784,7 +1824,6 @@ function loadInitialInfo() {
 	loadMonsters();
 	loadHeroInfo(gameSettings);
 	loadFood();
-	setHeroNameInTtitle();
 }
 
 function createMapsAndShowSmallMap() {
@@ -1794,7 +1833,6 @@ function createMapsAndShowSmallMap() {
 }
 
 function showInitialQuest() {
-	document.getElementById('map_loading').style.display = "none";
 	displayDestination(map.big.nextDestination);
 	document.getElementById('mapTableDiv').focus();
 }

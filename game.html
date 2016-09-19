@@ -30,7 +30,7 @@
 
 <script>
 	$(document).ready(function() {
-		startGame();
+		document.getElementById('map_loading').style.display = "none";
 	});
 </script>
 
@@ -41,28 +41,39 @@
 	<strong>Loading map . . .</strong>
 </div>
 <div id="page-container">
-	<div id="titleBar">
-		<span style="text-align:center; color:white" id="titleTemplate_target">
+	<div class="titleBar">
+		<span id="titleTemplate_target">
 			<script id="titleTemplate" type="x-tmpl-mustache">
 				The legend of {{ heroName }}
 			</script>
 		</span>
 	</div>
 
+<!-- Used when selcting your character at the start -->
+	<div id="characterInfo" class="stats">
+		<div id="characterInfoLeft" class="floatLeft">
+			<img id="statsHeroImageInfo"  title="your character" src="./web_images/hero_human.png"/>
+			<p id="textHeroNamePara">
+				<strong>Name</strong>&nbsp;&nbsp;&nbsp;
+				<input type="text" id="textHeroName" width="20" maxwidth="20" maxlength="20" value="human">
+			</p>
+		</div>
+	</div>
+
 	<div id="statsTemplate_target"></div>
 
 	<script id="statsTemplate" type="x-tmpl-mustache">
-	<div id="stats">
-		<div id="statsHero" style="float:left">
-			<img id="statsHeroImage"  title="the hero" />
-			<p>
+	<div id="stats" class="stats">
+		<div id="statsHero" class="floatLeft">
+			<img id="statsHeroImage"  title="your character" />
+			<p id="statsHeroLabel">
 				{{heroName}}
 			</p>
 			<p id="levelDesc">
 				Level <span style="font-weight:bold;font-size:x-large">{{heroLevel}}</span>
 			</p>
 		</div>
-			<table>
+			<table id="statsTable">
 				<tr>
 					<td>
 						Health
@@ -122,23 +133,32 @@
 	</div>
 	</script>
 
-	<div id="mapAndMove">
-		<div id="mapTableDiv"></div>
-		<div id="movementArea"></div>
+	<div id="mapAndMove" class="mapAndMove gone">
+		<div id = "mapTableDiv"></div>
+		<div id = "movementArea"></div>
 	</div>
 
-	<div id="buttons">
+	<div id="chooseHero" class="chooseHero">
+		<h3>Choose your character . . .</h3>
+		<div id="heroes" class="heroes">
+			<img id="human" src="./web_images/hero_human.png" title="human" onClick="setChosenHero(this);" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<img id="goose" src="./web_images/hero_goose.png" title="goose" onClick="setChosenHero(this);" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<img id="chicken" src="./web_images/hero_chicken.png" title="chicken" onClick="setChosenHero(this);" />
+		</div>
+	</div>
+
+	<div id="buttons" class="buttons gone">
 		<p><strong>Actions</strong></p>
-		<div id="fightButts" style="visibility:hidden">
+		<div id="fightButts" class="hidden">
 			<button id ="fightButt" onClick="fightMonster();"><u>F</u>ight</button>&nbsp;&nbsp;&nbsp;
 			<button id = "runAwayButt" type="button" onClick="runAway();"><u>R</u>un Away</button>&nbsp;&nbsp;&nbsp;
 			<button id = "contJournButt" type="button" onClick="continueJourney();" style="visibility:hidden;"><u>C</u>ontinue Journey</button>
-		</div>	<!-- end of fightButts DIV -->
+		</div>
 
 		<div id="optButts">
 			<button id ="sleepButt" onClick="sleepHero();"><u>S</u>leep</button>&nbsp;&nbsp;&nbsp;
 			<button id ="forageButt" onClick="toggleForageStatus(this);">F<u>o</u>rage</button>&nbsp;&nbsp;&nbsp;
-		</div>	<!-- end of optButts DIV -->
+		</div>
 
 		<div id="gameButts">
 			<p>
@@ -147,10 +167,16 @@
 				<button id ="showMapButt" onClick="showMap(map.big.displayed);">Show Big <u>M</u>ap</button>&nbsp;&nbsp;&nbsp;
 				<button id ="showQuestButt" onClick="toggleQuest(gameState.questDisplayed, map.big.displayed);">Show <u>Q</u>uest</button>&nbsp;&nbsp;&nbsp;
 			</p>
-		</div>	<!-- end of gameButts DIV -->
+		</div>
 	</div>
 
-	<div id="action">
+	<div id="playGameButtonDiv">
+		<p>
+			<button id ="playGame" onClick="playGame();">Play the game</button>
+		</p>
+	</div>
+
+	<div id="action" class="action hidden">
 		<!-- stuff will be dynamically generated in here -->
 	</div>
 

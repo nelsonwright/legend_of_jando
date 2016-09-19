@@ -8,7 +8,6 @@ body {
 	font-family: Arial, Helvetica, Verdana, Sans-serif;
 	font-size: 1em;
 	color: black;
-	cursor: url(http://www.nelsonwright.co.uk/game_project/web_images/sword_cursor.cur), default;
 }
 
 h1 {
@@ -20,21 +19,26 @@ button {
 	cursor: url(http://www.nelsonwright.co.uk/game_project/web_images/sword_cursor.cur), default;
 }
 
+.titleBar {
+		background-color:DarkGreen;
+}
+
 #page-container {
 	width: 1260px;
 	margin: auto;
 }
 
-#titleBar {
+.titleBar {
 	background: darkgreen;
 	height: 1.5em;
 	font-weight:bold;
 	padding-left: 15px;
 	padding-top: 5px;
+	color:white
 }
 
 
-#stats {
+.stats {
 	float: right;
 	width: 560px;
 	height:320px;
@@ -42,27 +46,27 @@ button {
 	padding: 15px;
 }
 
-#stats table {
+.stats table {
 	border:solid black;
 	width:260px;
 	background-color:darkred;
 	float:right;
 }
 
-#stats td {
+.stats td {
 	border:thin solid black;
 	background-color:#eeeecc;
 	padding:0.5em;
 }
 
-#stats td.max_values{
+.stats td.max_values{
 	border:thin solid black;
 	background-color:#aacccc;
 	padding:0.5em;
 	text-align:right;
 }
 
-#stats #heroName {
+.stats #heroName {
 	clear:both;
 	position:relative;
 	padding-top:1em;
@@ -70,23 +74,23 @@ button {
 	font-weight:bold;
 }
 
-#mapAndMove {
+.mapAndMove {
 	background-color: #CFDFC3;
 	height:320px;
 	padding:15px;
 }
 
-#mapAndMove table {
+.mapAndMove table {
 	border:solid black;
 	border-collapse:collapse;
 	float:left;
 }
 
-#mapAndMove tr {
+.mapAndMove tr {
 	height:40px;
 }
 
-#mapAndMove td {
+.mapAndMove td {
 	width:30px;
 	border:thin dotted gray;
 	text-align:center;
@@ -101,7 +105,7 @@ button {
 	width:250px;
 }
 
-#action {
+.action {
 	background-color: #CAEE90;
 	margin-right: 630px;
 	line-height: 18px;
@@ -111,33 +115,33 @@ button {
 	position:relative;
 }
 
-#action h2 {
+.action h2 {
 	margin: 0;
 	padding: 0;
 	padding-bottom: 15px;
 }
 
-#action p {
+.action p {
 	margin: 0;
 	padding: 0;
 	padding-bottom: 15px;
 }
 
-#action #fight{
+.action #fight{
 	background-color: #F5FF9F;
 }
-#action table {
+.action table {
 	border:none;
 	width:8em;
 	background-color:darkred;
 	float:right;
 }
-#action table td {
+.action table td {
 	border:thin solid black;
 	background-color:#B9CFB5;
 }
 
-#buttons {
+.buttons {
 	position:relative;
 	float: right;
 	width: 560px;
@@ -179,14 +183,48 @@ button {
 	top:155px;
 	left:10px;
 	height: 100px;
-	width: 	362px;
+	width: 362px;
 	text-align:center;
 	padding:15px;
 }
 
 .hidden {
+	visibility: hidden;
+}
+
+.collapse {
+	visibility: collapse;
+}
+
+.gone {
 	display: none;
+}
+
+.block {
+	display:block;
 }
 
 .floatLeft { float: left; }
 .floatRight { float: right; }
+
+
+/*
+new stuff in here . . .
+*/
+
+.chooseHero {
+	height:320px;
+	background-color: #CAEE90;
+	padding: 1em;
+}
+
+.chooseHero .heroes img{
+	padding:0.5em;
+}
+
+.chooseHero .heroes img:hover{
+	border-style: solid;
+	border-width: 0.5em;
+	padding: 0;
+	border-color: yellow;
+}
