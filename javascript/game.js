@@ -81,7 +81,8 @@ var gameSettings = Object.freeze({
 	numHeroDiceRolls: 3, 	// this equates to how many dice are rolled
 	numMonsterDiceRolls: 3,
 	foragingSuccessLevel: 0.89, // the random number generated (between 0 - 1) must be higher than this for food to be found when foraging
-	foodFindLevel: 0.99 // the random number generated (between 0 - 1) must be higher than this for food to be found when NOT foraging
+	foodFindLevel: 0.99, // the random number generated (between 0 - 1) must be higher than this for food to be found when NOT foraging
+	hoursInNight: 8 // how many "hours" are in the night, i.e. possible points at which bad dreams can occur
 });
 
 // these are the unicode values for the keyboard keys when pressed
@@ -110,19 +111,21 @@ var gameState = {
 	questDisplayed: false, 	// are we currently showing the current quest objective?
 	finalFight: false,     	// is the final battle happening?
 	monsterIdx:	0,					// used to indicate the currently battled monster
-	inStartMode: true	      // to indicate when player is selcting their starting charcter
+	inStartMode: true,      // to indicate when player is selcting their starting character
+	sleepIntervalId: null	  // id for the sleep state, needed when stopping/clearing
 };
 
 var hero = {
-	// the values here are the defaults, but may be overwritten by the cookie values . . .
+	// the values here are the defaults, but may be overwritten by other values . . .
 	name: '',
 	image: new Image(),
 	type: "human",
 	movePoints: 20,
 	maxMovePoints: 20,
-	foraging: false,     // are you foraging at the moment?
-	asleep: false,		   // indicates if you're sleeping
+	foraging: false,  // are you foraging at the moment?
 	moved: false,			// indicates if the hero has successfully moved on the map
+	asleep: false,		// indicates if you're sleeping
+	hoursSlept: 0,    // how long have you been asleep?
 
 	// attributes connected with fighting . . .
 	fightOn : 'No',	   // indicates if a fight with a monster is: ongoing, just ended, or not on
@@ -1646,11 +1649,40 @@ function checkIfFoodFound(forageState, posRowCell, posColumnCell) {
 	}
 }
 
+function processSleepState(hoursSlept) {
+	var actionPara = document.getElementById('action').firstChild;
+
+	if (hero.hoursSlept < gameSettings.hoursInNight) {
+
+		// will need to remove this hard-coded value
+		if (Math.random() > 0.8) {
+			paraText = actionPara.innerText;
+			actionPara.innerHTML = paraText + ' BAD DREAM ';
+			// do something to do with bad dreams here . . .
+		} else {
+			paraText = actionPara.innerText;
+			actionPara.innerHTML = paraText + ' ' + hero.hoursSlept + ' ';
+		}
+
+		hero.hoursSlept++;
+	} else {
+		paraText = actionPara.innerText;
+		actionPara.innerHTML = paraText + ' . . . you finally awake.';
+		clearInterval(sleepIntervalId);
+		hero.asleep = false;
+
+		// we will want to update these depending on how well the "dreams" were dealt with
+		hero.movePoints = hero.maxMovePoints;
+		updateMovePoints();
+	}
+}
+
 function sleepHero() {
 	var actionSpace = document.getElementById('action');
 	actionSpace.innerHTML='<p>You sleep, perchance to dream . . .</p>';
-	hero.movePoints = hero.maxMovePoints;
-	updateMovePoints();
+	hero.asleep = true;
+	hero.hoursSlept = 0;
+	sleepIntervalId = setInterval(processSleepState, 1000);
 }
 
 function toggleForageStatus(butt) {
@@ -1814,7 +1846,7 @@ function pressedAKey(e) {
 	var unicode = e.keyCode? e.keyCode : e.charCode;
 	/* if (e.altKey || e.ctrlKey || e.shiftKey)
  		 alert("you pressed one of the 'Alt', 'Ctrl', or 'Shift' keys"); */
-   if (!gameState.inStartMode) {
+   if (!gameState.inStartMode && !hero.asleep) {
 		processAction(unicode);
 	}
 }
