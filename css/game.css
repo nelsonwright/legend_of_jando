@@ -98,11 +98,19 @@ button {
 	width:33px;
 }
 
-#movementArea {
+.movementArea {
 	display:inline;
 	padding:0px 15px 0px 15px;
 	float:right;
 	width:250px;
+}
+
+.movementArea p {
+	margin-top: 0;
+}
+
+.mapAndMoveArrows {
+	font-family: courier,monospace;
 }
 
 .action {

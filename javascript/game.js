@@ -99,9 +99,9 @@ var key = Object.freeze({
 	questLog: 81, // letter "q" for (q)uest log
 	sleep: 83, // letter "s" for (s)leep
 	forage: 79, // letter "o" for f(o)rage
-	fight: 70, // letter "f" for (F)ight
-	runAway: 82, // letter "r" for (R)un Away
-	continueJourney: 67 // letter "c" for (C)ontinue Journey
+	fight: 70, // letter "f" for (f)ight
+	runAway: 82, // letter "r" for (r)un Away
+	continueJourney: 67 // letter "c" for (c)ontinue Journey
 });
 
 // these values apply to the game as a whole, and may change during the course of a game . . .
@@ -171,6 +171,7 @@ var map = {
     posColumnCell: 0,	// map-cordinates of the hero
 	 oldPosRowCell: 0,
 	 oldPosColumnCell: 0, // the previous co-ordinates
+	 movementAreaHtml: null, // variable to hold the html for this div
 	 drawHero: function() {
 		var mapTableDiv = document.getElementById('mapTableDiv');
 	   var mapCellImageTag = getCellImageTag(mapTableDiv, map.getHeroPosition());
@@ -807,27 +808,9 @@ function setTerrainCellSmallMap(mapTableDiv, row, column) {
 
 function showMovementArea() {
 	var moveArea = document.getElementById('movementArea');
-	moveArea.innerHTML =
-			'Use the arrow keys to move, or click on the direction arrows below' +
-			'<br />' +
-			'<br />' +
-			'<div style="font-family:courier,monospace">' +
-			'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
-			'<img src="./web_images/arrow_up_big.png" title="up" onClick="clickedAnArrow(this)"' +
-			'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />' +
-			'<br />' +
-			'<img src="./web_images/arrow_left_big.png" title="left" onClick="clickedAnArrow(this)"' +
-			'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />' +
-			'&nbsp;<span id="mouseMoveHero" style="vertical-align:90%">&nbsp;</span>&nbsp;' +
-			'<img src="./web_images/arrow_right_big.png" title="right" onClick="clickedAnArrow(this)"' +
-			'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />' +
-			'<br />' +
-			'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
-			'<img src="./web_images/arrow_down_big.png" title="down" onClick="clickedAnArrow(this)"' +
-			'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />' +
-		   '</div>';
+	moveArea.innerHTML = map.movementAreaHtml;
 	var mouseMoveHero = document.getElementById('mouseMoveHero');
-	mouseMoveHero.innerHTML='<img src="./web_images/hero_' + hero.type + '_thumb.png" title="the hero" />';
+	mouseMoveHero.innerHTML='<img src="./web_images/hero_' + hero.type + '_thumb.png" title="your character" />';
 }
 
 function showQuestDestinationOnSmallMap(mapTableDiv, row, col) {
@@ -1739,6 +1722,7 @@ function hideAndShowAreas() {
 	document.getElementById('buttons').className = 'buttons';
 	document.getElementById('playGameButtonDiv').className = 'gone';
 	document.getElementById('action').style.visibility = 'visible';
+	map.movementAreaHtml = document.getElementById('mapAndMove').innerHTML;
 }
 
 function playGame() {

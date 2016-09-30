@@ -135,7 +135,27 @@
 
 	<div id="mapAndMove" class="mapAndMove gone">
 		<div id = "mapTableDiv"></div>
-		<div id = "movementArea"></div>
+		<div id="movementArea" class="movementArea">
+			<p>
+				Use the arrow keys to move, or click on the direction arrows below
+			</p>
+
+			<div class="mapAndMoveArrows">
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<img src="./web_images/arrow_up_big.png" title="up" onClick="clickedAnArrow(this)"
+					onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />
+				<br />
+				<img src="./web_images/arrow_left_big.png" title="left" onClick="clickedAnArrow(this)"
+					onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />
+				&nbsp;<span id="mouseMoveHero" style="vertical-align:90%">&nbsp;</span>&nbsp;
+				<img src="./web_images/arrow_right_big.png" title="right" onClick="clickedAnArrow(this)"
+					onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />
+				<br />
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<img src="./web_images/arrow_down_big.png" title="down" onClick="clickedAnArrow(this)"
+					onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />
+			</div>
+		</div>
 	</div>
 
 	<div id="chooseHero" class="chooseHero">
