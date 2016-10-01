@@ -177,9 +177,9 @@ var map = {
 	   var mapCellImageTag = getCellImageTag(mapTableDiv, map.getHeroPosition());
 
 	   mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
-	   mapCellImageTag.title = 'the hero ' + hero.name;
-	   mapCellImageTag.alt = 'the hero ' + hero.name;
-	   mapCellImageTag.id = 'theHeroImg';
+	   mapCellImageTag.title = hero.name;
+	   mapCellImageTag.alt = hero.name;
+		 mapCellImageTag.id = 'yourCharacterImage';
 
 	   // should move this somewhere else at some point . . .
 	   map.setPriorHeroPosition(map.getHeroPosition());
@@ -810,7 +810,9 @@ function showMovementArea() {
 	var moveArea = document.getElementById('movementArea');
 	moveArea.innerHTML = map.movementAreaHtml;
 	var mouseMoveHero = document.getElementById('mouseMoveHero');
-	mouseMoveHero.innerHTML='<img src="./web_images/hero_' + hero.type + '_thumb.png" title="your character" />';
+	mouseMoveHero.src = makeImageSource('hero_' + hero.type + '_thumb');
+	mouseMoveHero.title = hero.name;
+	mouseMoveHero.alt = hero.name;
 }
 
 function showQuestDestinationOnSmallMap(mapTableDiv, row, col) {
@@ -964,7 +966,7 @@ function dontAllowMovement() {
 
 function highlightHeroSquare() {
 	$("#heroMovePoints").effect("highlight",{color: "#A52A2A"});
-	$("#theHeroImg").parent().effect("highlight",{color: "#A52A2A"});
+	$("#yourCharacterImage").parent().effect("highlight",{color: "#A52A2A"});
 	$("#sleepButt").effect("highlight",{"color": "#A52A2A", "background-color": "white"}).focus();
 }
 

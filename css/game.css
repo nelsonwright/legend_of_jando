@@ -23,7 +23,7 @@ button {
 		background-color:DarkGreen;
 }
 
-#page-container {
+.page-container {
 	width: 1260px;
 	margin: auto;
 }
@@ -36,7 +36,6 @@ button {
 	padding-top: 5px;
 	color:white
 }
-
 
 .stats {
 	float: right;
@@ -66,14 +65,6 @@ button {
 	text-align:right;
 }
 
-.stats #heroName {
-	clear:both;
-	position:relative;
-	padding-top:1em;
-	padding-left:25px;
-	font-weight:bold;
-}
-
 .mapAndMove {
 	background-color: #CFDFC3;
 	height:320px;
@@ -100,13 +91,15 @@ button {
 
 .movementArea {
 	display:inline;
-	padding:0px 15px 0px 15px;
 	float:right;
 	width:250px;
+	margin-left:  0.1em;
+	margin-right: 0.5em;
 }
 
 .movementArea p {
 	margin-top: 0;
+	margin-bottom: 0.6em;
 }
 
 .mapAndMoveArrows {
@@ -158,7 +151,7 @@ button {
 	padding: 15px;
 }
 
-#footer {
+.footer {
 	clear: both;
 	background: orange;
 	font-family: Tahoma, Arial, Helvetica, Sans-serif;
@@ -168,32 +161,8 @@ button {
 	padding: 3px;
 }
 
-#footer a {
-	color: #c9c9c9;
-	text-decoration: none;
-}
-
-#footer a:hover {
+.footer a:hover {
 	color: #df1d16;
-}
-
-#footer #altnav {
-	width: 350px;
-	float: right;
-	text-align: right;
-}
-
-#map_loading {
-	position:fixed;
-	background-image: url("http://www.nelsonwright.co.uk/game_project/web_images/ajax-loader.gif");
-	background-repeat: no-repeat;
-	background-position: center;
-	top:155px;
-	left:10px;
-	height: 100px;
-	width: 362px;
-	text-align:center;
-	padding:15px;
 }
 
 .hidden {
@@ -215,11 +184,6 @@ button {
 .floatLeft { float: left; }
 .floatRight { float: right; }
 
-
-/*
-new stuff in here . . .
-*/
-
 .chooseHero {
 	height:320px;
 	background-color: #CAEE90;
@@ -235,4 +199,8 @@ new stuff in here . . .
 	border-width: 0.5em;
 	padding: 0;
 	border-color: yellow;
+}
+
+.mouseMoveHero {
+	vertical-align:90%;
 }
