@@ -1655,6 +1655,7 @@ function processSleepState(hoursSlept) {
 		actionPara.innerHTML = paraText + ' . . . you finally awake.';
 		clearInterval(sleepIntervalId);
 		hero.asleep = false;
+		sleepButt.disabled = false;
 
 		// we will want to update these depending on how well the "dreams" were dealt with
 		hero.movePoints = hero.maxMovePoints;
@@ -1662,7 +1663,8 @@ function processSleepState(hoursSlept) {
 	}
 }
 
-function sleepHero() {
+function sleepHero(sleepButt) {
+	sleepButt.disabled = true;
 	var actionSpace = document.getElementById('action');
 	actionSpace.innerHTML='<p>You sleep, perchance to dream . . .</p>';
 	hero.asleep = true;
@@ -1795,7 +1797,7 @@ function checkNonMovementActions(actionCode) {
 	}
 
 	if (actionCode === key.sleep) {
-		sleepHero();
+		sleepHero(document.getElementById('sleepButt'));
 	}
 
 	if (actionCode === key.forage) {

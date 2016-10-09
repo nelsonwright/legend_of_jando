@@ -42,7 +42,7 @@ button {
 	width: 560px;
 	height:320px;
 	background: darkgreen;
-	padding: 15px;
+	padding: 1em;
 }
 
 .stats table {
@@ -68,7 +68,7 @@ button {
 .mapAndMove {
 	background-color: #CFDFC3;
 	height:320px;
-	padding:15px;
+	padding:1em;
 }
 
 .mapAndMove table {
@@ -82,11 +82,10 @@ button {
 }
 
 .mapAndMove td {
-	width:30px;
 	border:thin dotted gray;
 	text-align:center;
 	background-color:#E6EFC2;
-	width:33px;
+	width:2.1em;
 }
 
 .movementArea {
@@ -95,6 +94,10 @@ button {
 	width:250px;
 	margin-left:  0.1em;
 	margin-right: 0.5em;
+}
+
+.movementArea h4 {
+	margin-top: -0.5em;
 }
 
 .movementArea p {
@@ -108,12 +111,10 @@ button {
 
 .action {
 	background-color: #CAEE90;
-	margin-right: 630px;
 	line-height: 18px;
-	padding:15px;
+	padding:1em;
 	height:250px;
 	width:640px;
-	position:relative;
 }
 
 .action h2 {
@@ -147,8 +148,8 @@ button {
 	float: right;
 	width: 560px;
 	height: 250px;
-	background: brown;
-	padding: 15px;
+	background-color: brown;
+	padding: 1em;
 }
 
 .footer {
@@ -158,7 +159,7 @@ button {
 	font-size: 0.7em;
 	color: black;
 	border-top: 1px solid #efefef;
-	padding: 3px;
+	padding: 0.5em;
 }
 
 .footer a:hover {
