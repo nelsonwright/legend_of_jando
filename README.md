@@ -7,7 +7,7 @@ The Legend of Jando is a typical RPG game that is written in JavaScript.  I crea
 
 So, I'll be re-factoring as I go along, folks!
 
-To start the game, just point your browser at: index.html
+To start the game, just point your browser at: game.html
 
 Feel free to drop me a line if you can think of any parts of the code that could be improved.  You can find me at:
 

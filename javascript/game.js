@@ -138,7 +138,8 @@ var hero = {
 	maxDefence: 8,
 	experience: 0,
 	level: 1,
-	experiencePerLevel: 4
+	experiencePerLevel: 4,
+	badDreamThreshold: 0.8	// the closer to 1, the less likely you'll have bad dreams
 };
 
 // this is the monster that is currently being fought
@@ -169,20 +170,20 @@ var map = {
     cols: 10, // size of the map you move around in
     posRowCell: 0,
     posColumnCell: 0,	// map-cordinates of the hero
-	 oldPosRowCell: 0,
-	 oldPosColumnCell: 0, // the previous co-ordinates
-	 movementAreaHtml: null, // variable to hold the html for this div
-	 drawHero: function() {
+	  oldPosRowCell: 0,
+	  oldPosColumnCell: 0, // the previous co-ordinates
+	  movementAreaHtml: null, // variable to hold the html for this div
+	  drawHero: function() {
 		var mapTableDiv = document.getElementById('mapTableDiv');
-	   var mapCellImageTag = getCellImageTag(mapTableDiv, map.getHeroPosition());
+	  var mapCellImageTag = getCellImageTag(mapTableDiv, map.getHeroPosition());
 
-	   mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
-	   mapCellImageTag.title = hero.name;
-	   mapCellImageTag.alt = hero.name;
-		 mapCellImageTag.id = 'yourCharacterImage';
+		mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
+		mapCellImageTag.title = hero.name;
+		mapCellImageTag.alt = hero.name;
+		mapCellImageTag.id = 'yourCharacterImage';
 
-	   // should move this somewhere else at some point . . .
-	   map.setPriorHeroPosition(map.getHeroPosition());
+		// should move this somewhere else at some point . . .
+		map.setPriorHeroPosition(map.getHeroPosition());
 	 }
   },
   // big map, i.e the overview of the whole area
@@ -191,8 +192,8 @@ var map = {
     cols: 10, // size of the overall big scale map
     posRowCell: 0,
     posColumnCell: 0,	// big map-cordinates of the hero
-	 bigOldposRowCell: 0,
-	 bigOldPosColumnCell: 0, // the previous co-ordinates
+		bigOldposRowCell: 0,
+		bigOldPosColumnCell: 0, // the previous co-ordinates
     terrainAttributes: 6,	// number of attributes of the particular terrain
     numTerrainTypes: 6,    // how many different terrain types there are - set by the length of the terrainTypes array
     displayed: false,      // indicates if the big map is being displayed
@@ -214,10 +215,10 @@ var map = {
 	  this.big.posColumnCell = heroPosition.big.column;
   },
   setPriorHeroPosition: function(heroPosition) {
-	this.small.oldPosRowCell = heroPosition.small.row;
-	this.small.oldPosColumnCell = heroPosition.small.column;
-	this.big.oldPosRowCell = heroPosition.big.row;
-	this.big.oldPosColumnCell = heroPosition.big.column;
+		this.small.oldPosRowCell = heroPosition.small.row;
+		this.small.oldPosColumnCell = heroPosition.small.column;
+		this.big.oldPosRowCell = heroPosition.big.row;
+		this.big.oldPosColumnCell = heroPosition.big.column;
   },
   resetHeroPositionToPrior: function() {
 	  this.small.posRowCell = this.small.oldPosRowCell;
@@ -1634,39 +1635,60 @@ function checkIfFoodFound(forageState, posRowCell, posColumnCell) {
 	}
 }
 
-function processSleepState(hoursSlept) {
-	var actionPara = document.getElementById('action').firstChild;
+function sleepAtNight() {
+	var actionDiv = document.getElementById('action');
+	var sleepCounterPara = actionDiv.firstChild;
+	var sumPara = actionDiv.children[1];
+
+	if (Math.random() > hero.badDreamThreshold) {
+		var firstFactor = Math.floor(Math.random() * 10 + 2);
+		var secondFactor = Math.floor(Math.random() * 10 + 2);
+		var product = firstFactor * secondFactor;
+
+		var sumText = firstFactor + ' X ' + secondFactor + ' = ' + product;
+		sumPara.innerHTML = sumText;
+		// do something to do with bad dreams here . . .
+	} else {
+		var sleepCounterText = sleepCounterPara.innerText;
+		sleepCounterPara.innerHTML = sleepCounterText + ' ' + hero.hoursSlept + ' ';
+	}
+
+	hero.hoursSlept++;
+}
+
+function awakeFromSlumber() {
+	var actionDiv = document.getElementById('action');
+	var sleepCounterPara = actionDiv.firstChild;
+	var sumPara = actionDiv.children[1];
+	var paraText = sleepCounterPara.innerText;
+
+	sleepCounterPara.innerHTML = paraText + ' . . . you finally awake.';
+	clearInterval(sleepIntervalId);
+	sumPara.innerHTML = "";
+
+	hero.asleep = false;
+	sleepButt.disabled = false;
+
+	// we will want to update these depending on how well the "dreams" were dealt with
+	hero.movePoints = hero.maxMovePoints;
+	updateMovePoints();
+}
+
+function processSleepState() {
+	var actionDiv = document.getElementById('action');
+	var sleepCounterPara = actionDiv.firstChild;
 
 	if (hero.hoursSlept < gameSettings.hoursInNight) {
-
-		// will need to remove this hard-coded value
-		if (Math.random() > 0.8) {
-			paraText = actionPara.innerText;
-			actionPara.innerHTML = paraText + ' BAD DREAM ';
-			// do something to do with bad dreams here . . .
-		} else {
-			paraText = actionPara.innerText;
-			actionPara.innerHTML = paraText + ' ' + hero.hoursSlept + ' ';
-		}
-
-		hero.hoursSlept++;
+		sleepAtNight();
 	} else {
-		paraText = actionPara.innerText;
-		actionPara.innerHTML = paraText + ' . . . you finally awake.';
-		clearInterval(sleepIntervalId);
-		hero.asleep = false;
-		sleepButt.disabled = false;
-
-		// we will want to update these depending on how well the "dreams" were dealt with
-		hero.movePoints = hero.maxMovePoints;
-		updateMovePoints();
+		awakeFromSlumber();
 	}
 }
 
 function sleepHero(sleepButt) {
 	sleepButt.disabled = true;
 	var actionSpace = document.getElementById('action');
-	actionSpace.innerHTML='<p>You sleep, perchance to dream . . .</p>';
+	actionSpace.innerHTML='<p>You sleep, perchance to dream . . .</p><p></p>';
 	hero.asleep = true;
 	hero.hoursSlept = 0;
 	sleepIntervalId = setInterval(processSleepState, 1000);
