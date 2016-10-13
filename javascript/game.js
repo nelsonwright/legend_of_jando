@@ -3,18 +3,7 @@
    Contact me at: me@nelsonwright.co.uk
 */
 
-// cookie and trim stuff thanks to Patrick Hunlock: http://www.hunlock.com/blogs/Ten_Javascript_Tools_Everyone_Should_Have
-String.prototype.trim = function() {
-	return this.replace(/^\s+|\s+$/g,"");
-};
-
-String.prototype.ltrim = function() {
-	return this.replace(/^\s+/g,"");
-};
-
-String.prototype.rtrim = function() {
-	return this.replace(/\s+$/g,"");
-};
+// cookie stuff thanks to Patrick Hunlock: http://www.hunlock.com/blogs/Ten_Javascript_Tools_Everyone_Should_Have
 
 function setCookie(name,value,expires, options) {
 	if (options === undefined) {
@@ -112,7 +101,9 @@ var gameState = {
 	finalFight: false,     	// is the final battle happening?
 	monsterIdx:	0,					// used to indicate the currently battled monster
 	inStartMode: true,      // to indicate when player is selcting their starting character
-	sleepIntervalId: null	  // id for the sleep state, needed when stopping/clearing
+	sleepIntervalId: null,  // id for the sleep state, needed when stopping/clearing
+	sumsIntervalId: null,		// id for the timer used when doing sums in the dream state
+	timeForSums: 5					// how many seconds you have to complete a sum whilst in a dream
 };
 
 var hero = {
@@ -139,7 +130,7 @@ var hero = {
 	experience: 0,
 	level: 1,
 	experiencePerLevel: 4,
-	badDreamThreshold: 0.8	// the closer to 1, the less likely you'll have bad dreams
+	badDreamThreshold: 0.7	// the closer to 1, the less likely you'll have bad dreams
 };
 
 // this is the monster that is currently being fought
@@ -1531,8 +1522,6 @@ function displayDestination(nextDestination){
 }
 
 function prepareFightDiv() {
-	var actionSpace = document.getElementById('action');
-
 	var template = $('#fightTemplate').html();
 	Mustache.parse(template);   // optional, speeds up future uses
 
@@ -1635,24 +1624,43 @@ function checkIfFoodFound(forageState, posRowCell, posColumnCell) {
 	}
 }
 
+function processSums() {
+	var actionDiv = document.getElementById('action');
+	var sleepCounterPara = actionDiv.firstChild;
+	var sumPara = actionDiv.children[1];
+
+	if (gameState.timeForSums > 0) {
+		sumPara.innerHTML = sumPara.innerHTML + gameState.timeForSums;
+		gameState.timeForSums--;
+	} else {
+		clearInterval(sumsIntervalId);
+		// sleep some more . . .
+		sleepIntervalId = setInterval(processSleepState, 1000);
+	}
+}
+
 function sleepAtNight() {
 	var actionDiv = document.getElementById('action');
 	var sleepCounterPara = actionDiv.firstChild;
 	var sumPara = actionDiv.children[1];
 
 	if (Math.random() > hero.badDreamThreshold) {
+		clearInterval(sleepIntervalId); // stop the clock
+
 		var firstFactor = Math.floor(Math.random() * 10 + 2);
 		var secondFactor = Math.floor(Math.random() * 10 + 2);
 		var product = firstFactor * secondFactor;
 
 		var sumText = firstFactor + ' X ' + secondFactor + ' = ' + product;
-		sumPara.innerHTML = sumText;
-		// do something to do with bad dreams here . . .
-	} else {
-		var sleepCounterText = sleepCounterPara.innerText;
-		sleepCounterPara.innerHTML = sleepCounterText + ' ' + hero.hoursSlept + ' ';
+		sumPara.innerHTML = sumText + '   ';
+
+		gameState.timeForSums = 5;
+		sumsIntervalId = setInterval(processSums, 1000);
+
 	}
 
+	var sleepCounterText = sleepCounterPara.innerText;
+	sleepCounterPara.innerHTML = sleepCounterText + ' .';
 	hero.hoursSlept++;
 }
 
@@ -1674,11 +1682,15 @@ function awakeFromSlumber() {
 	updateMovePoints();
 }
 
+function stillAsleep() {
+	return hero.hoursSlept < gameSettings.hoursInNight;
+}
+
 function processSleepState() {
 	var actionDiv = document.getElementById('action');
 	var sleepCounterPara = actionDiv.firstChild;
 
-	if (hero.hoursSlept < gameSettings.hoursInNight) {
+	if (stillAsleep()) {
 		sleepAtNight();
 	} else {
 		awakeFromSlumber();
