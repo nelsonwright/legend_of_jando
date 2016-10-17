@@ -90,7 +90,8 @@ var key = Object.freeze({
 	forage: 79, // letter "o" for f(o)rage
 	fight: 70, // letter "f" for (f)ight
 	runAway: 82, // letter "r" for (r)un Away
-	continueJourney: 67 // letter "c" for (c)ontinue Journey
+	continueJourney: 67, // letter "c" for (c)ontinue Journey
+	enter: 13	// the enter or return key
 });
 
 // these values apply to the game as a whole, and may change during the course of a game . . .
@@ -108,7 +109,7 @@ var gameState = {
 
 var hero = {
 	// the values here are the defaults, but may be overwritten by other values . . .
-	name: '',
+	name: null,
 	image: new Image(),
 	type: "human",
 	movePoints: 20,
@@ -130,7 +131,7 @@ var hero = {
 	experience: 0,
 	level: 1,
 	experiencePerLevel: 4,
-	badDreamThreshold: 0.7	// the closer to 1, the less likely you'll have bad dreams
+	badDreamThreshold: 0.5	// the closer to 1, the less likely you'll have bad dreams
 };
 
 // this is the monster that is currently being fought
@@ -501,7 +502,7 @@ function loadHeroInfo(gameSettings) {
 	loadHeroImage();
 	startHeroPosition(gameSettings);
 
-	gameState.inProgress = true; // not entirely sure if we need this
+	gameState.inProgress = true;
 }
 
 function saveHeroInfo() {
@@ -1627,13 +1628,18 @@ function checkIfFoodFound(forageState, posRowCell, posColumnCell) {
 function processSums() {
 	var actionDiv = document.getElementById('action');
 	var sleepCounterPara = actionDiv.firstChild;
-	var sumPara = actionDiv.children[1];
+	var timerPara = actionDiv.children[1];
+	var sumPara = actionDiv.children[2];
+
+	gameState.timeForSums--;
 
 	if (gameState.timeForSums > 0) {
-		sumPara.innerHTML = sumPara.innerHTML + gameState.timeForSums;
-		gameState.timeForSums--;
+		timerPara.innerHTML = "Time to answer: " + gameState.timeForSums;
+
 	} else {
 		clearInterval(sumsIntervalId);
+		timerPara.innerHTML = '&nbsp;';
+		sumPara .innerHTML = '&nbsp;';
 		// sleep some more . . .
 		sleepIntervalId = setInterval(processSleepState, 1000);
 	}
@@ -1642,7 +1648,8 @@ function processSums() {
 function sleepAtNight() {
 	var actionDiv = document.getElementById('action');
 	var sleepCounterPara = actionDiv.firstChild;
-	var sumPara = actionDiv.children[1];
+	var timerPara = actionDiv.children[1];
+	var sumPara = actionDiv.children[2];
 
 	if (Math.random() > hero.badDreamThreshold) {
 		clearInterval(sleepIntervalId); // stop the clock
@@ -1651,10 +1658,11 @@ function sleepAtNight() {
 		var secondFactor = Math.floor(Math.random() * 10 + 2);
 		var product = firstFactor * secondFactor;
 
-		var sumText = firstFactor + ' X ' + secondFactor + ' = ' + product;
-		sumPara.innerHTML = sumText + '   ';
-
+		var sumText = firstFactor + ' X ' + secondFactor + ' = ' + '?';
+		sumPara.innerHTML = sumText;
 		gameState.timeForSums = 5;
+		timerPara.innerHTML = "Time to answer: " + gameState.timeForSums;
+
 		sumsIntervalId = setInterval(processSums, 1000);
 
 	}
@@ -1667,12 +1675,14 @@ function sleepAtNight() {
 function awakeFromSlumber() {
 	var actionDiv = document.getElementById('action');
 	var sleepCounterPara = actionDiv.firstChild;
-	var sumPara = actionDiv.children[1];
+	var timerPara = actionDiv.children[1];
+	var sumPara = actionDiv.children[2];
 	var paraText = sleepCounterPara.innerText;
 
 	sleepCounterPara.innerHTML = paraText + ' . . . you finally awake.';
 	clearInterval(sleepIntervalId);
 	sumPara.innerHTML = "";
+	timerPara.innerHTML = "";
 
 	hero.asleep = false;
 	sleepButt.disabled = false;
@@ -1700,7 +1710,7 @@ function processSleepState() {
 function sleepHero(sleepButt) {
 	sleepButt.disabled = true;
 	var actionSpace = document.getElementById('action');
-	actionSpace.innerHTML='<p>You sleep, perchance to dream . . .</p><p></p>';
+	actionSpace.innerHTML='<p>You sleep, perchance to dream . . .</p><p>&nbsp;</p><p>&nbsp;</p>';
 	hero.asleep = true;
 	hero.hoursSlept = 0;
 	sleepIntervalId = setInterval(processSleepState, 1000);
@@ -1764,14 +1774,7 @@ function hideAndShowAreas() {
 }
 
 function playGame() {
-	var theEnteredHeroName = document.getElementById('textHeroName').value;
-	var selectedHeroPic = document.getElementById('statsHeroImageInfo');
-
-	theEnteredHeroName = theEnteredHeroName.trim();
-	hero.name = nvl(theEnteredHeroName, 'human');
-	hero.image = selectedHeroPic;
-	hero.type = selectedHeroPic.title;
-
+	setChosenHero(document.getElementById('statsHeroImageInfo'));
 	hideAndShowAreas();
 	setHeroNameInTitleBar();
 
@@ -1780,11 +1783,15 @@ function playGame() {
 }
 
 function setChosenHero(theImage) {
-	var selectedHeroPic = document.getElementById('statsHeroImageInfo');
-	selectedHeroPic.src = theImage.src;
-	selectedHeroPic.title = theImage.title;
+	var theEnteredCharacterName = document.getElementById('textHeroName').value;
+	theEnteredCharacterName = theEnteredCharacterName.trim();
+
+	hero.name = nvl(theEnteredCharacterName, theImage.title);
+	hero.image = theImage;
+	hero.type = theImage.title;
+
 	var heroNameInputBox = document.getElementById('textHeroName');
-	heroNameInputBox.value = theImage.title;
+	heroNameInputBox.value = hero.name;
 
 	heroNameInputBox.focus();
 	heroNameInputBox.select();
@@ -1871,6 +1878,12 @@ function pressedAKey(e) {
    if (!gameState.inStartMode && !hero.asleep) {
 		processAction(unicode);
 	}
+
+	if (gameState.inStartMode && unicode === key.enter) {
+		playGame();
+	}
+
+
 }
 
 function loadInitialInfo() {
