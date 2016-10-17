@@ -84,6 +84,9 @@ var key = Object.freeze({
 	isArrowKey: function(actionCode) {
 		return actionCode >= 37 && actionCode <= 40;
 	},
+	isDigit: function(actionCode) {
+		return actionCode >= 48 && actionCode <= 57;
+	},
 	map: 77, // letter "m" for (m)ap
 	questLog: 81, // letter "q" for (q)uest log
 	sleep: 83, // letter "s" for (s)leep
@@ -96,7 +99,7 @@ var key = Object.freeze({
 
 // these values apply to the game as a whole, and may change during the course of a game . . .
 var gameState = {
-	inProgress: false,			// has the game started?
+	inProgress: false,			// has the game started? - prob don't need this now there's inStartMode
 	storyEvent: false,	   	// is a story event happening?
 	questDisplayed: false, 	// are we currently showing the current quest objective?
 	finalFight: false,     	// is the final battle happening?
@@ -117,6 +120,7 @@ var hero = {
 	foraging: false,  // are you foraging at the moment?
 	moved: false,			// indicates if the hero has successfully moved on the map
 	asleep: false,		// indicates if you're sleeping
+	doingSums: false,	// indicates if you're actually trying an answer a sum
 	hoursSlept: 0,    // how long have you been asleep?
 
 	// attributes connected with fighting . . .
@@ -133,6 +137,40 @@ var hero = {
 	experiencePerLevel: 4,
 	badDreamThreshold: 0.5	// the closer to 1, the less likely you'll have bad dreams
 };
+
+var calculation = {
+	firstFactor: null,
+	secondFactor: null,
+	digitToGuess: null,
+	timeAllowed: 7, // how many seconds you're allowed to answer
+	answerIndex: null,
+	create: function() {
+		this.firstFactor = Math.floor(Math.random() * 10 + 2);
+		this.secondFactor = Math.floor(Math.random() * 10 + 2);
+		this.answerIndex = 0;
+		this.digitToGuess = this.calcDigitToGuess();
+	},
+	product: function() {
+		return this.firstFactor * this.secondFactor;
+	},
+	createQuestionText: function () {
+		return this.firstFactor + ' X ' + this.secondFactor + ' = '
+			+ '<span id="calcAnswer">?</span>';
+	},
+	correctDigitGuessed: function(digitGuessed) {
+		return digitGuessed === this.digitToGuess;
+	},
+	calcDigitToGuess: function () {
+		return parseInt(this.product().toString()[this.answerIndex]);
+	},
+	updateDigitToGuess: function() {
+		this.answerIndex++;
+		this.digitToGuess = this.calcDigitToGuess();
+	},
+	gotItAllCorrect: function() {
+		return this.answerIndex >= parseInt(this.product().toString().length);
+	}
+}
 
 // this is the monster that is currently being fought
 var monster = {};
@@ -157,40 +195,40 @@ var terrainLocationsArray = [];
 
 var map = {
   // small map, i.e. the one your hero character moves around on
-  small: {
-    rows: 8,
-    cols: 10, // size of the map you move around in
-    posRowCell: 0,
-    posColumnCell: 0,	// map-cordinates of the hero
-	  oldPosRowCell: 0,
-	  oldPosColumnCell: 0, // the previous co-ordinates
-	  movementAreaHtml: null, // variable to hold the html for this div
-	  drawHero: function() {
-		var mapTableDiv = document.getElementById('mapTableDiv');
-	  var mapCellImageTag = getCellImageTag(mapTableDiv, map.getHeroPosition());
+	small: {
+		rows: 8,
+		cols: 10, // size of the map you move around in
+		posRowCell: 0,
+		posColumnCell: 0,	// map-cordinates of the hero
+		oldPosRowCell: 0,
+		oldPosColumnCell: 0, // the previous co-ordinates
+		movementAreaHtml: null, // variable to hold the html for this div
+		drawHero: function() {
+			var mapTableDiv = document.getElementById('mapTableDiv');
+			var mapCellImageTag = getCellImageTag(mapTableDiv, map.getHeroPosition());
 
-		mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
-		mapCellImageTag.title = hero.name;
-		mapCellImageTag.alt = hero.name;
-		mapCellImageTag.id = 'yourCharacterImage';
+			mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
+			mapCellImageTag.title = hero.name;
+			mapCellImageTag.alt = hero.name;
+			mapCellImageTag.id = 'yourCharacterImage';
 
-		// should move this somewhere else at some point . . .
-		map.setPriorHeroPosition(map.getHeroPosition());
-	 }
+			// should move this somewhere else at some point . . .
+			map.setPriorHeroPosition(map.getHeroPosition());
+		}
   },
   // big map, i.e the overview of the whole area
-  big: {
-    rows: 8,
-    cols: 10, // size of the overall big scale map
-    posRowCell: 0,
-    posColumnCell: 0,	// big map-cordinates of the hero
+  	big: {
+		rows: 8,
+		cols: 10, // size of the overall big scale map
+		posRowCell: 0,
+		posColumnCell: 0,	// big map-cordinates of the hero
 		bigOldposRowCell: 0,
 		bigOldPosColumnCell: 0, // the previous co-ordinates
-    terrainAttributes: 6,	// number of attributes of the particular terrain
-    numTerrainTypes: 6,    // how many different terrain types there are - set by the length of the terrainTypes array
-    displayed: false,      // indicates if the big map is being displayed
-    nextDestination: 0		// holds the next destination level,
-    								// corresponds to terrain type, i.e. starts at zero,which = light grass
+		terrainAttributes: 6,	// number of attributes of the particular terrain
+		numTerrainTypes: 6,    // how many different terrain types there are - set by the length of the terrainTypes array
+		displayed: false,      // indicates if the big map is being displayed
+		nextDestination: 0		// holds the next destination level,
+										// corresponds to terrain type, i.e. starts at zero,which = light grass
   },
   getHeroPosition: function() {
 	  var heroPosition = {small:{row:null, column:null}, big:{row:null, column:null}};
@@ -1625,6 +1663,29 @@ function checkIfFoodFound(forageState, posRowCell, posColumnCell) {
 	}
 }
 
+function processAttemptedSumAnswer(numberCode) {
+	// the digits 0-9 mnap directly to unicode values 48 - 57
+	var digitPressed = numberCode - 48;
+	var timerPara = document.getElementById('action').children[1];
+
+	if (calculation.correctDigitGuessed(digitPressed)) {
+		var answerEle = document.getElementById("calcAnswer");
+		// should move this into the calculation object . . .
+		answerEle.innerHTML = answerEle.innerHTML === '?' ? digitPressed : answerEle.innerHTML + digitPressed;
+		calculation.updateDigitToGuess();
+
+		if (calculation.gotItAllCorrect()) {
+			clearInterval(sumsIntervalId);
+			timerPara.innerHTML = "Hooray!  Got it right!";
+		}
+
+	} else {
+		//oh dear, got it wrong . . .
+		clearInterval(sumsIntervalId);
+		timerPara.innerHTML = "Wrong!  I beat you!";
+	}
+}
+
 function processSums() {
 	var actionDiv = document.getElementById('action');
 	var sleepCounterPara = actionDiv.firstChild;
@@ -1638,6 +1699,7 @@ function processSums() {
 
 	} else {
 		clearInterval(sumsIntervalId);
+		hero.doingSums = false;
 		timerPara.innerHTML = '&nbsp;';
 		sumPara .innerHTML = '&nbsp;';
 		// sleep some more . . .
@@ -1652,15 +1714,12 @@ function sleepAtNight() {
 	var sumPara = actionDiv.children[2];
 
 	if (Math.random() > hero.badDreamThreshold) {
-		clearInterval(sleepIntervalId); // stop the clock
+		clearInterval(sleepIntervalId); // stop the nightime clock
+		hero.doingSums = true;
 
-		var firstFactor = Math.floor(Math.random() * 10 + 2);
-		var secondFactor = Math.floor(Math.random() * 10 + 2);
-		var product = firstFactor * secondFactor;
-
-		var sumText = firstFactor + ' X ' + secondFactor + ' = ' + '?';
-		sumPara.innerHTML = sumText;
-		gameState.timeForSums = 5;
+		calculation.create();
+		sumPara.innerHTML = calculation.createQuestionText();
+		gameState.timeForSums = calculation.timeAllowed;
 		timerPara.innerHTML = "Time to answer: " + gameState.timeForSums;
 
 		sumsIntervalId = setInterval(processSums, 1000);
@@ -1883,7 +1942,9 @@ function pressedAKey(e) {
 		playGame();
 	}
 
-
+	if (hero.doingSums && key.isDigit(unicode)) {
+		processAttemptedSumAnswer(unicode);
+	}
 }
 
 function loadInitialInfo() {
