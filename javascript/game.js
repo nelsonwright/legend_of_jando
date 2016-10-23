@@ -107,7 +107,7 @@ var gameState = {
 	inStartMode: true,      // to indicate when player is selcting their starting character
 	sleepIntervalId: null,  // id for the sleep state, needed when stopping/clearing
 	sumsIntervalId: null,		// id for the timer used when doing sums in the dream state
-	timeForSums: 5					// how many seconds you have to complete a sum whilst in a dream
+	timeForSums: 7					// how many seconds you have to complete a sum whilst in a dream
 };
 
 var hero = {
@@ -1737,6 +1737,7 @@ function awakeFromSlumber() {
 	var timerPara = actionDiv.children[1];
 	var sumPara = actionDiv.children[2];
 	var paraText = sleepCounterPara.innerText;
+	var sleepButt = document.getElementById('sleepButt');
 
 	sleepCounterPara.innerHTML = paraText + ' . . . you finally awake.';
 	clearInterval(sleepIntervalId);
@@ -1965,11 +1966,23 @@ function showInitialQuest() {
 	document.getElementById('mapTableDiv').focus();
 }
 
+function enableOptionButtons()() {
+	var optionButtons = document.getElementById('optButts').getElementsByTagName('button');
+	for (var i = 0; i < optionButtons.length; i++) {
+   	optionButtons[i].disabled = false;
+	}
+}
+
+function showStartOfGame() {
+	showInitialQuest();
+	enableOptionButtons();
+}
+
 function startGame() {
 	loadInitialInfo();
 	createMapsAndShowSmallMap();
 	map.small.drawHero();
 	updateHeroStats();
 	updateMovePoints();
-	showInitialQuest();
+	showStartOfGame();
 }
