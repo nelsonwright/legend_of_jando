@@ -1881,7 +1881,7 @@ function hideAndShowAreas() {
 }
 
 function playGame() {
-	setChosenHero(document.getElementById('statsHeroImageInfo'));
+	setChosenHero();
 	hideAndShowAreas();
 	setHeroNameInTitleBar();
 
@@ -1891,11 +1891,21 @@ function playGame() {
 
 function setChosenHero(theImage) {
 	var theEnteredCharacterName = document.getElementById('textHeroName').value;
+	var imageSelected = document.getElementById('statsHeroImageInfo');
+
 	theEnteredCharacterName = theEnteredCharacterName.trim();
 
-	hero.name = nvl(theEnteredCharacterName, theImage.title);
-	hero.image = theImage;
-	hero.type = theImage.title;
+	if (typeof theImage === 'undefined') {
+		hero.image = imageSelected;
+		hero.type = imageSelected.title;
+		hero.name = theEnteredCharacterName ? theEnteredCharacterName : imageSelected.title;
+	} else {
+		imageSelected.src = theImage.src;
+		imageSelected.title = theImage.title;
+		hero.image = theImage;
+		hero.type = theImage.title;
+		hero.name = nvl(theEnteredCharacterName, theImage.title);
+	}
 
 	var heroNameInputBox = document.getElementById('textHeroName');
 	heroNameInputBox.value = hero.name;
