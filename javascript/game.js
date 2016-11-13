@@ -120,7 +120,7 @@ var hero = {
 	foraging: false,  // are you foraging at the moment?
 	moved: false,			// indicates if the hero has successfully moved on the map
 	asleep: false,		// indicates if you're sleeping
-	doingSums: false,	// indicates if you're actually trying an answer a sum
+	doingSums: false,	// indicates if you're actually trying to answer a sum
 	hoursSlept: 0,    // how long have you been asleep?
 
 	// attributes connected with fighting . . .
@@ -138,12 +138,14 @@ var hero = {
 	badDreamThreshold: 0.5	// the closer to 1, the less likely you'll have bad dreams
 };
 
-var calculation = {
+var sleepCalculation = {
 	firstFactor: null,
 	secondFactor: null,
 	digitToGuess: null,
 	timeAllowed: 7, // how many seconds you're allowed to answer
 	answerIndex: null,
+	questionsAsked: null,
+	correctAnswers: null,
 	create: function() {
 		this.firstFactor = Math.floor(Math.random() * 10 + 2);
 		this.secondFactor = Math.floor(Math.random() * 10 + 2);
@@ -155,7 +157,7 @@ var calculation = {
 	},
 	createQuestionText: function () {
 		return this.firstFactor + ' X ' + this.secondFactor + ' = '
-			+ '<span id="calcAnswer">?</span>';
+			+ '<span id="calcAnswer" class="calcAnswer">?</span>';
 	},
 	correctDigitGuessed: function(digitGuessed) {
 		return digitGuessed === this.digitToGuess;
@@ -589,7 +591,7 @@ function getQuestData() {
 				storyTextHtml: '<p>' +
 					'You find yourself in a wide, open land with long grasses. ' +
 					' You see a crow perched on a branch, swaying slightly in the wind.' +
-					'  It starts to sing, it\'s liquid, burbling sound almost resembling speech in a foreign tongue . . .' +
+					'  It starts to bob it\'s head, it\'s croaks and caws almost resembling speech in a foreign tongue . . .' +
 					'</p>' +
 					'<p>' +
 					'Quite strange, that look in it\'s eye, as if it was trying to communicate.  Really rather odd.' +
@@ -1667,23 +1669,44 @@ function processAttemptedSumAnswer(numberCode) {
 	// the digits 0-9 mnap directly to unicode values 48 - 57
 	var digitPressed = numberCode - 48;
 	var timerPara = document.getElementById('action').children[1];
+	var answerEle = document.getElementById("calcAnswer");
 
-	if (calculation.correctDigitGuessed(digitPressed)) {
-		var answerEle = document.getElementById("calcAnswer");
-		// should move this into the calculation object . . .
+	if (sleepCalculation.correctDigitGuessed(digitPressed)) {
+		// should move this into the sleepCalculation object . . .
 		answerEle.innerHTML = answerEle.innerHTML === '?' ? digitPressed : answerEle.innerHTML + digitPressed;
-		calculation.updateDigitToGuess();
+		sleepCalculation.updateDigitToGuess();
 
-		if (calculation.gotItAllCorrect()) {
+		if (sleepCalculation.gotItAllCorrect()) {
 			clearInterval(sumsIntervalId);
-			timerPara.innerHTML = "Hooray!  Got it right!";
+			timerPara.innerHTML = "Got it right!";
+			keepOnSleeping();
 		}
 
 	} else {
+		answerEle.innerHTML = answerEle.innerHTML === '?' ? digitPressed : answerEle.innerHTML + digitPressed;
 		//oh dear, got it wrong . . .
 		clearInterval(sumsIntervalId);
-		timerPara.innerHTML = "Wrong!  I beat you!";
+		timerPara.innerHTML = "Wrong! Ha ha!";
+		keepOnSleeping();
 	}
+}
+
+
+function wipeSumAndKeepOnSleeping() {
+	var actionDiv = document.getElementById('action');
+	var sleepCounterPara = actionDiv.firstChild;
+	var timerPara = actionDiv.children[1];
+	var sumPara = actionDiv.children[2];
+
+	hero.doingSums = false;
+	timerPara.innerHTML = '&nbsp;';
+	sumPara .innerHTML = '&nbsp;';
+	// sleep some more . . .
+	keepOnSleeping();
+}
+
+function waitABitThenKeepSleeping() {
+	setTimeout(wipeSumAndKeepOnSleeping, 1500);
 }
 
 function processSums() {
@@ -1699,11 +1722,8 @@ function processSums() {
 
 	} else {
 		clearInterval(sumsIntervalId);
-		hero.doingSums = false;
-		timerPara.innerHTML = '&nbsp;';
-		sumPara .innerHTML = '&nbsp;';
-		// sleep some more . . .
-		sleepIntervalId = setInterval(processSleepState, 1000);
+		timerPara.innerHTML = "Too slow!";
+		waitABitThenKeepSleeping();
 	}
 }
 
@@ -1714,16 +1734,15 @@ function sleepAtNight() {
 	var sumPara = actionDiv.children[2];
 
 	if (Math.random() > hero.badDreamThreshold) {
-		clearInterval(sleepIntervalId); // stop the nightime clock
+		clearInterval(gameState.sleepIntervalId); // stop the nightime clock
 		hero.doingSums = true;
 
-		calculation.create();
-		sumPara.innerHTML = calculation.createQuestionText();
-		gameState.timeForSums = calculation.timeAllowed;
+		sleepCalculation.create();
+		sumPara.innerHTML = sleepCalculation.createQuestionText();
+		gameState.timeForSums = sleepCalculation.timeAllowed;
 		timerPara.innerHTML = "Time to answer: " + gameState.timeForSums;
 
 		sumsIntervalId = setInterval(processSums, 1000);
-
 	}
 
 	var sleepCounterText = sleepCounterPara.innerText;
@@ -1737,15 +1756,14 @@ function awakeFromSlumber() {
 	var timerPara = actionDiv.children[1];
 	var sumPara = actionDiv.children[2];
 	var paraText = sleepCounterPara.innerText;
-	var sleepButt = document.getElementById('sleepButt');
 
 	sleepCounterPara.innerHTML = paraText + ' . . . you finally awake.';
-	clearInterval(sleepIntervalId);
+	clearInterval(gameState.sleepIntervalId);
 	sumPara.innerHTML = "";
 	timerPara.innerHTML = "";
 
 	hero.asleep = false;
-	sleepButt.disabled = false;
+	enableOptionButtons(true);
 
 	// we will want to update these depending on how well the "dreams" were dealt with
 	hero.movePoints = hero.maxMovePoints;
@@ -1757,9 +1775,6 @@ function stillAsleep() {
 }
 
 function processSleepState() {
-	var actionDiv = document.getElementById('action');
-	var sleepCounterPara = actionDiv.firstChild;
-
 	if (stillAsleep()) {
 		sleepAtNight();
 	} else {
@@ -1767,13 +1782,18 @@ function processSleepState() {
 	}
 }
 
-function sleepHero(sleepButt) {
-	sleepButt.disabled = true;
+function keepOnSleeping() {
+	hero.doingSums = false;
+	gameState.sleepIntervalId = setInterval(processSleepState, 1000);
+}
+
+function sleepHero() {
+	enableOptionButtons(false);
 	var actionSpace = document.getElementById('action');
 	actionSpace.innerHTML='<p>You sleep, perchance to dream . . .</p><p>&nbsp;</p><p>&nbsp;</p>';
 	hero.asleep = true;
 	hero.hoursSlept = 0;
-	sleepIntervalId = setInterval(processSleepState, 1000);
+	keepOnSleeping();
 }
 
 function toggleForageStatus(butt) {
@@ -1783,6 +1803,13 @@ function toggleForageStatus(butt) {
 	} else {
 		hero.foraging = true;
 		butt.innerHTML = 'Stop f<u>o</u>raging';
+	}
+}
+
+function enableOptionButtons(state) {
+	var optionButtons = document.getElementById('optButts').getElementsByTagName('button');
+	for (var i = 0; i < optionButtons.length; i++) {
+   	optionButtons[i].disabled = !state;
 	}
 }
 
@@ -1898,7 +1925,7 @@ function checkNonMovementActions(actionCode) {
 	}
 
 	if (actionCode === key.sleep) {
-		sleepHero(document.getElementById('sleepButt'));
+		sleepHero();
 	}
 
 	if (actionCode === key.forage) {
@@ -1966,16 +1993,9 @@ function showInitialQuest() {
 	document.getElementById('mapTableDiv').focus();
 }
 
-function enableOptionButtons()() {
-	var optionButtons = document.getElementById('optButts').getElementsByTagName('button');
-	for (var i = 0; i < optionButtons.length; i++) {
-   	optionButtons[i].disabled = false;
-	}
-}
-
 function showStartOfGame() {
 	showInitialQuest();
-	enableOptionButtons();
+	enableOptionButtons(true);
 }
 
 function startGame() {

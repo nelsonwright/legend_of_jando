@@ -205,3 +205,8 @@ button {
 .mouseMoveHero {
 	vertical-align:90%;
 }
+
+.calcAnswer {
+	font-size: 200%;
+	font-weight:bold;
+}
