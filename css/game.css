@@ -210,3 +210,7 @@ button {
 	font-size: 200%;
 	font-weight:bold;
 }
+
+.questLog {
+	width:48%;
+}

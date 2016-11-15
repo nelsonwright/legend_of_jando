@@ -573,20 +573,6 @@ function saveHeroInfo() {
 }
 
 function getQuestData() {
-	// this array assumes that the index is the same as the index used in the terrainArray,
-	// i.e. index 0 = first position in the array = light grass, 1 = low scrub, etc
-
-	/*
-			Quest array
-			0. This quest destination (big map row)
-			1. This quest destination (big map column)
-			2. This quest destination (small map row)
-			3. This quest destination (small map column)
-			4. Image name of character to display at start of this quest
-			5. Text to display at start of this quest
-			6. Image that will appear on the small map as the destination for this quest
-
-	*/
 	var questData = {
 		quest:
 		[
@@ -608,7 +594,7 @@ function getQuestData() {
 					'You see a huge grasshopper seated on a throne made of woven grasses.  Incredibly, it starts to speak:' +
 					'</p>' +
 					'<p>' +
-					'"Ah, do come in, my dear fellow, I\'ve been expecting you.  My friend the blackbird said you may pay me a visit.' +
+					'"Ah, do come in, my dear fellow, I\'ve been expecting you.  My friend the crow said you may pay me a visit.' +
 					'Please don\'t be alarmed, I may be as big as a good-sized goat and live in a blue tent, but I will not harm you.' +
 					'Would you mind closing the tent flap . . . ?  Thank you, there\'s a bit of a chill breeze from the east today."' +
 					'</p>' +
@@ -1180,7 +1166,7 @@ function lastQuestDestination() {
 function createQuestString() {
 	var destinationInWords = questArray[map.big.nextDestination].destinationImageName.replace(/_/g,' ');
 	var characterToFindInWords = questArray[map.big.nextDestination + 1].imageNameOfStartCharacter.replace(/_/g,' ');
-	var assembledQuestString = '<div style = "position:absolute;width:360px">' +
+	var assembledQuestString = '<div class = "questLog">' +
 				  		'<h3>Your Quest</h3>';
 
 	if (lastQuestDestination()) {
@@ -1199,10 +1185,10 @@ function createQuestString() {
 		characterToFindInWords +
 		', who lives in a ' +
 		destinationInWords +
-		' like this  ' +
+		' like this:  ' +
 		'<img src="./web_images/' + questArray[map.big.nextDestination].destinationImageName + '.png" />' +
-		' ' +
-		'. You can find the ' +
+		'</p><p>' +
+		'You can find the ' +
 		destinationInWords +
 		' by looking at the big map, and searching all of the squares of type "' +
 		terrainArray[map.big.nextDestination].name +
@@ -1726,6 +1712,7 @@ function processSums() {
 
 	} else {
 		clearInterval(sumsIntervalId);
+		hero.doingSums = false;
 		timerPara.innerHTML = "Too slow!";
 		waitABitThenKeepSleeping();
 	}
@@ -1738,6 +1725,8 @@ function sleepAtNight() {
 	var sumPara = actionDiv.children[2];
 
 	if (Math.random() > hero.badDreamThreshold) {
+		// we need the following as otherwise some other element may have focus, and we won't get keystrokes
+		document.activeElement.blur();
 		clearInterval(gameState.sleepIntervalId); // stop the nightime clock
 		hero.doingSums = true;
 		sleep.questionsAsked++;
@@ -1766,6 +1755,7 @@ function awakeFromSlumber() {
 	clearInterval(gameState.sleepIntervalId);
 
 	extraHealth = Math.round(hero.maxHealthGainedBySleep * (sleep.correctAnswers / sleep.questionsAsked));
+	extraHealth = extraHealth ? extraHealth : 0;
 
 	paraText = paraText + ' . . . you finally awake.';
 
