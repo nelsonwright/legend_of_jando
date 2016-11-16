@@ -837,6 +837,15 @@ function showMovementArea() {
 	mouseMoveHero.alt = hero.name;
 }
 
+function fadeMovementArea() {
+	var moveArea = document.getElementsByClassName('mapAndMoveArrows');
+	var arrowButtonImages = moveArea[0].getElementsByTagName('IMG');
+
+	for (var i = 0; i < arrowButtonImages.length; i++) {
+		arrowButtonImages[i].style.opacity = 0.4;
+	}
+}
+
 function showQuestDestinationOnSmallMap(mapTableDiv, row, col) {
 	var cellImageTag;
 	var position = {small:{row:row, column:col}, big:{row:null, column:null}};
@@ -1462,6 +1471,7 @@ function endFight() {
 	resetFightHero();
 	hideFightButts();
 	showOptButts();
+	showMovementArea();
 	hero.fightOn = 'No';
 	hero.turnToFight = true;	// reset to give hero first hit next time.
 }
@@ -1590,6 +1600,7 @@ function checkForAttack() {
 	}
 	if (Math.random() > gameSettings.attackRisk + attackModifier) {
 		hero.fightOn = 'Yes';
+		fadeMovementArea();
 		startAttack();
 	}
 }
@@ -1680,7 +1691,6 @@ function processAttemptedSumAnswer(numberCode) {
 		keepOnSleeping();
 	}
 }
-
 
 function wipeSumAndKeepOnSleeping() {
 	var actionDiv = document.getElementById('action');
@@ -1775,7 +1785,7 @@ function awakeFromSlumber() {
 	hero.movePoints = hero.maxMovePoints;
 	hero.health = Math.min(hero.maxHealth, hero.health + extraHealth);
 	updateHeroStats();
-	// updateMovePoints();
+	showMovementArea();
 }
 
 function stillAsleep() {
@@ -1797,6 +1807,7 @@ function keepOnSleeping() {
 
 function sleepHero() {
 	enableOptionButtons(false);
+	fadeMovementArea();
 	var actionSpace = document.getElementById('action');
 	actionSpace.innerHTML='<p>You sleep, perchance to dream . . .</p><p>&nbsp;</p><p>&nbsp;</p>';
 	hero.asleep = true;
@@ -1904,6 +1915,7 @@ function setChosenHero(theImage) {
 	heroNameInputBox.select();
 }
 
+// this is called from the html . . .
 function clickedAnArrow(arrowImage) {
 	var unicode = 0;
 	var arrowDirection = arrowImage.title;
@@ -1964,7 +1976,7 @@ function checkForFightOrRun(actionCode) {
 }
 
 function processAction(actionCode) {
-	if (hero.fightOn === 'No') {
+	if ((hero.fightOn === 'No') && !hero.asleep) {
 		checkForMovement(actionCode);
 		checkNonMovementActions(actionCode);
 	}
