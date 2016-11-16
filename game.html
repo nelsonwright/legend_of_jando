@@ -27,20 +27,13 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.2.1/mustache.js"/></script>
 <script src="./javascript/game.js"/></script>
-
-<script>
-	$(document).ready(function() {
-		document.getElementById('map_loading').style.display = "none";
-	});
-</script>
+<script src="./javascript/string_utils.js"/></script>
 
 </head>
 
-<body onkeyup="pressedAKey(event)">
-<div id="map_loading">
-	<strong>Loading map . . .</strong>
-</div>
-<div id="page-container">
+<body onkeyup="pressedAKey(event)" onLoad="setChosenHero(document.getElementById('statsHeroImageInfo'))">
+
+<div class="page-container">
 	<div class="titleBar">
 		<span id="titleTemplate_target">
 			<script id="titleTemplate" type="x-tmpl-mustache">
@@ -49,10 +42,10 @@
 		</span>
 	</div>
 
-<!-- Used when selcting your character at the start -->
+<!-- Used when selecting your character at the start -->
 	<div id="characterInfo" class="stats">
 		<div id="characterInfoLeft" class="floatLeft">
-			<img id="statsHeroImageInfo"  title="your character" src="./web_images/hero_human.png"/>
+			<img id="statsHeroImageInfo"  title="human" src="./web_images/hero_human.png"/>
 			<p id="textHeroNamePara">
 				<strong>Name</strong>&nbsp;&nbsp;&nbsp;
 				<input type="text" id="textHeroName" width="20" maxwidth="20" maxlength="20" value="human">
@@ -135,7 +128,28 @@
 
 	<div id="mapAndMove" class="mapAndMove gone">
 		<div id = "mapTableDiv"></div>
-		<div id = "movementArea"></div>
+
+		<div id="movementArea" class="movementArea">
+			<p>
+				Use the arrow keys to move, or click on the direction arrows below
+			</p>
+
+			<div class="mapAndMoveArrows">
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<img src="./web_images/arrow_up_big.png" title="up" onClick="clickedAnArrow(this)"
+					onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />
+				<br />
+				<img src="./web_images/arrow_left_big.png" title="left" onClick="clickedAnArrow(this)"
+					onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />
+				&nbsp;<img id="mouseMoveHero" class="mouseMoveHero" />&nbsp;
+				<img src="./web_images/arrow_right_big.png" title="right" onClick="clickedAnArrow(this)"
+					onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />
+				<br />
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<img src="./web_images/arrow_down_big.png" title="down" onClick="clickedAnArrow(this)"
+					onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />
+			</div>
+		</div>
 	</div>
 
 	<div id="chooseHero" class="chooseHero">
@@ -181,7 +195,7 @@
 	</div>
 
 	<script id="fightTemplate" type="x-tmpl-mustache">
-		<div id="fight" style="visibility:hidden">
+		<div id="fight" class="hidden">
 			You are attacked by a <span id="monsterName" style="font-weight:bold">{{monsterName}}</span><br />
 			<span id="fightDamage">{{fightDamage}}</span><br />
 			<span id="monsterFightDamage">{{monsterFightDamage}}</span><br />
@@ -222,7 +236,7 @@
 		</div>
 	</script>
 
-	<div id="footer">
+	<div class="footer">
 		Page hosted by <a href="http://www.nelsonwright.co.uk/">Nelson</a>
 	</div>
 </div>  <!-- end of pageContainer DIV -->

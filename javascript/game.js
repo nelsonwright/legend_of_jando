@@ -3,18 +3,7 @@
    Contact me at: me@nelsonwright.co.uk
 */
 
-// cookie and trim stuff thanks to Patrick Hunlock: http://www.hunlock.com/blogs/Ten_Javascript_Tools_Everyone_Should_Have
-String.prototype.trim = function() {
-	return this.replace(/^\s+|\s+$/g,"");
-};
-
-String.prototype.ltrim = function() {
-	return this.replace(/^\s+/g,"");
-};
-
-String.prototype.rtrim = function() {
-	return this.replace(/\s+$/g,"");
-};
+// cookie stuff thanks to Patrick Hunlock: http://www.hunlock.com/blogs/Ten_Javascript_Tools_Everyone_Should_Have
 
 function setCookie(name,value,expires, options) {
 	if (options === undefined) {
@@ -81,7 +70,8 @@ var gameSettings = Object.freeze({
 	numHeroDiceRolls: 3, 	// this equates to how many dice are rolled
 	numMonsterDiceRolls: 3,
 	foragingSuccessLevel: 0.89, // the random number generated (between 0 - 1) must be higher than this for food to be found when foraging
-	foodFindLevel: 0.99 // the random number generated (between 0 - 1) must be higher than this for food to be found when NOT foraging
+	foodFindLevel: 0.99, // the random number generated (between 0 - 1) must be higher than this for food to be found when NOT foraging
+	hoursInNight: 8 // how many "hours" are in the night, i.e. possible points at which bad dreams can occur
 });
 
 // these are the unicode values for the keyboard keys when pressed
@@ -94,35 +84,45 @@ var key = Object.freeze({
 	isArrowKey: function(actionCode) {
 		return actionCode >= 37 && actionCode <= 40;
 	},
+	isDigit: function(actionCode) {
+		return actionCode >= 48 && actionCode <= 57;
+	},
 	map: 77, // letter "m" for (m)ap
 	questLog: 81, // letter "q" for (q)uest log
 	sleep: 83, // letter "s" for (s)leep
 	forage: 79, // letter "o" for f(o)rage
-	fight: 70, // letter "f" for (F)ight
-	runAway: 82, // letter "r" for (R)un Away
-	continueJourney: 67 // letter "c" for (C)ontinue Journey
+	fight: 70, // letter "f" for (f)ight
+	runAway: 82, // letter "r" for (r)un Away
+	continueJourney: 67, // letter "c" for (c)ontinue Journey
+	enter: 13	// the enter or return key
 });
 
 // these values apply to the game as a whole, and may change during the course of a game . . .
 var gameState = {
-	inProgress: false,			// has the game started?
+	inProgress: false,			// has the game started? - prob don't need this now there's inStartMode
 	storyEvent: false,	   	// is a story event happening?
 	questDisplayed: false, 	// are we currently showing the current quest objective?
 	finalFight: false,     	// is the final battle happening?
 	monsterIdx:	0,					// used to indicate the currently battled monster
-	inStartMode: true	      // to indicate when player is selcting their starting charcter
+	inStartMode: true,      // to indicate when player is selcting their starting character
+	sleepIntervalId: null,  // id for the sleep state, needed when stopping/clearing
+	sumsIntervalId: null,		// id for the timer used when doing sums in the dream state
+	timeForSums: 7					// how many seconds you have to complete a sum whilst in a dream
 };
 
 var hero = {
-	// the values here are the defaults, but may be overwritten by the cookie values . . .
-	name: '',
+	// the values here are the defaults, but may be overwritten by other values . . .
+	name: null,
 	image: new Image(),
 	type: "human",
 	movePoints: 20,
 	maxMovePoints: 20,
-	foraging: false,     // are you foraging at the moment?
-	asleep: false,		   // indicates if you're sleeping
+	maxHealthGainedBySleep: 8,
+	foraging: false,  // are you foraging at the moment?
 	moved: false,			// indicates if the hero has successfully moved on the map
+	asleep: false,		// indicates if you're sleeping
+	doingSums: false,	// indicates if you're actually trying to answer a sum
+	hoursSlept: 0,    // how long have you been asleep?
 
 	// attributes connected with fighting . . .
 	fightOn : 'No',	   // indicates if a fight with a monster is: ongoing, just ended, or not on
@@ -135,8 +135,47 @@ var hero = {
 	maxDefence: 8,
 	experience: 0,
 	level: 1,
-	experiencePerLevel: 4
+	experiencePerLevel: 4,
+	badDreamThreshold: 0.5	// the closer to 1, the less likely you'll have bad dreams
 };
+
+var sleep = {
+	questionsAsked: null,
+	correctAnswers: null,
+	calculation: {
+		firstFactor: null,
+		secondFactor: null,
+		digitToGuess: null,
+		timeAllowed: 7, // how many seconds you're allowed to answer
+		answerIndex: null,
+		create: function() {
+			this.firstFactor = Math.floor(Math.random() * 10 + 2);
+			this.secondFactor = Math.floor(Math.random() * 10 + 2);
+			this.answerIndex = 0;
+			this.digitToGuess = this.calcDigitToGuess();
+		},
+		product: function() {
+			return this.firstFactor * this.secondFactor;
+		},
+		createQuestionText: function () {
+			return this.firstFactor + ' X ' + this.secondFactor + ' = '
+				+ '<span id="calcAnswer" class="calcAnswer">?</span>';
+		},
+		correctDigitGuessed: function(digitGuessed) {
+			return digitGuessed === this.digitToGuess;
+		},
+		calcDigitToGuess: function () {
+			return parseInt(this.product().toString()[this.answerIndex]);
+		},
+		updateDigitToGuess: function() {
+			this.answerIndex++;
+			this.digitToGuess = this.calcDigitToGuess();
+		},
+		gotItAllCorrect: function() {
+			return this.answerIndex >= parseInt(this.product().toString().length);
+		}
+	}
+}
 
 // this is the monster that is currently being fought
 var monster = {};
@@ -161,39 +200,40 @@ var terrainLocationsArray = [];
 
 var map = {
   // small map, i.e. the one your hero character moves around on
-  small: {
-    rows: 8,
-    cols: 10, // size of the map you move around in
-    posRowCell: 0,
-    posColumnCell: 0,	// map-cordinates of the hero
-	 oldPosRowCell: 0,
-	 oldPosColumnCell: 0, // the previous co-ordinates
-	 drawHero: function() {
-		var mapTableDiv = document.getElementById('mapTableDiv');
-	   var mapCellImageTag = getCellImageTag(mapTableDiv, map.getHeroPosition());
+	small: {
+		rows: 8,
+		cols: 10, // size of the map you move around in
+		posRowCell: 0,
+		posColumnCell: 0,	// map-cordinates of the hero
+		oldPosRowCell: 0,
+		oldPosColumnCell: 0, // the previous co-ordinates
+		movementAreaHtml: null, // variable to hold the html for this div
+		drawHero: function() {
+			var mapTableDiv = document.getElementById('mapTableDiv');
+			var mapCellImageTag = getCellImageTag(mapTableDiv, map.getHeroPosition());
 
-	   mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
-	   mapCellImageTag.title = 'the hero ' + hero.name;
-	   mapCellImageTag.alt = 'the hero ' + hero.name;
-	   mapCellImageTag.id = 'theHeroImg';
+			mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
+			mapCellImageTag.title = hero.name;
+			mapCellImageTag.alt = hero.name;
+			mapCellImageTag.id = 'yourCharacterImage';
 
-	   // should move this somewhere else at some point . . .
-	   map.setPriorHeroPosition(map.getHeroPosition());
-	 }
+			// should move this somewhere else at some point . . .
+			map.setPriorHeroPosition(map.getHeroPosition());
+		}
   },
   // big map, i.e the overview of the whole area
-  big: {
-    rows: 8,
-    cols: 10, // size of the overall big scale map
-    posRowCell: 0,
-    posColumnCell: 0,	// big map-cordinates of the hero
-	 bigOldposRowCell: 0,
-	 bigOldPosColumnCell: 0, // the previous co-ordinates
-    terrainAttributes: 6,	// number of attributes of the particular terrain
-    numTerrainTypes: 6,    // how many different terrain types there are - set by the length of the terrainTypes array
-    displayed: false,      // indicates if the big map is being displayed
-    nextDestination: 0		// holds the next destination level,
-    								// corresponds to terrain type, i.e. starts at zero,which = light grass
+  	big: {
+		rows: 8,
+		cols: 10, // size of the overall big scale map
+		posRowCell: 0,
+		posColumnCell: 0,	// big map-cordinates of the hero
+		bigOldposRowCell: 0,
+		bigOldPosColumnCell: 0, // the previous co-ordinates
+		terrainAttributes: 6,	// number of attributes of the particular terrain
+		numTerrainTypes: 6,    // how many different terrain types there are - set by the length of the terrainTypes array
+		displayed: false,      // indicates if the big map is being displayed
+		nextDestination: 0		// holds the next destination level,
+										// corresponds to terrain type, i.e. starts at zero,which = light grass
   },
   getHeroPosition: function() {
 	  var heroPosition = {small:{row:null, column:null}, big:{row:null, column:null}};
@@ -210,10 +250,10 @@ var map = {
 	  this.big.posColumnCell = heroPosition.big.column;
   },
   setPriorHeroPosition: function(heroPosition) {
-	this.small.oldPosRowCell = heroPosition.small.row;
-	this.small.oldPosColumnCell = heroPosition.small.column;
-	this.big.oldPosRowCell = heroPosition.big.row;
-	this.big.oldPosColumnCell = heroPosition.big.column;
+		this.small.oldPosRowCell = heroPosition.small.row;
+		this.small.oldPosColumnCell = heroPosition.small.column;
+		this.big.oldPosRowCell = heroPosition.big.row;
+		this.big.oldPosColumnCell = heroPosition.big.column;
   },
   resetHeroPositionToPrior: function() {
 	  this.small.posRowCell = this.small.oldPosRowCell;
@@ -505,7 +545,7 @@ function loadHeroInfo(gameSettings) {
 	loadHeroImage();
 	startHeroPosition(gameSettings);
 
-	gameState.inProgress = true; // not entirely sure if we need this
+	gameState.inProgress = true;
 }
 
 function saveHeroInfo() {
@@ -533,20 +573,6 @@ function saveHeroInfo() {
 }
 
 function getQuestData() {
-	// this array assumes that the index is the same as the index used in the terrainArray,
-	// i.e. index 0 = first position in the array = light grass, 1 = low scrub, etc
-
-	/*
-			Quest array
-			0. This quest destination (big map row)
-			1. This quest destination (big map column)
-			2. This quest destination (small map row)
-			3. This quest destination (small map column)
-			4. Image name of character to display at start of this quest
-			5. Text to display at start of this quest
-			6. Image that will appear on the small map as the destination for this quest
-
-	*/
 	var questData = {
 		quest:
 		[
@@ -554,7 +580,7 @@ function getQuestData() {
 				storyTextHtml: '<p>' +
 					'You find yourself in a wide, open land with long grasses. ' +
 					' You see a crow perched on a branch, swaying slightly in the wind.' +
-					'  It starts to sing, it\'s liquid, burbling sound almost resembling speech in a foreign tongue . . .' +
+					'  It starts to bob it\'s head, it\'s croaks and caws almost resembling speech in a foreign tongue . . .' +
 					'</p>' +
 					'<p>' +
 					'Quite strange, that look in it\'s eye, as if it was trying to communicate.  Really rather odd.' +
@@ -568,7 +594,7 @@ function getQuestData() {
 					'You see a huge grasshopper seated on a throne made of woven grasses.  Incredibly, it starts to speak:' +
 					'</p>' +
 					'<p>' +
-					'"Ah, do come in, my dear fellow, I\'ve been expecting you.  My friend the blackbird said you may pay me a visit.' +
+					'"Ah, do come in, my dear fellow, I\'ve been expecting you.  My friend the crow said you may pay me a visit.' +
 					'Please don\'t be alarmed, I may be as big as a good-sized goat and live in a blue tent, but I will not harm you.' +
 					'Would you mind closing the tent flap . . . ?  Thank you, there\'s a bit of a chill breeze from the east today."' +
 					'</p>' +
@@ -804,27 +830,20 @@ function setTerrainCellSmallMap(mapTableDiv, row, column) {
 
 function showMovementArea() {
 	var moveArea = document.getElementById('movementArea');
-	moveArea.innerHTML =
-			'Use the arrow keys to move, or click on the direction arrows below' +
-			'<br />' +
-			'<br />' +
-			'<div style="font-family:courier,monospace">' +
-			'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
-			'<img src="./web_images/arrow_up_big.png" title="up" onClick="clickedAnArrow(this)"' +
-			'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />' +
-			'<br />' +
-			'<img src="./web_images/arrow_left_big.png" title="left" onClick="clickedAnArrow(this)"' +
-			'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />' +
-			'&nbsp;<span id="mouseMoveHero" style="vertical-align:90%">&nbsp;</span>&nbsp;' +
-			'<img src="./web_images/arrow_right_big.png" title="right" onClick="clickedAnArrow(this)"' +
-			'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />' +
-			'<br />' +
-			'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
-			'<img src="./web_images/arrow_down_big.png" title="down" onClick="clickedAnArrow(this)"' +
-			'onMouseOver="arrowImageMouseOver(this)" onMouseOut="arrowImageMouseOver(this)" />' +
-		   '</div>';
+	moveArea.innerHTML = map.movementAreaHtml;
 	var mouseMoveHero = document.getElementById('mouseMoveHero');
-	mouseMoveHero.innerHTML='<img src="./web_images/hero_' + hero.type + '_thumb.png" title="the hero" />';
+	mouseMoveHero.src = makeImageSource('hero_' + hero.type + '_thumb');
+	mouseMoveHero.title = hero.name;
+	mouseMoveHero.alt = hero.name;
+}
+
+function fadeMovementArea() {
+	var moveArea = document.getElementsByClassName('mapAndMoveArrows');
+	var arrowButtonImages = moveArea[0].getElementsByTagName('IMG');
+
+	for (var i = 0; i < arrowButtonImages.length; i++) {
+		arrowButtonImages[i].style.opacity = 0.4;
+	}
 }
 
 function showQuestDestinationOnSmallMap(mapTableDiv, row, col) {
@@ -978,7 +997,7 @@ function dontAllowMovement() {
 
 function highlightHeroSquare() {
 	$("#heroMovePoints").effect("highlight",{color: "#A52A2A"});
-	$("#theHeroImg").parent().effect("highlight",{color: "#A52A2A"});
+	$("#yourCharacterImage").parent().effect("highlight",{color: "#A52A2A"});
 	$("#sleepButt").effect("highlight",{"color": "#A52A2A", "background-color": "white"}).focus();
 }
 
@@ -1156,7 +1175,7 @@ function lastQuestDestination() {
 function createQuestString() {
 	var destinationInWords = questArray[map.big.nextDestination].destinationImageName.replace(/_/g,' ');
 	var characterToFindInWords = questArray[map.big.nextDestination + 1].imageNameOfStartCharacter.replace(/_/g,' ');
-	var assembledQuestString = '<div style = "position:absolute;width:360px">' +
+	var assembledQuestString = '<div class = "questLog">' +
 				  		'<h3>Your Quest</h3>';
 
 	if (lastQuestDestination()) {
@@ -1175,10 +1194,10 @@ function createQuestString() {
 		characterToFindInWords +
 		', who lives in a ' +
 		destinationInWords +
-		' like this  ' +
+		' like this:  ' +
 		'<img src="./web_images/' + questArray[map.big.nextDestination].destinationImageName + '.png" />' +
-		' ' +
-		'. You can find the ' +
+		'</p><p>' +
+		'You can find the ' +
 		destinationInWords +
 		' by looking at the big map, and searching all of the squares of type "' +
 		terrainArray[map.big.nextDestination].name +
@@ -1452,6 +1471,7 @@ function endFight() {
 	resetFightHero();
 	hideFightButts();
 	showOptButts();
+	showMovementArea();
 	hero.fightOn = 'No';
 	hero.turnToFight = true;	// reset to give hero first hit next time.
 }
@@ -1542,8 +1562,6 @@ function displayDestination(nextDestination){
 }
 
 function prepareFightDiv() {
-	var actionSpace = document.getElementById('action');
-
 	var template = $('#fightTemplate').html();
 	Mustache.parse(template);   // optional, speeds up future uses
 
@@ -1582,6 +1600,7 @@ function checkForAttack() {
 	}
 	if (Math.random() > gameSettings.attackRisk + attackModifier) {
 		hero.fightOn = 'Yes';
+		fadeMovementArea();
 		startAttack();
 	}
 }
@@ -1646,11 +1665,156 @@ function checkIfFoodFound(forageState, posRowCell, posColumnCell) {
 	}
 }
 
-function sleepHero() {
-	var actionSpace = document.getElementById('action');
-	actionSpace.innerHTML='<p>You sleep, perchance to dream . . .</p>';
+function processAttemptedSumAnswer(numberCode) {
+	// the digits 0-9 mnap directly to unicode values 48 - 57
+	var digitPressed = numberCode - 48;
+	var timerPara = document.getElementById('action').children[1];
+	var answerEle = document.getElementById("calcAnswer");
+
+	if (sleep.calculation.correctDigitGuessed(digitPressed)) {
+		// should move this into the sleep.calculation object . . .
+		answerEle.innerHTML = answerEle.innerHTML === '?' ? digitPressed : answerEle.innerHTML + digitPressed;
+		sleep.calculation.updateDigitToGuess();
+
+		if (sleep.calculation.gotItAllCorrect()) {
+			clearInterval(sumsIntervalId);
+			timerPara.innerHTML = "Got it right!";
+			sleep.correctAnswers++;
+			keepOnSleeping();
+		}
+
+	} else {
+		answerEle.innerHTML = answerEle.innerHTML === '?' ? digitPressed : answerEle.innerHTML + digitPressed;
+		//oh dear, got it wrong . . .
+		clearInterval(sumsIntervalId);
+		timerPara.innerHTML = "Wrong! Ha ha!";
+		keepOnSleeping();
+	}
+}
+
+function wipeSumAndKeepOnSleeping() {
+	var actionDiv = document.getElementById('action');
+	var sleepCounterPara = actionDiv.firstChild;
+	var timerPara = actionDiv.children[1];
+	var sumPara = actionDiv.children[2];
+
+	hero.doingSums = false;
+	timerPara.innerHTML = '&nbsp;';
+	sumPara .innerHTML = '&nbsp;';
+	// sleep some more . . .
+	keepOnSleeping();
+}
+
+function waitABitThenKeepSleeping() {
+	setTimeout(wipeSumAndKeepOnSleeping, 1500);
+}
+
+function processSums() {
+	var actionDiv = document.getElementById('action');
+	var sleepCounterPara = actionDiv.firstChild;
+	var timerPara = actionDiv.children[1];
+	var sumPara = actionDiv.children[2];
+
+	gameState.timeForSums--;
+
+	if (gameState.timeForSums > 0) {
+		timerPara.innerHTML = "Time to answer: " + gameState.timeForSums;
+
+	} else {
+		clearInterval(sumsIntervalId);
+		hero.doingSums = false;
+		timerPara.innerHTML = "Too slow!";
+		waitABitThenKeepSleeping();
+	}
+}
+
+function sleepAtNight() {
+	var actionDiv = document.getElementById('action');
+	var sleepCounterPara = actionDiv.firstChild;
+	var timerPara = actionDiv.children[1];
+	var sumPara = actionDiv.children[2];
+
+	if (Math.random() > hero.badDreamThreshold) {
+		// we need the following as otherwise some other element may have focus, and we won't get keystrokes
+		document.activeElement.blur();
+		clearInterval(gameState.sleepIntervalId); // stop the nightime clock
+		hero.doingSums = true;
+		sleep.questionsAsked++;
+
+		sleep.calculation.create();
+		sumPara.innerHTML = sleep.calculation.createQuestionText();
+		gameState.timeForSums = sleep.calculation.timeAllowed;
+		timerPara.innerHTML = "Time to answer: " + gameState.timeForSums;
+
+		sumsIntervalId = setInterval(processSums, 1000);
+	}
+
+	var sleepCounterText = sleepCounterPara.innerText;
+	sleepCounterPara.innerHTML = sleepCounterText + ' .';
+	hero.hoursSlept++;
+}
+
+function awakeFromSlumber() {
+	var actionDiv = document.getElementById('action');
+	var sleepCounterPara = actionDiv.firstChild;
+	var timerPara = actionDiv.children[1];
+	var sumPara = actionDiv.children[2];
+	var paraText = sleepCounterPara.innerText;
+	var extraHealth;
+
+	clearInterval(gameState.sleepIntervalId);
+
+	extraHealth = Math.round(hero.maxHealthGainedBySleep * (sleep.correctAnswers / sleep.questionsAsked));
+	extraHealth = extraHealth ? extraHealth : 0;
+
+	paraText = paraText + ' . . . you finally awake.';
+
+	// we'll want the words to change depending on how well or bad you did, but for now . . .
+	paraText = paraText + ' You answered ' +  sleep.correctAnswers
+	+ ' correctly, out of ' + sleep.questionsAsked + '. You gain '
+	+ extraHealth + ' extra health as a result.';
+
+	sleepCounterPara.innerHTML = paraText;
+
+	sumPara.innerHTML = "";
+	timerPara.innerHTML = "";
+
+	hero.asleep = false;
+	enableOptionButtons(true);
+
 	hero.movePoints = hero.maxMovePoints;
-	updateMovePoints();
+	hero.health = Math.min(hero.maxHealth, hero.health + extraHealth);
+	updateHeroStats();
+	showMovementArea();
+}
+
+function stillAsleep() {
+	return hero.hoursSlept < gameSettings.hoursInNight;
+}
+
+function processSleepState() {
+	if (stillAsleep()) {
+		sleepAtNight();
+	} else {
+		awakeFromSlumber();
+	}
+}
+
+function keepOnSleeping() {
+	hero.doingSums = false;
+	gameState.sleepIntervalId = setInterval(processSleepState, 1000);
+}
+
+function sleepHero() {
+	enableOptionButtons(false);
+	fadeMovementArea();
+	var actionSpace = document.getElementById('action');
+	actionSpace.innerHTML='<p>You sleep, perchance to dream . . .</p><p>&nbsp;</p><p>&nbsp;</p>';
+	hero.asleep = true;
+	hero.hoursSlept = 0;
+	sleep.questionsAsked = 0;
+	sleep.correctAnswers = 0;
+	keepOnSleeping();
 }
 
 function toggleForageStatus(butt) {
@@ -1660,6 +1824,13 @@ function toggleForageStatus(butt) {
 	} else {
 		hero.foraging = true;
 		butt.innerHTML = 'Stop f<u>o</u>raging';
+	}
+}
+
+function enableOptionButtons(state) {
+	var optionButtons = document.getElementById('optButts').getElementsByTagName('button');
+	for (var i = 0; i < optionButtons.length; i++) {
+   	optionButtons[i].disabled = !state;
 	}
 }
 
@@ -1707,17 +1878,11 @@ function hideAndShowAreas() {
 	document.getElementById('buttons').className = 'buttons';
 	document.getElementById('playGameButtonDiv').className = 'gone';
 	document.getElementById('action').style.visibility = 'visible';
+	map.movementAreaHtml = document.getElementById('mapAndMove').innerHTML;
 }
 
 function playGame() {
-	var theEnteredHeroName = document.getElementById('textHeroName').value;
-	var selectedHeroPic = document.getElementById('statsHeroImageInfo');
-
-	theEnteredHeroName = theEnteredHeroName.trim();
-	hero.name = nvl(theEnteredHeroName, 'human');
-	hero.image = selectedHeroPic;
-	hero.type = selectedHeroPic.title;
-
+	setChosenHero();
 	hideAndShowAreas();
 	setHeroNameInTitleBar();
 
@@ -1726,16 +1891,31 @@ function playGame() {
 }
 
 function setChosenHero(theImage) {
-	var selectedHeroPic = document.getElementById('statsHeroImageInfo');
-	selectedHeroPic.src = theImage.src;
-	selectedHeroPic.title = theImage.title;
+	var theEnteredCharacterName = document.getElementById('textHeroName').value;
+	var imageSelected = document.getElementById('statsHeroImageInfo');
+
+	theEnteredCharacterName = theEnteredCharacterName.trim();
+
+	if (typeof theImage === 'undefined') {
+		hero.image = imageSelected;
+		hero.type = imageSelected.title;
+		hero.name = theEnteredCharacterName ? theEnteredCharacterName : imageSelected.title;
+	} else {
+		imageSelected.src = theImage.src;
+		imageSelected.title = theImage.title;
+		hero.image = theImage;
+		hero.type = theImage.title;
+		hero.name = nvl(theEnteredCharacterName, theImage.title);
+	}
+
 	var heroNameInputBox = document.getElementById('textHeroName');
-	heroNameInputBox.value = theImage.title;
+	heroNameInputBox.value = hero.name;
 
 	heroNameInputBox.focus();
 	heroNameInputBox.select();
 }
 
+// this is called from the html . . .
 function clickedAnArrow(arrowImage) {
 	var unicode = 0;
 	var arrowDirection = arrowImage.title;
@@ -1796,7 +1976,7 @@ function checkForFightOrRun(actionCode) {
 }
 
 function processAction(actionCode) {
-	if (hero.fightOn === 'No') {
+	if ((hero.fightOn === 'No') && !hero.asleep) {
 		checkForMovement(actionCode);
 		checkNonMovementActions(actionCode);
 	}
@@ -1814,8 +1994,16 @@ function pressedAKey(e) {
 	var unicode = e.keyCode? e.keyCode : e.charCode;
 	/* if (e.altKey || e.ctrlKey || e.shiftKey)
  		 alert("you pressed one of the 'Alt', 'Ctrl', or 'Shift' keys"); */
-   if (!gameState.inStartMode) {
+   if (!gameState.inStartMode && !hero.asleep) {
 		processAction(unicode);
+	}
+
+	if (gameState.inStartMode && unicode === key.enter) {
+		playGame();
+	}
+
+	if (hero.doingSums && key.isDigit(unicode)) {
+		processAttemptedSumAnswer(unicode);
 	}
 }
 
@@ -1837,11 +2025,16 @@ function showInitialQuest() {
 	document.getElementById('mapTableDiv').focus();
 }
 
+function showStartOfGame() {
+	showInitialQuest();
+	enableOptionButtons(true);
+}
+
 function startGame() {
 	loadInitialInfo();
 	createMapsAndShowSmallMap();
 	map.small.drawHero();
 	updateHeroStats();
 	updateMovePoints();
-	showInitialQuest();
+	showStartOfGame();
 }

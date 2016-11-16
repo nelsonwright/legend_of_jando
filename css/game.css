@@ -23,7 +23,7 @@ button {
 		background-color:DarkGreen;
 }
 
-#page-container {
+.page-container {
 	width: 1260px;
 	margin: auto;
 }
@@ -37,13 +37,12 @@ button {
 	color:white
 }
 
-
 .stats {
 	float: right;
 	width: 560px;
 	height:320px;
 	background: darkgreen;
-	padding: 15px;
+	padding: 1em;
 }
 
 .stats table {
@@ -66,18 +65,10 @@ button {
 	text-align:right;
 }
 
-.stats #heroName {
-	clear:both;
-	position:relative;
-	padding-top:1em;
-	padding-left:25px;
-	font-weight:bold;
-}
-
 .mapAndMove {
 	background-color: #CFDFC3;
 	height:320px;
-	padding:15px;
+	padding:1em;
 }
 
 .mapAndMove table {
@@ -91,28 +82,39 @@ button {
 }
 
 .mapAndMove td {
-	width:30px;
 	border:thin dotted gray;
 	text-align:center;
 	background-color:#E6EFC2;
-	width:33px;
+	width:2.1em;
 }
 
-#movementArea {
+.movementArea {
 	display:inline;
-	padding:0px 15px 0px 15px;
 	float:right;
 	width:250px;
+	margin-left:  0.1em;
+	margin-right: 0.5em;
+}
+
+.movementArea h4 {
+	margin-top: -0.5em;
+}
+
+.movementArea p {
+	margin-top: 0;
+	margin-bottom: 0.6em;
+}
+
+.mapAndMoveArrows {
+	font-family: courier,monospace;
 }
 
 .action {
 	background-color: #CAEE90;
-	margin-right: 630px;
 	line-height: 18px;
-	padding:15px;
+	padding:1em;
 	height:250px;
 	width:640px;
-	position:relative;
 }
 
 .action h2 {
@@ -146,46 +148,22 @@ button {
 	float: right;
 	width: 560px;
 	height: 250px;
-	background: brown;
-	padding: 15px;
+	background-color: brown;
+	padding: 1em;
 }
 
-#footer {
+.footer {
 	clear: both;
 	background: orange;
 	font-family: Tahoma, Arial, Helvetica, Sans-serif;
 	font-size: 0.7em;
 	color: black;
 	border-top: 1px solid #efefef;
-	padding: 3px;
+	padding: 0.5em;
 }
 
-#footer a {
-	color: #c9c9c9;
-	text-decoration: none;
-}
-
-#footer a:hover {
+.footer a:hover {
 	color: #df1d16;
-}
-
-#footer #altnav {
-	width: 350px;
-	float: right;
-	text-align: right;
-}
-
-#map_loading {
-	position:fixed;
-	background-image: url("http://www.nelsonwright.co.uk/game_project/web_images/ajax-loader.gif");
-	background-repeat: no-repeat;
-	background-position: center;
-	top:155px;
-	left:10px;
-	height: 100px;
-	width: 362px;
-	text-align:center;
-	padding:15px;
 }
 
 .hidden {
@@ -207,11 +185,6 @@ button {
 .floatLeft { float: left; }
 .floatRight { float: right; }
 
-
-/*
-new stuff in here . . .
-*/
-
 .chooseHero {
 	height:320px;
 	background-color: #CAEE90;
@@ -227,4 +200,17 @@ new stuff in here . . .
 	border-width: 0.5em;
 	padding: 0;
 	border-color: yellow;
+}
+
+.mouseMoveHero {
+	vertical-align:90%;
+}
+
+.calcAnswer {
+	font-size: 200%;
+	font-weight:bold;
+}
+
+.questLog {
+	width:48%;
 }
