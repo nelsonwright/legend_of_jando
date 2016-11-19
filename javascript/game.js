@@ -84,8 +84,14 @@ var key = Object.freeze({
 	isArrowKey: function(actionCode) {
 		return actionCode >= 37 && actionCode <= 40;
 	},
-	isDigit: function(actionCode) {
+	isTopRowDigit: function(actionCode) {
 		return actionCode >= 48 && actionCode <= 57;
+	},
+	isKeypadDigit: function(actionCode) {
+		return actionCode >= 96 && actionCode <= 105;
+	},
+	isDigit: function(actionCode) {
+		return this.isTopRowDigit(actionCode) || this.isKeypadDigit(actionCode);
 	},
 	map: 77, // letter "m" for (m)ap
 	questLog: 81, // letter "q" for (q)uest log
@@ -1666,8 +1672,16 @@ function checkIfFoodFound(forageState, posRowCell, posColumnCell) {
 }
 
 function processAttemptedSumAnswer(numberCode) {
-	// the digits 0-9 mnap directly to unicode values 48 - 57
-	var digitPressed = numberCode - 48;
+	// the digits 0-9 on the top row of the keyboard are unicode values 48 - 57
+	// the numeric keypad digits are unicode values 96 - 105
+	var digitPressed;
+
+	if (key.isTopRowDigit(numberCode)) {
+		digitPressed = numberCode - 48;
+	} else {
+		digitPressed = numberCode - 96;
+	}
+
 	var timerPara = document.getElementById('action').children[1];
 	var answerEle = document.getElementById("calcAnswer");
 
@@ -1992,8 +2006,10 @@ function processAction(actionCode) {
 
 function pressedAKey(e) {
 	var unicode = e.keyCode? e.keyCode : e.charCode;
-	/* if (e.altKey || e.ctrlKey || e.shiftKey)
- 		 alert("you pressed one of the 'Alt', 'Ctrl', or 'Shift' keys"); */
+	/* if (e.altKey || e.ctrlKey || e.shiftKey) {
+ 		 alert("you pressed one of the 'Alt', 'Ctrl', or 'Shift' keys");
+	 } */
+
    if (!gameState.inStartMode && !hero.asleep) {
 		processAction(unicode);
 	}
