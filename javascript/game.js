@@ -5,7 +5,7 @@
 
 // cookie stuff thanks to Patrick Hunlock: http://www.hunlock.com/blogs/Ten_Javascript_Tools_Everyone_Should_Have
 
-function setCookie(name,value,expires, options) {
+function setCookie(name, value, expires, options) {
 	if (options === undefined) {
 		options = {};
 	}
@@ -52,13 +52,22 @@ function deleteCookie(name, path, domain) {
 function cookiesAllowed() {
 	setCookie('checkCookie', 'test', 1);
 
-	if (getCookie('checkCookie')) {
-		deleteCookie('checkCookie');
-	 	return true;
-	}
-	return false;
+   if (getCookie('checkCookie')) {
+      deleteCookie('checkCookie');
+      return true;
+   } else {
+      return false;
+   }
 }
-// end of cookie functions
+
+// this is my own function, but based on Patrick's code . . .
+function jandoCookieExists() {
+   if (getCookie('jando')) {
+      return true;
+   } else {
+      return false;
+   }
+}
 
 /*********************************
     do some initial game set up
@@ -410,8 +419,8 @@ function loadHeroImage() {
 	hero.image.title = hero.type + ' ' + hero.name;
 }
 
-function startHeroPosition(stateOfGame) {
-	if (!stateOfGame.inProgress) {
+function startHeroPosition() {
+	if (!gameState.inProgress) {
 		map.setHeroPosition({
 			small: {
 				row: Math.floor(Math.random() * map.small.rows), // random starting row
@@ -427,12 +436,12 @@ function startHeroPosition(stateOfGame) {
 	map.setPriorHeroPosition(map.getHeroPosition());
 }
 
-function loadHeroInfo(gameSettings) {
-	// extractValuesFromCookie();
+function loadHeroInfo() {
+	extractValuesFromCookie();
 	renderHeroStatsBox();
 	setupStatsHeroImage();
 	loadHeroImage();
-	startHeroPosition(gameSettings);
+	startHeroPosition();
 
 	gameState.inProgress = true;
 }
@@ -1697,6 +1706,15 @@ function setChosenHero(theImage) {
 	heroNameInputBox.select();
 }
 
+function checkForSavedState(theImage) {
+   if (jandoCookieExists()) {
+      // just go straight to playing the game, no need to select character
+      playGame();
+   } else {
+      setChosenHero(theImage);
+   }
+}
+
 // this is called from the html . . .
 function clickedAnArrow(arrowImage) {
 	var unicode = 0;
@@ -1794,7 +1812,7 @@ function pressedAKey(e) {
 function loadInitialInfo() {
 	loadTerrain();
 	loadMonsters();
-	loadHeroInfo(gameSettings);
+	loadHeroInfo();
 	loadFood();
 }
 
