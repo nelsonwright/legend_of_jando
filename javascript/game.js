@@ -181,7 +181,7 @@ var sleep = {
 			return this.answerIndex >= parseInt(this.product().toString().length);
 		}
 	}
-}
+};
 
 // this is the monster that is currently being fought
 var monster = {};
@@ -749,7 +749,7 @@ function calculateNewHeroPosition() {
 
 // a function to return an alernative value if the first value is null
 function nvl(value1, value2) {
-	if (typeof value1 === 'undefined' || value1 === null || value1 == "") {
+	if (typeof value1 === 'undefined' || value1 === null || value1 === "") {
 		return value2;
 	}
 	return value1;
@@ -883,7 +883,6 @@ function showTerrainOnBigMap(mapTableDiv) {
 }
 
 function showBigMap() {
-	var mapCell;
 	var mapTableDiv = document.getElementById('mapTableDiv');
 
 	makeMapIfNotThere(mapTableDiv);
@@ -1063,7 +1062,6 @@ function renderHeroStatsBox() {
 		maxHeroDefence: hero.maxDefence,
 		heroMovePoints: hero.movePoints,
 		maxHeroMovePoints: hero.maxMovePoints,
-		heroLevel: hero.level,
 		heroLevelTarget: hero.level * hero.experiencePerLevel,
 		heroExp: hero.experience
 	});
@@ -1464,7 +1462,7 @@ function processAttemptedSumAnswer(numberCode) {
 		sleep.calculation.updateDigitToGuess();
 
 		if (sleep.calculation.gotItAllCorrect()) {
-			clearInterval(sumsIntervalId);
+			clearInterval(gameState.sumsIntervalId);
 			timerPara.innerHTML = "Got it right!";
 			sleep.correctAnswers++;
 			keepOnSleeping();
@@ -1473,7 +1471,7 @@ function processAttemptedSumAnswer(numberCode) {
 	} else {
 		answerEle.innerHTML = answerEle.innerHTML === '?' ? digitPressed : answerEle.innerHTML + digitPressed;
 		//oh dear, got it wrong . . .
-		clearInterval(sumsIntervalId);
+		clearInterval(gameState.sumsIntervalId);
 		timerPara.innerHTML = "Wrong! Ha ha!";
 		keepOnSleeping();
 	}
@@ -1481,7 +1479,6 @@ function processAttemptedSumAnswer(numberCode) {
 
 function wipeSumAndKeepOnSleeping() {
 	var actionDiv = document.getElementById('action');
-	var sleepCounterPara = actionDiv.firstChild;
 	var timerPara = actionDiv.children[1];
 	var sumPara = actionDiv.children[2];
 
@@ -1498,9 +1495,7 @@ function waitABitThenKeepSleeping() {
 
 function processSums() {
 	var actionDiv = document.getElementById('action');
-	var sleepCounterPara = actionDiv.firstChild;
 	var timerPara = actionDiv.children[1];
-	var sumPara = actionDiv.children[2];
 
 	gameState.timeForSums--;
 
@@ -1508,7 +1503,7 @@ function processSums() {
 		timerPara.innerHTML = "Time to answer: " + gameState.timeForSums;
 
 	} else {
-		clearInterval(sumsIntervalId);
+		clearInterval(gameState.sumsIntervalId);
 		hero.doingSums = false;
 		timerPara.innerHTML = "Too slow!";
 		waitABitThenKeepSleeping();
@@ -1533,7 +1528,7 @@ function sleepAtNight() {
 		gameState.timeForSums = sleep.calculation.timeAllowed;
 		timerPara.innerHTML = "Time to answer: " + gameState.timeForSums;
 
-		sumsIntervalId = setInterval(processSums, 1000);
+		gameState.sumsIntervalId = setInterval(processSums, 1000);
 	}
 
 	var sleepCounterText = sleepCounterPara.innerText;
