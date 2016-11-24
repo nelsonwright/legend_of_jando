@@ -223,9 +223,27 @@ var map = {
 		oldPosRowCell: 0,
 		oldPosColumnCell: 0, // the previous co-ordinates
 		movementAreaHtml: null, // variable to hold the html for this div
+      directionClassName: "",
+      movedLeft: function() {
+         return this.posColumnCell < this.oldPosColumnCell;
+      },
+      movedRight: function() {
+         return this.posColumnCell > this.oldPosColumnCell;
+      },
+      storeDirectionClassName: function() {
+         if (this.movedLeft()) {
+            // if they've moved left, make the character face the other way
+            this.directionClassName = "flipHorizontal";
+         } else if (this.movedRight()) {
+            this.directionClassName = "";
+         }
+      },
 		drawHero: function() {
 			var mapTableDiv = document.getElementById('mapTableDiv');
 			var mapCellImageTag = getCellImageTag(mapTableDiv, map.getHeroPosition());
+
+         this.storeDirectionClassName();
+         mapCellImageTag.className = this.directionClassName;
 
 			mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
 			mapCellImageTag.title = hero.name;
@@ -242,8 +260,8 @@ var map = {
 		cols: 10, // size of the overall big scale map
 		posRowCell: 0,
 		posColumnCell: 0,	// big map-cordinates of the hero
-		bigOldposRowCell: 0,
-		bigOldPosColumnCell: 0, // the previous co-ordinates
+		oldPosRowCell: 0,
+		oldPosColumnCell: 0, // the previous co-ordinates
 		terrainAttributes: 6,	// number of attributes of the particular terrain
 		numTerrainTypes: 6,    // how many different terrain types there are - set by the length of the terrainTypes array
 		displayed: false,      // indicates if the big map is being displayed
@@ -814,14 +832,14 @@ function processMovement(heroPosition) {
 	hero.moved = false;
 	gameState.storyEvent = false;
 
-	if (isOffSmallMap(heroPosition)) {
-		if (isOffBigMap(heroPosition)) {
-			dontAllowMovement();
-		} else {
-			showNextSmallMapSquare(heroPosition);
-		}
-	} else {
-		moveOnSmallMap(heroPosition);
+   if (isOffSmallMap(heroPosition)) {
+      if (isOffBigMap(heroPosition)) {
+         dontAllowMovement();
+      } else {
+         showNextSmallMapSquare(heroPosition);
+      }
+   } else {
+      moveOnSmallMap(heroPosition);
    }
 }
 
