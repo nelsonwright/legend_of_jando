@@ -467,7 +467,7 @@ function saveHeroInfo() {
 		"nextDestination=" + map.big.nextDestination + ';' +
 		"heroExperience=" + hero.experience + ';' +
 		"heroLevel=" + hero.level;
-	setCookie('jando', cookieValue, 365);  // cookie will expire in a year?  Seems to be 6 weeks now
+	setCookie('jando', cookieValue, 365);  // cookie will expire in a year
 }
 
 function populateQuestArray(terrainCode, terrainQuestData) {
@@ -863,8 +863,12 @@ function startNewGame() {
 }
 
 function saveGame() {
-	saveHeroInfo();
-	window.alert('Game Saved');
+   var permissionGiven = confirm("This will save the game in a cookie, is this OK?");
+
+   if (permissionGiven) {
+      saveHeroInfo();
+      window.alert('Game Saved');
+   }
 }
 
 function makeMapIfNotThere(mapTableDiv) {
