@@ -94,22 +94,21 @@ function getMonsterData() {
 
 
 function getTerrainData() {
-	/*
-		Terrain Attributes:
-		1	Number Code
-		2	Name
-		3	Density Factor (relates to how many will appear on the small map)
-		4	Additional movement points needed to traverse this terrain
-	*/
+/*
+	Terrain Attributes:
+	1	name: appears in the Quest Log
+	3	densityFactor: relates to how many will appear on the small map
+	4	extraMovementPts: additional movement points needed to traverse this terrain
+*/
 	var data = {
 		items:
 		[
-			{code: 0, name: 'light grass', densityFactor: 0, extraMovementPts: 0},
-			{code: 1, name: 'low scrub', densityFactor: 0.1, extraMovementPts: 1},
-			{code: 2, name: 'woods', densityFactor: 0.15, extraMovementPts: 2},
-			{code: 3, name: 'forest', densityFactor: 0.3, extraMovementPts: 2},
-			{code: 4, name: 'hills', densityFactor: 0.35, extraMovementPts: 3},
-			{code: 5, name: 'mountains', densityFactor: 0.4, extraMovementPts: 4}
+			{name: 'light grass', densityFactor: 0, extraMovementPts: 0},
+			{name: 'low scrub', densityFactor: 0.1, extraMovementPts: 1},
+			{name: 'woods', densityFactor: 0.15, extraMovementPts: 2},
+			{name: 'forest', densityFactor: 0.3, extraMovementPts: 2},
+			{name: 'hills', densityFactor: 0.35, extraMovementPts: 3},
+			{name: 'mountains', densityFactor: 0.4, extraMovementPts: 4}
 		]
 	};
 	return data;
