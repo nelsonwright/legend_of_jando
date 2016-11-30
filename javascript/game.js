@@ -809,6 +809,7 @@ function highlightHeroSquare() {
 }
 
 function moveOnSmallMap(heroPosition) {
+   var actionSpace = document.getElementById('action');
 	var terrType = mapDetailArray[heroPosition.small.row][heroPosition.small.column];
 	var terrainMovementCost = 1 + terrainArray[terrType].extraMovementPts;
 
@@ -822,6 +823,9 @@ function moveOnSmallMap(heroPosition) {
 	} else {
 		dontAllowMovement();
 		// highlight the fact that you've run out of movement points . . .
+      actionSpace.innerHTML = "<p>"
+         + "You feel so tired that you cannot move, and need to sleep"
+         + "</p>";
 		highlightHeroSquare();
 	}
 }
@@ -1011,8 +1015,8 @@ function createQuestString() {
 		destinationInWords +
 		' by looking at the big map, and searching all of the squares of type "' +
 		terrainArray[map.big.nextDestination].name +
-		'", which look like this: <img src = ' +
-		terrainArray[map.big.nextDestination].image.src + '/>' +
+		'", which look like this: <img src = "' +
+		terrainArray[map.big.nextDestination].image.src + '"/>' +
 		'</p>' +
 		'One of these larger squares will have the ' +
 		destinationInWords +
