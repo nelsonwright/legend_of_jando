@@ -92,7 +92,6 @@ function getMonsterData() {
 	return data;
 }
 
-
 function getTerrainData() {
 /*
 	Terrain Attributes:

@@ -224,6 +224,7 @@ var map = {
 		oldPosColumnCell: 0, // the previous co-ordinates
 		movementAreaHtml: null, // variable to hold the html for this div
       directionClassName: "",
+      backgroundColour: "#E6EFC2",
       movedLeft: function() {
          return this.posColumnCell < this.oldPosColumnCell;
       },
@@ -632,7 +633,7 @@ function setTerrainCellSmallMap(mapTableDiv, row, column) {
 	cellImageTag.src = terrainArray[terrType].image.src;
 	cellImageTag.title = terrainArray[terrType].name;
 	cellImageTag.alt = terrainArray[terrType].name;
-	setMapCellColour(mapTableDiv, position, '#E6EFC2');
+	setMapCellColour(mapTableDiv, position, map.small.backgroundColour);
 }
 
 function showMovementArea() {
