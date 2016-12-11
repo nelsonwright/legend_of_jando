@@ -160,17 +160,25 @@ var map = {
 		rows: 8,
 		cols: 10, // size of the map you move around in
 		posRowCell: 0,
-		posColumnCell: 0,	// map-cordinates of the hero
+		posColumnCell: 0,	// map-cordinates of your character
 		oldPosRowCell: 0,
 		oldPosColumnCell: 0, // the previous co-ordinates
 		movementAreaHtml: null, // variable to hold the html for this div
       directionClassName: "",
       backgroundColour: "#E6EFC2",
       movedLeft: function() {
-         return this.posColumnCell < this.oldPosColumnCell;
+         var movedLeftOnSmallMap = this.posColumnCell < this.oldPosColumnCell
+               && map.big.posColumnCell === map.big.oldPosColumnCell;
+         var movedLeftOffEdgeOfSmallMap = this.posColumnCell === this.cols -1
+                && map.big.posColumnCell < map.big.oldPosColumnCell;
+         return movedLeftOnSmallMap || movedLeftOffEdgeOfSmallMap;
       },
       movedRight: function() {
-         return this.posColumnCell > this.oldPosColumnCell;
+         var movedRightOnSmallMap = this.posColumnCell > this.oldPosColumnCell
+               && map.big.posColumnCell === map.big.oldPosColumnCell;
+         var movedRightOffEdgeOfSmallMap = this.posColumnCell === 0
+                && map.big.posColumnCell > map.big.oldPosColumnCell;
+         return movedRightOnSmallMap || movedRightOffEdgeOfSmallMap;
       },
       storeDirectionClassName: function() {
          if (this.movedLeft()) {
@@ -186,7 +194,6 @@ var map = {
 
          this.storeDirectionClassName();
          mapCellImageTag.className = this.directionClassName;
-
 			mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
 			mapCellImageTag.title = hero.name;
 			mapCellImageTag.alt = hero.name;
