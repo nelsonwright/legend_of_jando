@@ -154,6 +154,102 @@ var hero = {
 	badDreamThreshold: 0.8	// the closer to 1, the less likely you'll have bad dreams
 };
 
+var map = {
+  // small map, i.e. the one your character moves around on
+	small: {
+		rows: 8,
+		cols: 10, // size of the map you move around in
+		posRowCell: 0,
+		posColumnCell: 0,	// map-cordinates of the hero
+		oldPosRowCell: 0,
+		oldPosColumnCell: 0, // the previous co-ordinates
+		movementAreaHtml: null, // variable to hold the html for this div
+      directionClassName: "",
+      backgroundColour: "#E6EFC2",
+      movedLeft: function() {
+         return this.posColumnCell < this.oldPosColumnCell;
+      },
+      movedRight: function() {
+         return this.posColumnCell > this.oldPosColumnCell;
+      },
+      storeDirectionClassName: function() {
+         if (this.movedLeft()) {
+            // if they've moved left, make the character face the other way
+            this.directionClassName = "flipHorizontal";
+         } else if (this.movedRight()) {
+            this.directionClassName = "";
+         }
+      },
+		drawHero: function() {
+			var mapTableDiv = document.getElementById('mapTableDiv');
+			var mapCellImageTag = getCellImageTag(mapTableDiv, map.getHeroPosition());
+
+         this.storeDirectionClassName();
+         mapCellImageTag.className = this.directionClassName;
+
+			mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
+			mapCellImageTag.title = hero.name;
+			mapCellImageTag.alt = hero.name;
+			mapCellImageTag.id = 'yourCharacterImage';
+
+			// should move this somewhere else at some point . . .
+			map.setPriorHeroPosition(map.getHeroPosition());
+		}
+   },
+  // big map, i.e the overview of the whole area
+  	big: {
+		rows: 8,
+		cols: 10, // size of the overall big scale map
+		posRowCell: 0,
+		posColumnCell: 0,	// big map-cordinates of the hero
+		oldPosRowCell: 0,
+		oldPosColumnCell: 0, // the previous co-ordinates
+		terrainAttributes: 6,	// number of attributes of the particular terrain
+		numTerrainTypes: 6,    // how many different terrain types there are - set by the length of the terrainTypes array
+		displayed: false,      // indicates if the big map is being displayed
+		nextDestination: 0		// holds the next destination level,
+										// corresponds to terrain type, i.e. starts at zero,which = light grass
+  },
+  // an array of arrays containing the terrain details of each small map
+   terrain: null,
+   getTerrainType: function(row, column) {
+      var position = this.getHeroPosition();
+      var terrType = this.terrain[position.big.row][position.big.column][row][column];
+      return terrType;
+   },
+   getTerrainTypeAtCharactersPosition: function() {
+      var position = this.getHeroPosition();
+      var terrType = this.terrain[position.big.row][position.big.column][position.small.row][position.small.column];
+      return terrType;
+   },
+   getHeroPosition: function() {
+      var heroPosition = {small:{row:null, column:null}, big:{row:null, column:null}};
+      heroPosition.small.row = this.small.posRowCell;
+      heroPosition.small.column = this.small.posColumnCell;
+      heroPosition.big.row = this.big.posRowCell;
+      heroPosition.big.column = this.big.posColumnCell;
+      return heroPosition;
+   },
+   setHeroPosition: function(heroPosition) {
+      this.small.posRowCell = heroPosition.small.row;
+      this.small.posColumnCell = heroPosition.small.column;
+      this.big.posRowCell = heroPosition.big.row;
+      this.big.posColumnCell = heroPosition.big.column;
+   },
+   setPriorHeroPosition: function(heroPosition) {
+      this.small.oldPosRowCell = heroPosition.small.row;
+      this.small.oldPosColumnCell = heroPosition.small.column;
+      this.big.oldPosRowCell = heroPosition.big.row;
+      this.big.oldPosColumnCell = heroPosition.big.column;
+   },
+   resetHeroPositionToPrior: function() {
+      this.small.posRowCell = this.small.oldPosRowCell;
+      this.small.posColumnCell = this.small.oldPosColumnCell;
+      this.big.posRowCell = this.big.oldPosRowCell;
+      this.big.posColumnCell = this.big.oldPosColumnCell;
+   }
+};
+
 var sleep = {
 	questionsAsked: null,
 	correctAnswers: null,
@@ -213,89 +309,6 @@ var terrainArray= [];
 */
 var terrainLocationsArray = [];
 
-var map = {
-  // small map, i.e. the one your character moves around on
-	small: {
-		rows: 8,
-		cols: 10, // size of the map you move around in
-		posRowCell: 0,
-		posColumnCell: 0,	// map-cordinates of the hero
-		oldPosRowCell: 0,
-		oldPosColumnCell: 0, // the previous co-ordinates
-		movementAreaHtml: null, // variable to hold the html for this div
-      directionClassName: "",
-      movedLeft: function() {
-         return this.posColumnCell < this.oldPosColumnCell;
-      },
-      movedRight: function() {
-         return this.posColumnCell > this.oldPosColumnCell;
-      },
-      storeDirectionClassName: function() {
-         if (this.movedLeft()) {
-            // if they've moved left, make the character face the other way
-            this.directionClassName = "flipHorizontal";
-         } else if (this.movedRight()) {
-            this.directionClassName = "";
-         }
-      },
-		drawHero: function() {
-			var mapTableDiv = document.getElementById('mapTableDiv');
-			var mapCellImageTag = getCellImageTag(mapTableDiv, map.getHeroPosition());
-
-         this.storeDirectionClassName();
-         mapCellImageTag.className = this.directionClassName;
-
-			mapCellImageTag.src = makeImageSource('hero_' + hero.type + '_thumb');
-			mapCellImageTag.title = hero.name;
-			mapCellImageTag.alt = hero.name;
-			mapCellImageTag.id = 'yourCharacterImage';
-
-			// should move this somewhere else at some point . . .
-			map.setPriorHeroPosition(map.getHeroPosition());
-		}
-  },
-  // big map, i.e the overview of the whole area
-  	big: {
-		rows: 8,
-		cols: 10, // size of the overall big scale map
-		posRowCell: 0,
-		posColumnCell: 0,	// big map-cordinates of the hero
-		oldPosRowCell: 0,
-		oldPosColumnCell: 0, // the previous co-ordinates
-		terrainAttributes: 6,	// number of attributes of the particular terrain
-		numTerrainTypes: 6,    // how many different terrain types there are - set by the length of the terrainTypes array
-		displayed: false,      // indicates if the big map is being displayed
-		nextDestination: 0		// holds the next destination level,
-										// corresponds to terrain type, i.e. starts at zero,which = light grass
-  },
-  getHeroPosition: function() {
-	  var heroPosition = {small:{row:null, column:null}, big:{row:null, column:null}};
-	  heroPosition.small.row = this.small.posRowCell;
-	  heroPosition.small.column = this.small.posColumnCell;
-	  heroPosition.big.row = this.big.posRowCell;
-	  heroPosition.big.column = this.big.posColumnCell;
-	  return heroPosition;
-  },
-  setHeroPosition: function(heroPosition) {
-	  this.small.posRowCell = heroPosition.small.row;
-	  this.small.posColumnCell = heroPosition.small.column;
-	  this.big.posRowCell = heroPosition.big.row;
-	  this.big.posColumnCell = heroPosition.big.column;
-  },
-  setPriorHeroPosition: function(heroPosition) {
-		this.small.oldPosRowCell = heroPosition.small.row;
-		this.small.oldPosColumnCell = heroPosition.small.column;
-		this.big.oldPosRowCell = heroPosition.big.row;
-		this.big.oldPosColumnCell = heroPosition.big.column;
-  },
-  resetHeroPositionToPrior: function() {
-	  this.small.posRowCell = this.small.oldPosRowCell;
-	  this.small.posColumnCell = this.small.oldPosColumnCell;
-	  this.big.posRowCell = this.big.oldPosRowCell;
-	  this.big.posColumnCell = this.big.oldPosColumnCell;
-  }
-};
-
 function getImageForItem(paramObject, isFood) {
 	var theImage = new Image();
 
@@ -316,12 +329,6 @@ function makeImageSource(imageName, isFood) {
 var bigMapTerrainArray=new Array(map.big.rows);
 for (var i=0; i <map.big.rows; i++) {
 	bigMapTerrainArray[i]=new Array(map.big.cols);
-}
-
-// Used to hold details of map features, for small map . . .
-var mapDetailArray=new Array(map.small.rows);
-for (var i=0; i <map.small.rows; i++) {
-	mapDetailArray[i]=new Array(map.small.cols);
 }
 
 // Used to hold row/col destination pairs on big map and small map,
@@ -577,18 +584,39 @@ function createBigMap() {
 	setQuestLocations();
 }
 
-function createSmallMapTerrain(heroPosition) {
-	var terrainType = bigMapTerrainArray[heroPosition.big.row][heroPosition.big.column];
+function createSmallMapTerrain() {
+   // this will hold all the details of the terrain in each small map,
+   // in an array inside each "big map" cell
+   var totalSmallMapTerrain=new Array(map.big.rows);
+   for (var i=0; i <map.big.rows; i++) {
+   	totalSmallMapTerrain[i]=new Array(map.big.cols);
+   }
 
-	for (var row=0; row <map.small.rows; row++) {
-		for (var col=0; col <map.small.cols; col++) {
-			if (Math.random() < terrainArray[terrainType].densityFactor) {
-				mapDetailArray[row][col] = terrainType;
-			} else {
-				mapDetailArray[row][col] = 0;	// default to terrain type zero
-			}
-		}
-	}
+   for (var bigRow=0; bigRow < map.big.rows; bigRow++) {
+		for (var bigCol=0; bigCol < map.big.cols; bigCol++) {
+
+         var terrainType = bigMapTerrainArray[bigRow][bigCol];
+
+         // initialise the (empty) terrain array on the small map . . .
+         var smallMapTerrain = new Array(map.small.rows);
+
+         for (var i=0; i <map.small.rows; i++) {
+            smallMapTerrain[i]=new Array(map.small.cols);
+         }
+
+      	for (var row=0; row <map.small.rows; row++) {
+      		for (var col=0; col <map.small.cols; col++) {
+      			if (Math.random() < terrainArray[terrainType].densityFactor) {
+      				smallMapTerrain[row][col] = terrainType;
+      			} else {
+      				smallMapTerrain[row][col] = 0;	// default to terrain type zero (light grass)
+      			}
+      		}
+      	}
+         totalSmallMapTerrain[bigRow][bigCol] = smallMapTerrain;
+      }
+   }
+   map.terrain = totalSmallMapTerrain;
 }
 
 function getMapCell(mapTableDiv, row, column) {
@@ -622,17 +650,16 @@ function setBigMapCellColour(mapTableDiv, position, colour) {
 }
 
 function setTerrainCellSmallMap(mapTableDiv, row, column) {
-	var terrType;
 	var cellImageTag;
-	var position = {small:{row:row, column:column}, big:{row:null, column:null}};
+   var cellPosition = {small:{row:row, column:column}, big:{row:null, column:null}};
+   var terrType = map.getTerrainType(row, column);
 
-	terrType = mapDetailArray[row][column];
-	cellImageTag = getCellImageTag(mapTableDiv, position);
+   cellImageTag = getCellImageTag(mapTableDiv, cellPosition);
 
 	cellImageTag.src = terrainArray[terrType].image.src;
 	cellImageTag.title = terrainArray[terrType].name;
 	cellImageTag.alt = terrainArray[terrType].name;
-	setMapCellColour(mapTableDiv, position, '#E6EFC2');
+	setMapCellColour(mapTableDiv, cellPosition, map.small.backgroundColour);
 }
 
 function showMovementArea() {
@@ -670,7 +697,7 @@ function isQuestDestinationBigMapSquare(heroPosition) {
 
 function showSmallMap() {
 	var mapTableDiv = document.getElementById('mapTableDiv');
-	makeMapIfNotThere(mapTableDiv);
+	createBlankMapIfNotPresent(mapTableDiv);
 	showMovementArea();
 
 	for (var row=0; row <map.small.rows; row++) {
@@ -787,10 +814,9 @@ function max(value1, value2) {
 	return Math.max(value1, value2);
 }
 
-function showNextSmallMapSquare(heroPosition) {
+function showNextSmallMap(heroPosition) {
 	var newHeroPosition = calculateNewHeroPosition();
 	map.setHeroPosition(newHeroPosition);
-	createSmallMapTerrain(newHeroPosition);
 
 	showSmallMap();
 	map.small.drawHero();
@@ -809,7 +835,8 @@ function highlightHeroSquare() {
 }
 
 function moveOnSmallMap(heroPosition) {
-	var terrType = mapDetailArray[heroPosition.small.row][heroPosition.small.column];
+   var actionSpace = document.getElementById('action');
+	var terrType = map.getTerrainTypeAtCharactersPosition();
 	var terrainMovementCost = 1 + terrainArray[terrType].extraMovementPts;
 
 	terrainMovementCost = hero.foraging ? terrainMovementCost * 2 : terrainMovementCost;
@@ -822,6 +849,9 @@ function moveOnSmallMap(heroPosition) {
 	} else {
 		dontAllowMovement();
 		// highlight the fact that you've run out of movement points . . .
+      actionSpace.innerHTML = "<p>"
+         + "You feel so tired that you cannot move, and need to sleep"
+         + "</p>";
 		highlightHeroSquare();
 	}
 }
@@ -836,7 +866,7 @@ function processMovement(heroPosition) {
       if (isOffBigMap(heroPosition)) {
          dontAllowMovement();
       } else {
-         showNextSmallMapSquare(heroPosition);
+         showNextSmallMap(heroPosition);
       }
    } else {
       moveOnSmallMap(heroPosition);
@@ -889,7 +919,7 @@ function saveGame() {
    }
 }
 
-function makeMapIfNotThere(mapTableDiv) {
+function createBlankMapIfNotPresent(mapTableDiv) {
    var tableExists = mapTableDiv.getElementsByTagName("table")[0];
 	if (typeof tableExists === 'undefined') {
 	    createTableMap(mapTableDiv);
@@ -916,7 +946,7 @@ function showTerrainOnBigMap(mapTableDiv) {
 function showBigMap() {
 	var mapTableDiv = document.getElementById('mapTableDiv');
 
-	makeMapIfNotThere(mapTableDiv);
+	createBlankMapIfNotPresent(mapTableDiv);
 	showTerrainOnBigMap(mapTableDiv);
 
 	// highlight on the big map the square where the hero is . . .
@@ -1011,8 +1041,8 @@ function createQuestString() {
 		destinationInWords +
 		' by looking at the big map, and searching all of the squares of type "' +
 		terrainArray[map.big.nextDestination].name +
-		'", which look like this: <img src = ' +
-		terrainArray[map.big.nextDestination].image.src + '/>' +
+		'", which look like this: <img src = "' +
+		terrainArray[map.big.nextDestination].image.src + '"/>' +
 		'</p>' +
 		'One of these larger squares will have the ' +
 		destinationInWords +
@@ -1460,9 +1490,9 @@ function checkIfFoodForaged(forageState, terrType) {
 	}
 }
 
-function checkIfFoodFound(forageState, posRowCell, posColumnCell) {
+function checkIfFoodFound(forageState) {
 	var actionSpace = document.getElementById('action');
-	var terrType = mapDetailArray[posRowCell][posColumnCell];
+   var terrType = map.getTerrainTypeAtCharactersPosition();
 	actionSpace.innerHTML = '&nbsp';
 
 	if (hero.foraging) {
@@ -1763,7 +1793,7 @@ function checkForMovement(actionCode) {
 		if (hero.moved && !gameState.storyEvent) {
 			checkForAttack();
 			if (hero.fightOn === 'No' ) {
-				checkIfFoodFound(hero.foraging, map.small.posRowCell, map.small.posColumnCell);
+				checkIfFoodFound(hero.foraging);
 			}
 		}
 	}
@@ -1840,8 +1870,9 @@ function loadInitialInfo() {
 
 function createMapsAndShowSmallMap() {
 	createBigMap();
-	createSmallMapTerrain(map.getHeroPosition());
+	createSmallMapTerrain();
 	showSmallMap();
+   map.small.drawHero();
 }
 
 function showInitialQuest() {
@@ -1857,7 +1888,6 @@ function showStartOfGame() {
 function startGame() {
 	loadInitialInfo();
 	createMapsAndShowSmallMap();
-	map.small.drawHero();
 	updateHeroStats();
 	updateMovePoints();
 	showStartOfGame();
