@@ -133,6 +133,7 @@ var hero = {
 	movePoints: 20,
 	maxMovePoints: 20,
 	maxHealthGainedBySleep: 8,
+   minHealthGainedBySleep: 2, // the minimum if you've not answered any sums, that is
 	foraging: false,  // are you foraging at the moment?
 	moved: false,			// indicates if the hero has successfully moved on the map
 	asleep: false,		// indicates if you're sleeping
@@ -151,7 +152,7 @@ var hero = {
 	experience: 0,
 	level: 1,
 	experiencePerLevel: 4,
-	badDreamThreshold: 0.8	// the closer to 1, the less likely you'll have bad dreams
+	badDreamThreshold: 0.9999	// the closer to 1, the less likely you'll have bad dreams
 };
 
 var map = {
@@ -1614,8 +1615,13 @@ function awakeFromSlumber() {
 
 	clearInterval(gameState.sleepIntervalId);
 
-	extraHealth = Math.round(hero.maxHealthGainedBySleep * (sleep.correctAnswers / sleep.questionsAsked));
-	extraHealth = extraHealth ? extraHealth : 0;
+   if (sleep.questionsAsked > 0) {
+         // this can equate to zero if there's been no correct answers . . .
+         extraHealth = Math.round(hero.maxHealthGainedBySleep * (sleep.correctAnswers / sleep.questionsAsked));
+   } else {
+      // no questions have been asked, so give the minumum health boost . . .
+         extraHealth = hero.minHealthGainedBySleep;
+   }
 
 	paraText = paraText + ' . . . you finally awake.';
 
