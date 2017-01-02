@@ -1,4 +1,4 @@
-/* So, this was created in order to try and learn javascript.  You can probably tell.
+/* This was created initially in order to try and learn and improve my JavaScript.
    If you have any suggestions on how to improve this script, I'd love to hear from you.
    Contact me at: me@nelsonwright.co.uk
 */
@@ -129,6 +129,7 @@ var hero = {
 	// the values here are the defaults, but may be overwritten by other values . . .
 	name: null,
 	image: new Image(),
+   sleepImage: new Image(),
 	type: "human",
 	movePoints: 20,
 	maxMovePoints: 20,
@@ -152,7 +153,7 @@ var hero = {
 	experience: 0,
 	level: 1,
 	experiencePerLevel: 4,
-	badDreamThreshold: 0.9999	// the closer to 1, the less likely you'll have bad dreams
+	badDreamThreshold: 0.8	// the closer to 1, the less likely you'll have bad dreams
 };
 
 var map = {
@@ -261,12 +262,17 @@ var map = {
 var sleep = {
 	questionsAsked: null,
 	correctAnswers: null,
+   narrativeText: null,
 	calculation: {
 		firstFactor: null,
 		secondFactor: null,
 		digitToGuess: null,
 		timeAllowed: 7, // how many seconds you're allowed to answer
 		answerIndex: null,
+      timeToAnswerText: null,
+      text: null,
+      answerText: "",
+      resultText: null,
 		create: function() {
 			this.firstFactor = Math.floor(Math.random() * 10 + 2);
 			this.secondFactor = Math.floor(Math.random() * 10 + 2);
@@ -277,8 +283,7 @@ var sleep = {
 			return this.firstFactor * this.secondFactor;
 		},
 		createQuestionText: function () {
-			return this.firstFactor + ' X ' + this.secondFactor + ' = '
-				+ '<span id="calcAnswer" class="calcAnswer">?</span>';
+			return this.firstFactor + ' X ' + this.secondFactor + ' = ';
 		},
 		correctDigitGuessed: function(digitGuessed) {
 			return digitGuessed === this.digitToGuess;
@@ -292,8 +297,15 @@ var sleep = {
 		},
 		gotItAllCorrect: function() {
 			return this.answerIndex >= parseInt(this.product().toString().length);
-		}
-	}
+		},
+      wipeText: function() {
+         this.timeToAnswerText = "";
+         this.text = "";
+         this.resultText = "";
+         this.answerText = "";
+      }
+	},
+
 };
 
 // this is the monster that is currently being fought
@@ -450,6 +462,9 @@ function setupStatsHeroImage() {
 function loadHeroImage() {
 	hero.image.src = makeImageSource('hero_' + hero.type);
 	hero.image.title = hero.type + ' ' + hero.name;
+
+   hero.sleepImage.src = makeImageSource('hero_' + hero.type + '_asleep');
+	hero.sleepImage.title = hero.type + ' ' + hero.name + ' asleep';
 }
 
 function startHeroPosition() {
@@ -1522,95 +1537,96 @@ function processAttemptedSumAnswer(numberCode) {
 		digitPressed = numberCode - 96;
 	}
 
-	var timerPara = document.getElementById('action').children[1];
-	var answerEle = document.getElementById("calcAnswer");
-
 	if (sleep.calculation.correctDigitGuessed(digitPressed)) {
-		// should move this into the sleep.calculation object . . .
-		answerEle.innerHTML = answerEle.innerHTML === '?' ? digitPressed : answerEle.innerHTML + digitPressed;
+		sleep.calculation.answerText = sleep.calculation.answerText === '?' ? digitPressed : sleep.calculation.answerText + digitPressed.toString();
 		sleep.calculation.updateDigitToGuess();
+      renderSleepingState();
 
 		if (sleep.calculation.gotItAllCorrect()) {
 			clearInterval(gameState.sumsIntervalId);
-			timerPara.innerHTML = "Got it right!";
+			sleep.calculation.resultText = "Got it right!";
 			sleep.correctAnswers++;
-			keepOnSleeping();
+         renderSleepingState();
+         waitABitThenKeepSleeping();
 		}
-
 	} else {
-		answerEle.innerHTML = answerEle.innerHTML === '?' ? digitPressed : answerEle.innerHTML + digitPressed;
+		sleep.calculation.answerText = sleep.calculation.answerText === '?' ? digitPressed : sleep.calculation.answerText + digitPressed.toString();
 		//oh dear, got it wrong . . .
 		clearInterval(gameState.sumsIntervalId);
-		timerPara.innerHTML = "Wrong! Ha ha!";
-		keepOnSleeping();
+		sleep.calculation.resultText = "Wrong! Ha ha!";
+      renderSleepingState();
+      waitABitThenKeepSleeping();
 	}
 }
 
 function wipeSumAndKeepOnSleeping() {
-	var actionDiv = document.getElementById('action');
-	var timerPara = actionDiv.children[1];
-	var sumPara = actionDiv.children[2];
-
-	hero.doingSums = false;
-	timerPara.innerHTML = '&nbsp;';
-	sumPara .innerHTML = '&nbsp;';
+   sleep.calculation.wipeText();
+   renderSleepingState();
 	// sleep some more . . .
 	keepOnSleeping();
 }
 
 function waitABitThenKeepSleeping() {
+   hero.doingSums = false;
 	setTimeout(wipeSumAndKeepOnSleeping, 1500);
 }
 
 function processSums() {
-	var actionDiv = document.getElementById('action');
-	var timerPara = actionDiv.children[1];
-
 	gameState.timeForSums--;
 
 	if (gameState.timeForSums > 0) {
-		timerPara.innerHTML = "Time to answer: " + gameState.timeForSums;
-
+      sleep.calculation.timeToAnswerText = "Time to answer: " + gameState.timeForSums;
 	} else {
 		clearInterval(gameState.sumsIntervalId);
 		hero.doingSums = false;
-		timerPara.innerHTML = "Too slow!";
+		sleep.calculation.timeToAnswerText = "Too slow!";
 		waitABitThenKeepSleeping();
 	}
+   renderSleepingState();
 }
 
 function sleepAtNight() {
-	var actionDiv = document.getElementById('action');
-	var sleepCounterPara = actionDiv.firstChild;
-	var timerPara = actionDiv.children[1];
-	var sumPara = actionDiv.children[2];
+   sleep.calculation.wipeText();
 
 	if (Math.random() > hero.badDreamThreshold) {
 		// we need the following as otherwise some other element may have focus, and we won't get keystrokes
 		document.activeElement.blur();
-		clearInterval(gameState.sleepIntervalId); // stop the nightime clock
+
+		clearInterval(gameState.sleepIntervalId); // stop the "hourly" nightime clock
 		hero.doingSums = true;
 		sleep.questionsAsked++;
 
 		sleep.calculation.create();
-		sumPara.innerHTML = sleep.calculation.createQuestionText();
+		sleep.calculation.text = sleep.calculation.createQuestionText();
+      sleep.calculation.answerText = "?";
 		gameState.timeForSums = sleep.calculation.timeAllowed;
-		timerPara.innerHTML = "Time to answer: " + gameState.timeForSums;
+		sleep.calculation.timeToAnswerText = "Time to answer: " + gameState.timeForSums;
 
 		gameState.sumsIntervalId = setInterval(processSums, 1000);
 	}
 
-	var sleepCounterText = sleepCounterPara.innerText;
-	sleepCounterPara.innerHTML = sleepCounterText + ' .';
+	sleep.narrativeText = sleep.narrativeText + ' .';
 	hero.hoursSlept++;
+   renderSleepingState();
+}
+
+function renderSleepingState() {
+   var template = $('#sleepTemplate').html();
+   Mustache.parse(template);   // optional, speeds up future uses
+   var sleepHtml = Mustache.render(template, {
+      narrativeText: sleep.narrativeText,
+      timeToAnswerText: sleep.calculation.timeToAnswerText,
+      calculationText: sleep.calculation.text,
+      answerText: sleep.calculation.answerText,
+      resultText: sleep.calculation.resultText,
+      heroImageSrc: hero.sleepImage.src,
+      heroImgTitle: hero.sleepImage.title
+   });
+   $('#action').html(sleepHtml);
+   document.getElementById("sleepDiv").className = "sleep";
 }
 
 function awakeFromSlumber() {
-	var actionDiv = document.getElementById('action');
-	var sleepCounterPara = actionDiv.firstChild;
-	var timerPara = actionDiv.children[1];
-	var sumPara = actionDiv.children[2];
-	var paraText = sleepCounterPara.innerText;
 	var extraHealth;
 
 	clearInterval(gameState.sleepIntervalId);
@@ -1623,17 +1639,17 @@ function awakeFromSlumber() {
          extraHealth = hero.minHealthGainedBySleep;
    }
 
-	paraText = paraText + ' . . . you finally awake.';
+	sleep.narrativeText = sleep.narrativeText + ' . . . you finally awake.';
 
 	// we'll want the words to change depending on how well or bad you did, but for now . . .
-	paraText = paraText + ' You answered ' +  sleep.correctAnswers
-	+ ' correctly, out of ' + sleep.questionsAsked + '. You gain '
-	+ extraHealth + ' extra health as a result.';
+	sleep.narrativeText = sleep.narrativeText + ' You answered '
+      +  sleep.correctAnswers + ' correctly, out of '
+      + sleep.questionsAsked + '. You gain '
+   	+ extraHealth + ' extra health as a result.';
 
-	sleepCounterPara.innerHTML = paraText;
+	sleep.calculation.wipeText();
 
-	sumPara.innerHTML = "";
-	timerPara.innerHTML = "";
+   renderSleepingState();
 
 	hero.asleep = false;
 	enableOptionButtons(true);
@@ -1658,14 +1674,17 @@ function processSleepState() {
 
 function keepOnSleeping() {
 	hero.doingSums = false;
-	gameState.sleepIntervalId = setInterval(processSleepState, 1000);
+   gameState.sleepIntervalId = setInterval(processSleepState, 1000);
 }
 
 function sleepHero() {
 	enableOptionButtons(false);
 	fadeMovementArea();
-	var actionSpace = document.getElementById('action');
-	actionSpace.innerHTML='<p>You sleep, perchance to dream . . .</p><p>&nbsp;</p><p>&nbsp;</p>';
+
+	sleep.narrativeText = "You sleep, perchance to dream . . .";
+   sleep.calculation.wipeText();
+   renderSleepingState();
+
 	hero.asleep = true;
 	hero.hoursSlept = 0;
 	sleep.questionsAsked = 0;
