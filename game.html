@@ -192,8 +192,18 @@
 	</div>
 
 	<div id="action" class="action hidden">
-		<!-- stuff will be dynamically generated in here -->
+		<!-- stuff will be generated dynamically in this div -->
 	</div>
+
+  <script id="sleepTemplate" type="x-tmpl-mustache">
+    <div id ="sleepDiv" class="sleep hidden">
+       <p>{{narrativeText}}</p>
+       <p>{{timeToAnswerText}}</p>
+       <p>{{calculationText}} <span class="answerText">{{answerText}}</span> </p>
+       <p>{{resultText}}</p>
+       <p><img id = "heroImage" src="{{heroImageSrc}}" title="{{heroImgTitle}}"/></p>
+    </div>
+  </script>
 
 	<script id="fightTemplate" type="x-tmpl-mustache">
 		<div id="fight" class="hidden">

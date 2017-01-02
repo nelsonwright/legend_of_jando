@@ -206,7 +206,7 @@ button {
 	vertical-align:90%;
 }
 
-.calcAnswer {
+.answerText {
 	font-size: 200%;
 	font-weight:bold;
 }
@@ -222,4 +222,8 @@ button {
         transform: scaleX(-1);
         filter: FlipH;
         -ms-filter: "FlipH";
+}
+
+.sleep {
+   padding-bottom: 0;
 }
