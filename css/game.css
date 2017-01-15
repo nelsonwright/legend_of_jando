@@ -191,8 +191,13 @@ button {
 	padding: 1em;
 }
 
-.chooseHero .heroes img{
-	padding:0.5em;
+.chooseHero .heroes img {
+   border-style: solid;
+   border-width: 0.5em;
+   border-color: #CAEE90;
+   padding: 0;
+   animation-name: fadeDownToGreen;
+   animation-duration: 0.7s;
 }
 
 .chooseHero .heroes img:hover{
@@ -200,6 +205,18 @@ button {
 	border-width: 0.5em;
 	padding: 0;
 	border-color: yellow;
+   animation-name: fadeUpToYellow;
+   animation-duration: 0.7s;
+}
+
+@keyframes fadeDownToGreen {
+    from {border-color: yellow}
+    to {border-color: #CAEE90}
+}
+
+@keyframes fadeUpToYellow {
+    from {border-color: #CAEE90}
+    to {border-color: yellow}
 }
 
 .mouseMoveHero {
