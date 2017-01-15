@@ -1630,25 +1630,22 @@ function awakeFromSlumber() {
 	var extraHealth;
 
 	clearInterval(gameState.sleepIntervalId);
+	sleep.narrativeText = sleep.narrativeText + ' . . . you finally awake.';
 
    if (sleep.questionsAsked > 0) {
-         // this can equate to zero if there's been no correct answers . . .
-         extraHealth = Math.round(hero.maxHealthGainedBySleep * (sleep.correctAnswers / sleep.questionsAsked));
+      // this can equate to zero if there's been no correct answers . . .
+      extraHealth = Math.round(hero.maxHealthGainedBySleep * (sleep.correctAnswers / sleep.questionsAsked));
+      // we'll want the words to change depending on how well or bad you did, but for now . . .
+      sleep.narrativeText = sleep.narrativeText + ' You answered '
+         +  sleep.correctAnswers + ' correctly, out of '
+         + sleep.questionsAsked + '. You gain '
+      	+ extraHealth + ' extra health as a result.';
    } else {
       // no questions have been asked, so give the minumum health boost . . .
          extraHealth = hero.minHealthGainedBySleep;
    }
 
-	sleep.narrativeText = sleep.narrativeText + ' . . . you finally awake.';
-
-	// we'll want the words to change depending on how well or bad you did, but for now . . .
-	sleep.narrativeText = sleep.narrativeText + ' You answered '
-      +  sleep.correctAnswers + ' correctly, out of '
-      + sleep.questionsAsked + '. You gain '
-   	+ extraHealth + ' extra health as a result.';
-
 	sleep.calculation.wipeText();
-
    renderSleepingState();
 
 	hero.asleep = false;
