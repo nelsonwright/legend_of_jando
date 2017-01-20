@@ -57,33 +57,34 @@ function getFoodData() {
 }
 
 function getMonsterData() {
-	// name, imageName, healthPoints, attackPoints, defencePoints
-	// we can infer image name from name, making lowercase and convertinf spaces to underscores
+	// we can infer image name from name, making lowercase and converting spaces to underscores
 	var data = {
 		items:
 		[
-			{name: 'Turtle Rider', healthPoints: 12, attackPoints: 6, defencePoints: 4},
-			{name: 'Turtle Rider', healthPoints: 12, attackPoints: 6, defencePoints: 4},
-			{name: 'Horned Devil', healthPoints: 13, attackPoints: 7, defencePoints: 5},
-			{name: 'Squirm', healthPoints: 9, attackPoints: 4, defencePoints: 4},
-			{name: 'Bleh', healthPoints: 16, attackPoints: 8, defencePoints: 5},
-			{name: 'Scream', healthPoints: 7, attackPoints: 6, defencePoints: 6},
-			{name: 'Warrior Ant', healthPoints: 10, attackPoints: 4, defencePoints: 7},
-			{name: 'Drop', healthPoints: 9, attackPoints: 4, defencePoints: 3},
-			{name: 'Ground Fish', healthPoints: 11, attackPoints: 6, defencePoints: 3},
-			{name: 'Snail', healthPoints: 8, attackPoints: 6, defencePoints: 6},
-			{name: 'Strawberry', healthPoints: 7, attackPoints: 5, defencePoints: 3},
+         // roughly try to order them in terms of easiest to hardesst . . .
+         {name: 'Drop', healthPoints: 9, attackPoints: 4, defencePoints: 3},
+         {name: 'Squirm', healthPoints: 9, attackPoints: 4, defencePoints: 4},
+         {name: 'Strawberry', healthPoints: 7, attackPoints: 5, defencePoints: 3},
+         {name: 'Scream', healthPoints: 7, attackPoints: 6, defencePoints: 6},
+         {name: 'Snail', healthPoints: 8, attackPoints: 6, defencePoints: 6},
 
-			   // level 2 monsters (allegedly, but is this used anywhere . . . ?) . . .
-			{name: 'Flame Spirit', healthPoints: 16, attackPoints: 9, defencePoints: 9},
-			{name: 'Bloat', healthPoints: 12, attackPoints: 7, defencePoints: 14},
+         {name: 'Warrior Ant', healthPoints: 10, attackPoints: 4, defencePoints: 7},
+         {name: 'Ground Fish', healthPoints: 11, attackPoints: 6, defencePoints: 3},
+			{name: 'Turtle Rider', healthPoints: 12, attackPoints: 6, defencePoints: 4},
+         {name: 'Bloat', healthPoints: 12, attackPoints: 7, defencePoints: 14},
+
+			{name: 'Horned Devil', healthPoints: 13, attackPoints: 7, defencePoints: 5},
+			{name: 'Bleh', healthPoints: 16, attackPoints: 8, defencePoints: 5},
+         {name: 'Leecho', healthPoints: 21, attackPoints: 4, defencePoints: 16},
 			{name: 'Star Man', healthPoints: 6, attackPoints: 10, defencePoints: 5},
-			{name: 'Ninja', healthPoints: 8, attackPoints: 10, defencePoints: 7},
+         
+         {name: 'Ninja', healthPoints: 8, attackPoints: 10, defencePoints: 7},
+			{name: 'Flame Spirit', healthPoints: 16, attackPoints: 9, defencePoints: 9},
 			{name: 'Assassin', healthPoints: 14, attackPoints: 11, defencePoints: 6},
 			{name: 'Lightning Fish', healthPoints: 15, attackPoints: 12, defencePoints: 7},
+
+         {name: 'Crazed King', healthPoints: 18, attackPoints: 11, defencePoints: 16},
 			{name: 'Leosaur', healthPoints: 19, attackPoints: 15, defencePoints: 11},
-			{name: 'Leecho', healthPoints: 21, attackPoints: 4, defencePoints: 16},
-			{name: 'Crazed King', healthPoints: 18, attackPoints: 11, defencePoints: 16},
 
 				// The final big boss-battle monster! . . . needs to be the last entry in this array
 			{name: 'Hideously evil GREEN SKULL', imageName: 'green_skull', healthPoints: 32, attackPoints: 16, defencePoints: 12}
