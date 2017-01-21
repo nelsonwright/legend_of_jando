@@ -231,6 +231,11 @@ var map = {
       var terrType = this.terrain[position.big.row][position.big.column][position.small.row][position.small.column];
       return terrType;
    },
+   getBigTerrainTypeForCharacter: function() {
+      var position = this.getHeroPosition();
+      var terrType = bigMapTerrainArray[position.big.row][position.big.column];
+      return terrType;
+   },
    getHeroPosition: function() {
       var heroPosition = {small:{row:null, column:null}, big:{row:null, column:null}};
       heroPosition.small.row = this.small.posRowCell;
@@ -673,7 +678,6 @@ function setBigMapCellColour(mapTableDiv, position, colour) {
 }
 
 function setTerrainCellSmallMap(mapTableDiv, row, column) {
-	var cellImageTag;
    var cellPosition = {small:{row:row, column:column}, big:{row:null, column:null}};
    var terrType = map.getTerrainType(row, column);
 
@@ -858,7 +862,6 @@ function highlightHeroSquare() {
 }
 
 function moveOnSmallMap(heroPosition) {
-   var actionSpace = document.getElementById('action');
 	var terrType = map.getTerrainTypeAtCharactersPosition();
 	var terrainMovementCost = 1 + terrainArray[terrType].extraMovementPts;
 
@@ -872,9 +875,9 @@ function moveOnSmallMap(heroPosition) {
 	} else {
 		dontAllowMovement();
 		// highlight the fact that you've run out of movement points . . .
-      actionSpace.innerHTML = "<p>"
-         + "You feel so tired that you cannot move, and need to sleep"
-         + "</p>";
+      $('#action').html("<p>"
+         + "You feel so tired that you cannot move, and need to sleep."
+         + "</p>");
 		highlightHeroSquare();
 	}
 }
@@ -1417,8 +1420,7 @@ function setDestinationImage(nextDestination) {
 }
 
 function displayDestination(nextDestination){
-	var actionSpace = document.getElementById('action');
-	actionSpace.innerHTML = setDestinationHTML(nextDestination);
+	$('#action').html(setDestinationHTML(nextDestination));
 	setDestinationImage(nextDestination);
 }
 
@@ -1439,8 +1441,21 @@ function prepareFightDiv() {
 	$('#action').html(fightDivHtml);
 }
 
+function calculateMonsterIndex() {
+   // it's minus 2, as we don't want the last monster in the array, as that's special
+   var numberOfMonsters = monsterArray.length - 2;
+   var monstersPerTerrainType = numberOfMonsters / map.big.numTerrainTypes;
+   var terrType = map.getBigTerrainTypeForCharacter();
+   var lower = Math.floor(terrType * monstersPerTerrainType);
+   var upper = Math.ceil(lower + monstersPerTerrainType);
+
+   var indexWithFraction = lower + (Math.random() * (upper - lower));
+
+   return Math.round(indexWithFraction);
+}
+
 function startAttack() {
-	gameState.monsterIdx = Math.floor(Math.random() * (monsterArray.length - 1));
+	gameState.monsterIdx = calculateMonsterIndex();
 
 	if (gameState.finalFight) {
 		gameState.monsterIdx = monsterArray.length - 1;
@@ -1473,16 +1488,15 @@ function calculateFoundPhrase(forageState) {
 function processFoundFood(forageState) {
 	// display the food found, and add health points . . .
 	var foodIdx = Math.floor(Math.random() * foodArray.length);
-	var actionSpace = document.getElementById('action');
 
-	actionSpace.innerHTML =
+	$('#action').html(
 		'<p>' +
 			calculateFoundPhrase(forageState) +
 			foodArray[foodIdx].name +
 		'</p>' +
 		'<img id="foodImage" title="' +
 		foodArray[foodIdx].name +
-		'" style="float:left;"/>';
+		'" style="float:left;"/>');
 
 	var foodPic = document.getElementById('foodImage');
 	foodPic.src = foodArray[foodIdx].image.src;
@@ -1500,7 +1514,6 @@ function foodStumbledUpon() {
 }
 
 function checkIfFoodForaged(forageState, terrType) {
-	var actionSpace = document.getElementById('action');
 	// I can't quite remember how this works, but I think you're more likely to find food in
 	// terrain that's harder to pass through . . .
 	var forageModifier = terrainArray[terrType].extraMovementPts;
@@ -1509,14 +1522,13 @@ function checkIfFoodForaged(forageState, terrType) {
 	if (foodSuccessfullyForaged(forageModifier)) {
 		processFoundFood(forageState);
 	} else {
-		actionSpace.innerHTML = '<p>Haven\'t found anything . . .</p>';
+		$('#action').html('<p>Haven\'t found anything . . .</p>');
 	}
 }
 
 function checkIfFoodFound(forageState) {
-	var actionSpace = document.getElementById('action');
    var terrType = map.getTerrainTypeAtCharactersPosition();
-	actionSpace.innerHTML = '&nbsp';
+	$('#action').html('&nbsp');
 
 	if (hero.foraging) {
 		checkIfFoodForaged(forageState, terrType);
@@ -1754,30 +1766,44 @@ function hideAndShowAreas() {
 }
 
 function playGame() {
-	setChosenHero();
-	hideAndShowAreas();
-	setHeroNameInTitleBar();
+   if (characterIsNamed()) {
+   	setChosenHero();
+   	hideAndShowAreas();
+   	setHeroNameInTitleBar();
 
-	gameState.inStartMode = false;
-	startGame();
+   	gameState.inStartMode = false;
+   	startGame();
+   } else {
+      document.getElementById('textHeroName').value = "Jando";
+   }
+}
+
+function characterIsNamed() {
+   var theEnteredCharacterName = document.getElementById('textHeroName').value;
+   theEnteredCharacterName = theEnteredCharacterName.trim();
+
+   if (theEnteredCharacterName.length > 0) {
+      return true;
+   } else {
+      return false;
+   }
 }
 
 function setChosenHero(theImage) {
-	var theEnteredCharacterName = document.getElementById('textHeroName').value;
 	var imageSelected = document.getElementById('statsHeroImageInfo');
-
-	theEnteredCharacterName = theEnteredCharacterName.trim();
+   var theEnteredCharacterName = document.getElementById('textHeroName').value;
+   theEnteredCharacterName = theEnteredCharacterName.trim();
 
 	if (typeof theImage === 'undefined') {
 		hero.image = imageSelected;
 		hero.type = imageSelected.title;
-		hero.name = theEnteredCharacterName ? theEnteredCharacterName : imageSelected.title;
+		hero.name = theEnteredCharacterName;
 	} else {
 		imageSelected.src = theImage.src;
 		imageSelected.title = theImage.title;
 		hero.image = theImage;
 		hero.type = theImage.title;
-		hero.name = nvl(theEnteredCharacterName, theImage.title);
+		hero.name = theEnteredCharacterName;
 	}
 
 	var heroNameInputBox = document.getElementById('textHeroName');
