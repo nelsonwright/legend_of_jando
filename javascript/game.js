@@ -1924,6 +1924,7 @@ function loadInitialInfo() {
 	loadMonsters();
 	loadHeroInfo();
 	loadFood();
+   setHeroNameInTitleBar();
 }
 
 function createMapsAndShowSmallMap() {
@@ -1939,13 +1940,14 @@ function showInitialQuest() {
 }
 
 function showStartOfGame() {
-	showInitialQuest();
+   if (!jandoCookieExists()) {
+      showInitialQuest();
+   }
 	enableOptionButtons(true);
 }
 
 function startGame() {
 	loadInitialInfo();
-   setHeroNameInTitleBar();
 	createMapsAndShowSmallMap();
 	updateHeroStats();
 	updateMovePoints();
