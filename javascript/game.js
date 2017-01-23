@@ -131,8 +131,8 @@ var hero = {
 	image: new Image(),
    sleepImage: new Image(),
 	type: "human",
-	movePoints: 20,
-	maxMovePoints: 20,
+	movePoints: 30,
+	maxMovePoints: 30,
 	maxHealthGainedBySleep: 8,
    minHealthGainedBySleep: 2, // the minimum if you've not answered any sums, that is
 	foraging: false,  // are you foraging at the moment?
@@ -145,10 +145,10 @@ var hero = {
 	fightOn : 'No',	   // indicates if a fight with a monster is: ongoing, just ended, or not on
 	turnToFight: true,	// if it's the hero's turn to fight or the monster's
 	health: 30,
-	attack: 10,
+	attack: 9,
 	defence: 8,
 	maxHealth: 30,
-	maxAttack: 10,
+	maxAttack: 9,
 	maxDefence: 8,
 	experience: 0,
 	level: 1,
@@ -1637,6 +1637,19 @@ function renderSleepingState() {
    document.getElementById("sleepDiv").className = "sleep";
 }
 
+function animateWakingUp() {
+   var theImage = document.getElementById("heroImageAsleep");
+   theImage.className ='animateImage90Clockwise';
+
+   $("#heroImageAsleep")
+   .on("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd",
+    function(e){
+       theImage.src = hero.image.src;
+       theImage.className = 'up3Ems';
+       $(this).off(e);
+    });
+}
+
 function awakeFromSlumber() {
 	var extraHealth;
 
@@ -1658,6 +1671,7 @@ function awakeFromSlumber() {
 
 	sleep.calculation.wipeText();
    renderSleepingState();
+   animateWakingUp();
 
 	hero.asleep = false;
 	enableOptionButtons(true);
