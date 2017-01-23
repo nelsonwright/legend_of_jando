@@ -91,6 +91,10 @@ caption {
    color: indigo;
 }
 
+.textHeroInputBox {
+   width:10em;
+}
+
 .mapAndMove {
 	background-color: #CFDFC3;
 	height:320px;
@@ -269,4 +273,30 @@ caption {
 
 .sleep {
    padding-bottom: 0;
+}
+
+.up3Ems {
+   -ms-transform: translate(0em, -3em); /* IE 9 */
+   -webkit-transform: translate(0em, -3em); /* Safari */
+   transform: translate(0em, -3em);
+}
+
+.animateImage90Clockwise {
+    top: 0%;
+    left: 0%;
+    -webkit-animation:spin 1.5s;
+    -moz-animation:spin 1.5s;
+    animation:spin 1.5s;
+    -webkit-animation-fill-mode: forwards; /* Safari 4.0 - 8.0 */
+    animation-fill-mode: forwards;
+}
+
+@-moz-keyframes spin { 100% { -moz-transform: rotate(90deg); } }
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(90deg); } }
+@keyframes spin { 100%
+   {
+      -ms-transform: translate(-3em, 0em) rotate(90deg);
+      -webkit-transform: translate(-3em, 0em) rotate(90deg); /* Safari */
+      transform: translate(-3em, 0em) rotate(90deg);
+   }
 }
