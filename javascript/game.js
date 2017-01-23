@@ -169,17 +169,17 @@ var map = {
       directionClassName: "",
       backgroundColour: "#E6EFC2",
       movedLeft: function() {
-         var movedLeftOnSmallMap = this.posColumnCell < this.oldPosColumnCell
-               && map.big.posColumnCell === map.big.oldPosColumnCell;
-         var movedLeftOffEdgeOfSmallMap = this.posColumnCell === this.cols -1
-                && map.big.posColumnCell < map.big.oldPosColumnCell;
+         var movedLeftOnSmallMap = this.posColumnCell < this.oldPosColumnCell &&
+            map.big.posColumnCell === map.big.oldPosColumnCell;
+         var movedLeftOffEdgeOfSmallMap = this.posColumnCell === this.cols -1 &&
+            map.big.posColumnCell < map.big.oldPosColumnCell;
          return movedLeftOnSmallMap || movedLeftOffEdgeOfSmallMap;
       },
       movedRight: function() {
-         var movedRightOnSmallMap = this.posColumnCell > this.oldPosColumnCell
-               && map.big.posColumnCell === map.big.oldPosColumnCell;
-         var movedRightOffEdgeOfSmallMap = this.posColumnCell === 0
-                && map.big.posColumnCell > map.big.oldPosColumnCell;
+         var movedRightOnSmallMap = this.posColumnCell > this.oldPosColumnCell &&
+            map.big.posColumnCell === map.big.oldPosColumnCell;
+         var movedRightOffEdgeOfSmallMap = this.posColumnCell === 0 &&
+            map.big.posColumnCell > map.big.oldPosColumnCell;
          return movedRightOnSmallMap || movedRightOffEdgeOfSmallMap;
       },
       storeDirectionClassName: function() {
@@ -306,7 +306,7 @@ var sleep = {
       wipeText: function() {
          this.timeToAnswerText = "";
          this.text = "";
-         this.resultText = "";
+         this.resultText = " ";
          this.answerText = "";
       }
 	},
@@ -680,8 +680,7 @@ function setBigMapCellColour(mapTableDiv, position, colour) {
 function setTerrainCellSmallMap(mapTableDiv, row, column) {
    var cellPosition = {small:{row:row, column:column}, big:{row:null, column:null}};
    var terrType = map.getTerrainType(row, column);
-
-   cellImageTag = getCellImageTag(mapTableDiv, cellPosition);
+   var cellImageTag = getCellImageTag(mapTableDiv, cellPosition);
 
 	cellImageTag.src = terrainArray[terrType].image.src;
 	cellImageTag.title = terrainArray[terrType].name;
@@ -875,9 +874,9 @@ function moveOnSmallMap(heroPosition) {
 	} else {
 		dontAllowMovement();
 		// highlight the fact that you've run out of movement points . . .
-      $('#action').html("<p>"
-         + "You feel so tired that you cannot move, and need to sleep."
-         + "</p>");
+      $('#action').html("<p>" +
+         "You feel so tired that you cannot move, and need to sleep." +
+         "</p>");
 		highlightHeroSquare();
 	}
 }
@@ -937,7 +936,7 @@ function startNewGame() {
 }
 
 function saveGame() {
-   var permissionGiven = confirm("This will save the game in a cookie, is this OK?");
+   var permissionGiven = window.confirm("This will save the game in a cookie, is this OK?");
 
    if (permissionGiven) {
       saveHeroInfo();
@@ -1648,10 +1647,10 @@ function awakeFromSlumber() {
       // this can equate to zero if there's been no correct answers . . .
       extraHealth = Math.round(hero.maxHealthGainedBySleep * (sleep.correctAnswers / sleep.questionsAsked));
       // we'll want the words to change depending on how well or bad you did, but for now . . .
-      sleep.narrativeText = sleep.narrativeText + ' You answered '
-         +  sleep.correctAnswers + ' correctly, out of '
-         + sleep.questionsAsked + '. You gain '
-      	+ extraHealth + ' extra health as a result.';
+      sleep.narrativeText = sleep.narrativeText + ' You answered ' +
+          sleep.correctAnswers + ' correctly, out of ' +
+          sleep.questionsAsked + '. You gain ' +
+      	 extraHealth + ' extra health as a result.';
    } else {
       // no questions have been asked, so give the minumum health boost . . .
          extraHealth = hero.minHealthGainedBySleep;
@@ -1755,7 +1754,7 @@ function arrowImageMouseOver(arrowImage) {
 	}
 }
 
-function hideAndShowAreas() {
+function showPlayingArea() {
 	document.getElementById('chooseHero').className = 'gone';
 	document.getElementById('characterInfo').className = 'gone';
 	document.getElementById('mapAndMove').className = 'mapAndMove';
@@ -1763,19 +1762,6 @@ function hideAndShowAreas() {
 	document.getElementById('playGameButtonDiv').className = 'gone';
 	document.getElementById('action').style.visibility = 'visible';
 	map.movementAreaHtml = document.getElementById('mapAndMove').innerHTML;
-}
-
-function playGame() {
-   if (characterIsNamed()) {
-   	setChosenHero();
-   	hideAndShowAreas();
-   	setHeroNameInTitleBar();
-
-   	gameState.inStartMode = false;
-   	startGame();
-   } else {
-      document.getElementById('textHeroName').value = "Jando";
-   }
 }
 
 function characterIsNamed() {
@@ -1786,6 +1772,23 @@ function characterIsNamed() {
       return true;
    } else {
       return false;
+   }
+}
+
+function startPlayingGame() {
+   showPlayingArea();
+   gameState.inStartMode = false;
+   startGame();
+}
+
+function playGame() {
+   if (jandoCookieExists()) {
+         startPlayingGame();
+   } else if (characterIsNamed()) {
+   	setChosenHero();
+   	startPlayingGame();
+   } else {
+      document.getElementById('textHeroName').value = "Jando";
    }
 }
 
@@ -1921,6 +1924,7 @@ function loadInitialInfo() {
 	loadMonsters();
 	loadHeroInfo();
 	loadFood();
+   setHeroNameInTitleBar();
 }
 
 function createMapsAndShowSmallMap() {
@@ -1936,7 +1940,9 @@ function showInitialQuest() {
 }
 
 function showStartOfGame() {
-	showInitialQuest();
+   if (!jandoCookieExists()) {
+      showInitialQuest();
+   }
 	enableOptionButtons(true);
 }
 

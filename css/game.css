@@ -19,6 +19,13 @@ button {
 	cursor: url(http://www.nelsonwright.co.uk/game_project/web_images/sword_cursor.cur), default;
 }
 
+caption {
+    display: table-caption;
+    text-align: right;
+    padding: 0.6em;
+    color: white;
+}
+
 .titleBar {
 		background-color:DarkGreen;
 }
@@ -63,6 +70,25 @@ button {
 	background-color:#aacccc;
 	padding:0.5em;
 	text-align:right;
+}
+
+#statsHeroLabel {
+   color: khaki;
+   font-size: large;
+   font-weight:bold;
+}
+
+#levelDesc {
+   font-size: large;
+   font-weight:bold;
+   background-color:yellowgreen;
+   padding: 0.5em;
+}
+
+#levelDesc span {
+   font-weight:bold;
+   font-size:x-large;
+   color: indigo;
 }
 
 .mapAndMove {
