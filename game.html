@@ -32,7 +32,7 @@
 
 </head>
 
-<body onkeyup="pressedAKey(event)" onLoad="checkForSavedState(document.getElementById('statsHeroImageInfo'))">
+<body onkeyup="pressedAKey(event)" onLoad="checkForSavedState()">
 
 <div class="page-container">
 	<div class="titleBar">
@@ -46,12 +46,18 @@
 <!-- Used when selecting your character at the start -->
 	<div id="characterInfo" class="stats">
 		<div id="characterInfoLeft" class="floatLeft">
-			<img id="statsHeroImageInfo"  title="human" src="./web_images/hero_human.png"/>
+			<img id="statsHeroImageId"  class="characterSelectedImage" title="question mark" src="./web_images/question_mark.png"/>
 			<p id="textHeroNamePara">
 				<strong>Name</strong>&nbsp;&nbsp;&nbsp;
 				<input type="text" id="textHeroName" class="textHeroInputBox" maxlength="25" value="Jando">
 			</p>
 		</div>
+      <div class="startingValues">
+         <p>Health: <span id="characterHealth"></span></p>
+         <p>Attack: <span id="characterAttack"></span></p>
+         <p>Defence: <span id="characterDefence"></span></p>
+         <p>Movement: <span id="characterMovement"></span></p>
+      </div>
 	</div>
 
 	<div id="statsTemplate_target"></div>
@@ -156,11 +162,17 @@
 	</div>
 
 	<div id="chooseHero" class="chooseHero">
-		<h3>Choose your character . . .</h3>
+		<h3 id="chooseCharacterText">Choose your character . . .</h3>
 		<div id="heroes" class="heroes">
-			<img id="human" src="./web_images/hero_human.png" title="human" onClick="setChosenHero(this);" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<img id="goose" src="./web_images/hero_goose.png" title="goose" onClick="setChosenHero(this);" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<img id="chicken" src="./web_images/hero_chicken.png" title="chicken" onClick="setChosenHero(this);" />
+			<img id="human" src="./web_images/hero_human.png" title="human" onClick="setChosenHero(this);"
+            data-health="25" data-attack="8" data-defence="9" data-move-points="26"
+            />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<img id="goose" src="./web_images/hero_goose.png" title="goose" onClick="setChosenHero(this);"
+            data-health="22" data-attack="7" data-defence="9" data-move-points="34"
+            />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<img id="chicken" src="./web_images/hero_chicken.png" title="chicken" onClick="setChosenHero(this);"
+            data-health="29" data-attack="6" data-defence="10" data-move-points="32"
+         />
 		</div>
 	</div>
 

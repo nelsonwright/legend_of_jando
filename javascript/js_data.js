@@ -77,7 +77,7 @@ function getMonsterData() {
 			{name: 'Bleh', healthPoints: 16, attackPoints: 8, defencePoints: 5},
          {name: 'Leecho', healthPoints: 21, attackPoints: 4, defencePoints: 16},
 			{name: 'Star Man', healthPoints: 6, attackPoints: 10, defencePoints: 5},
-         
+
          {name: 'Ninja', healthPoints: 8, attackPoints: 10, defencePoints: 7},
 			{name: 'Flame Spirit', healthPoints: 16, attackPoints: 9, defencePoints: 9},
 			{name: 'Assassin', healthPoints: 14, attackPoints: 11, defencePoints: 6},
@@ -141,7 +141,7 @@ function getQuestData() {
 					'Would you mind closing the tent flap . . . ?  Thank you, there\'s a bit of a chill breeze from the east today."' +
 					'</p>' +
 					'<p>' +
-					'"So, you seek a path through the hills, do you?  All in good time, but first you must traverse the woods, and a human can lose his way there. ' +
+					'"So, you seek a path through the hills, do you?  All in good time, but first you must traverse the woods, and a body can lose their way there. ' +
 					'I don\'t know the way myself, as it is dangerous even for a giant grasshopper. ' +
 					'There is a meditating skelton that lives on a watchtower somewhere in the scrub that can help you.' +
 					' I don\'t know his exact wherabouts, I\'m afraid, but I\'ll tell my blackbird friends to let him know that you\'re coming."' +

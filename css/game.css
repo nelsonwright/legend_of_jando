@@ -72,6 +72,11 @@ caption {
 	text-align:right;
 }
 
+.characterSelectedImage {
+   margin:auto;
+   display:block;
+}
+
 #statsHeroLabel {
    color: khaki;
    font-size: large;
@@ -299,4 +304,18 @@ caption {
       -webkit-transform: translate(-3em, 0em) rotate(90deg); /* Safari */
       transform: translate(-3em, 0em) rotate(90deg);
    }
+}
+
+.startingValues {
+   float: left;
+}
+
+.startingValues p{
+   color: white;
+}
+
+.startingValues p span{
+   color: yellow;
+   font-weight: bold;
+
 }

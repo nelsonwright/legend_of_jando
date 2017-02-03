@@ -130,9 +130,9 @@ var hero = {
 	name: null,
 	image: new Image(),
    sleepImage: new Image(),
-	type: "human",
-	movePoints: 30,
-	maxMovePoints: 30,
+	type: null,
+	movePoints: null,
+	maxMovePoints: null,
 	maxHealthGainedBySleep: 8,
    minHealthGainedBySleep: 2, // the minimum if you've not answered any sums, that is
 	foraging: false,  // are you foraging at the moment?
@@ -1778,6 +1778,16 @@ function showPlayingArea() {
 	map.movementAreaHtml = document.getElementById('mapAndMove').innerHTML;
 }
 
+function characterIsSelected() {
+   var imageSelected = document.getElementById('statsHeroImageId');
+
+   if (imageSelected.title == "question mark") {
+      return false;
+   } else {
+      return true;
+   }
+}
+
 function characterIsNamed() {
    var theEnteredCharacterName = document.getElementById('textHeroName').value;
    theEnteredCharacterName = theEnteredCharacterName.trim();
@@ -1796,46 +1806,57 @@ function startPlayingGame() {
 }
 
 function playGame() {
-   if (jandoCookieExists()) {
-         startPlayingGame();
-   } else if (characterIsNamed()) {
-   	setChosenHero();
-   	startPlayingGame();
+   if (characterIsNamed()) {
+      if (characterIsSelected()) {
+         hero.name = document.getElementById('textHeroName').value.trim();
+   	   startPlayingGame();
+      } else {
+         // pulse the question mark to highlight the fact you haven't chosen a character
+         $("#statsHeroImageId").effect("highlight",{color: "#A52A2A"});
+         $("#chooseCharacterText").effect("highlight",{color: "#A52A2A"});
+      }
    } else {
       document.getElementById('textHeroName').value = "Jando";
    }
 }
 
-function setChosenHero(theImage) {
-	var imageSelected = document.getElementById('statsHeroImageInfo');
-   var theEnteredCharacterName = document.getElementById('textHeroName').value;
-   theEnteredCharacterName = theEnteredCharacterName.trim();
+function setCharacterAttributes(image) {
+   hero.health = image.getAttribute('data-health');
+   hero.attack = image.getAttribute('data-attack');
+   hero.defence = image.getAttribute('data-defence');
+   hero.movePoints = image.getAttribute('data-move-points');
+   hero.maxMovePoints = image.getAttribute('data-move-points');
+}
 
-	if (typeof theImage === 'undefined') {
-		hero.image = imageSelected;
-		hero.type = imageSelected.title;
-		hero.name = theEnteredCharacterName;
-	} else {
-		imageSelected.src = theImage.src;
-		imageSelected.title = theImage.title;
-		hero.image = theImage;
-		hero.type = theImage.title;
-		hero.name = theEnteredCharacterName;
-	}
+function displayCharacterAttributes() {
+   document.getElementById('characterHealth').innerHTML = hero.health;
+   document.getElementById('characterAttack').innerHTML = hero.attack;
+   document.getElementById('characterDefence').innerHTML = hero.defence;
+   document.getElementById('characterMovement').innerHTML = hero.movePoints;
+}
+
+function setChosenHero(theImage) {
+	var imageSelected = document.getElementById('statsHeroImageId');
+   hero.name = document.getElementById('textHeroName').value.trim();
+
+	imageSelected.src = theImage.src;
+	imageSelected.title = theImage.title;
+	hero.image = theImage;
+	hero.type = theImage.title;
+
+   setCharacterAttributes(theImage);
+   displayCharacterAttributes(theImage);
 
 	var heroNameInputBox = document.getElementById('textHeroName');
 	heroNameInputBox.value = hero.name;
-
 	heroNameInputBox.focus();
 	heroNameInputBox.select();
 }
 
-function checkForSavedState(theImage) {
+function checkForSavedState() {
    if (jandoCookieExists()) {
       // just go straight to playing the game, no need to select character
-      playGame();
-   } else {
-      setChosenHero(theImage);
+      startPlayingGame();
    }
 }
 
