@@ -936,11 +936,22 @@ function startNewGame() {
 }
 
 function saveGame() {
-   var permissionGiven = window.confirm("This will save the game in a cookie, is this OK?");
+   var permissionGiven = false;
+
+   if (jandoCookieExists()) {
+      // we'll assume that if we've got the cookie, we asked for permission the first time we saved it
+      permissionGiven = true;
+   } else {
+      permissionGiven = window.confirm("This will save the game in a cookie, is this OK?");
+   }
 
    if (permissionGiven) {
       saveHeroInfo();
-      window.alert('Game Saved');
+      $('#action').html("<p>" +
+         "The game has been saved." +
+         "</p>");
+      $('#action>p')
+         .effect("highlight", {color: "#A52A2A"}, 600);
    }
 }
 
