@@ -56,38 +56,55 @@ function getFoodData() {
 	return data;
 }
 
+function getNightImageData() {
+      var data = {
+         items:
+         [
+            {name: 'night_1'},
+            {name: 'night_2'},
+            {name: 'night_3'},
+            {name: 'night_4'},
+            {name: 'night_5'},
+            {name: 'night_6'},
+            {name: 'night_7'},
+            {name: 'night_8'},
+         ]
+      };
+      return data;
+}
+
 function getMonsterData() {
 	// we can infer image name from name, making lowercase and converting spaces to underscores
 	var data = {
 		items:
 		[
          // roughly try to order them in terms of easiest to hardesst . . .
-         {name: 'Drop', healthPoints: 9, attackPoints: 4, defencePoints: 3},
-         {name: 'Squirm', healthPoints: 9, attackPoints: 4, defencePoints: 4},
-         {name: 'Strawberry', healthPoints: 7, attackPoints: 5, defencePoints: 3},
-         {name: 'Scream', healthPoints: 7, attackPoints: 6, defencePoints: 6},
-         {name: 'Snail', healthPoints: 8, attackPoints: 6, defencePoints: 6},
+         {name: 'Drop', healthPoints: 9, attackPoints: 5, defencePoints: 3},
+         {name: 'Squirm', healthPoints: 9, attackPoints: 5, defencePoints: 4},
+         {name: 'Strawberry', healthPoints: 7, attackPoints: 6, defencePoints: 3},
+         {name: 'Scream', healthPoints: 7, attackPoints: 7, defencePoints: 6},
+         {name: 'Snail', healthPoints: 8, attackPoints: 7, defencePoints: 6},
 
-         {name: 'Warrior Ant', healthPoints: 10, attackPoints: 4, defencePoints: 7},
-         {name: 'Ground Fish', healthPoints: 11, attackPoints: 6, defencePoints: 3},
-			{name: 'Turtle Rider', healthPoints: 12, attackPoints: 6, defencePoints: 4},
-         {name: 'Bloat', healthPoints: 12, attackPoints: 7, defencePoints: 14},
+         {name: 'Warrior Ant', healthPoints: 10, attackPoints: 5, defencePoints: 7},
+         {name: 'Ground Fish', healthPoints: 11, attackPoints: 7, defencePoints: 3},
+			{name: 'Turtle Rider', healthPoints: 12, attackPoints: 7, defencePoints: 4},
+         {name: 'Bloat', healthPoints: 12, attackPoints: 8, defencePoints: 14},
 
-			{name: 'Horned Devil', healthPoints: 13, attackPoints: 7, defencePoints: 5},
-			{name: 'Bleh', healthPoints: 16, attackPoints: 8, defencePoints: 5},
-         {name: 'Leecho', healthPoints: 21, attackPoints: 4, defencePoints: 16},
-			{name: 'Star Man', healthPoints: 6, attackPoints: 10, defencePoints: 5},
+			{name: 'Horned Devil', healthPoints: 13, attackPoints: 8, defencePoints: 5},
+			{name: 'Bleh', healthPoints: 16, attackPoints: 9, defencePoints: 5},
+         {name: 'Leecho', healthPoints: 21, attackPoints: 5, defencePoints: 16},
+			{name: 'Star Man', healthPoints: 6, attackPoints: 11, defencePoints: 5},
 
-         {name: 'Ninja', healthPoints: 8, attackPoints: 10, defencePoints: 7},
-			{name: 'Flame Spirit', healthPoints: 16, attackPoints: 9, defencePoints: 9},
-			{name: 'Assassin', healthPoints: 14, attackPoints: 11, defencePoints: 6},
-			{name: 'Lightning Fish', healthPoints: 15, attackPoints: 12, defencePoints: 7},
+         {name: 'Ninja', healthPoints: 8, attackPoints: 11, defencePoints: 7},
+			{name: 'Flame Spirit', healthPoints: 16, attackPoints: 10, defencePoints: 9},
+			{name: 'Assassin', healthPoints: 14, attackPoints: 12, defencePoints: 6},
+			{name: 'Lightning Fish', healthPoints: 15, attackPoints: 13, defencePoints: 7},
 
-         {name: 'Crazed King', healthPoints: 18, attackPoints: 11, defencePoints: 16},
-			{name: 'Leosaur', healthPoints: 19, attackPoints: 15, defencePoints: 11},
+         {name: 'Crazed King', healthPoints: 18, attackPoints: 12, defencePoints: 16},
+			{name: 'Leosaur', healthPoints: 19, attackPoints: 16, defencePoints: 11},
 
 				// The final big boss-battle monster! . . . needs to be the last entry in this array
-			{name: 'Hideously evil GREEN SKULL', imageName: 'green_skull', healthPoints: 32, attackPoints: 16, defencePoints: 12}
+			{name: 'Hideously evil GREEN SKULL', imageName: 'green_skull', healthPoints: 32, attackPoints: 18, defencePoints: 14}
 		]
 	};
 	return data;
