@@ -211,11 +211,13 @@
 
   <script id="sleepTemplate" type="x-tmpl-mustache">
     <div id ="sleepDiv" class="sleep hidden">
-       <p>{{narrativeText}}</p>
-       <p>{{timeToAnswerText}}</p>
-       <p>{{calculationText}} <span class="answerText">{{answerText}}</span> </p>
-       <p>{{resultText}}</p>
-       <p><img id="heroImageAsleep" src="{{heroImageSrc}}" title="{{heroImgTitle}}"/></p>
+      <img class="floatRight" src="{{sleepTimePassedSrc}}" title="hour of the night"/>
+
+      <p>{{narrativeText}}</p>
+      <p>{{timeToAnswerText}}</p>
+      <p>{{calculationText}} <span class="answerText">{{answerText}}</span> </p>
+      <p>{{resultText}}</p>
+      <p><img id="heroImageAsleep" src="{{heroImageSrc}}" title="{{heroImgTitle}}"/></p>
     </div>
   </script>
 

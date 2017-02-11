@@ -310,7 +310,7 @@ var sleep = {
          this.answerText = "";
       }
 	},
-
+   nightImages: []
 };
 
 // this is the monster that is currently being fought
@@ -366,6 +366,10 @@ for (var i=0; i <map.big.numTerrainTypes + 1; i++) {
 
 function loadMonsters() {
 	loadJsonIntoArray(getMonsterData(), monsterArray, false);
+}
+
+function loadNightImages() {
+	loadJsonIntoArray(getNightImageData(), sleep.nightImages, false);
 }
 
 function loadTerrain() {
@@ -1632,6 +1636,10 @@ function sleepAtNight() {
    renderSleepingState();
 }
 
+function getSleepTimePassedImage(hoursSlept) {
+   return hoursSlept <= gameSettings.hoursInNight - 1 ? sleep.nightImages[hoursSlept].image.src : null;
+}
+
 function renderSleepingState() {
    var template = $('#sleepTemplate').html();
    Mustache.parse(template);   // optional, speeds up future uses
@@ -1642,7 +1650,8 @@ function renderSleepingState() {
       answerText: sleep.calculation.answerText,
       resultText: sleep.calculation.resultText,
       heroImageSrc: hero.sleepImage.src,
-      heroImgTitle: hero.sleepImage.title
+      heroImgTitle: hero.sleepImage.title,
+      sleepTimePassedSrc: getSleepTimePassedImage(hero.hoursSlept)
    });
    $('#action').html(sleepHtml);
    document.getElementById("sleepDiv").className = "sleep";
@@ -1968,6 +1977,7 @@ function pressedAKey(e) {
 function loadInitialInfo() {
 	loadTerrain();
 	loadMonsters();
+   loadNightImages();
 	loadHeroInfo();
 	loadFood();
    setHeroNameInTitleBar();
