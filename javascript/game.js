@@ -1632,12 +1632,17 @@ function sleepAtNight() {
 	}
 
 	sleep.narrativeText = sleep.narrativeText + ' .';
-	hero.hoursSlept++;
+
+   hero.hoursSlept++;
    renderSleepingState();
 }
 
 function getSleepTimePassedImage(hoursSlept) {
-   return hoursSlept <= gameSettings.hoursInNight - 1 ? sleep.nightImages[hoursSlept].image.src : null;
+   if (hoursSlept >= gameSettings.hoursInNight) {
+      return sleep.nightImages[sleep.nightImages.length -1].image.src;
+   }
+
+   return sleep.nightImages[hoursSlept].image.src;
 }
 
 function renderSleepingState() {
@@ -1694,6 +1699,7 @@ function awakeFromSlumber() {
    animateWakingUp();
 
 	hero.asleep = false;
+   hero.hoursSlept = 0;
 	enableOptionButtons(true);
 
 	hero.movePoints = hero.maxMovePoints;
